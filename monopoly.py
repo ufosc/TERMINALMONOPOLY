@@ -610,6 +610,17 @@ def unittest():
     players[2].buy(35)
 
 unittest()
+#wipes the bottom of the screen where the player does all of their input
+def BottomScreenWipe():
+    print("\033[36;0H" + " " * 76)
+    print("\033[37;0H" + " " * 76)
+    print("\033[38;0H" + " " * 76)
+    print("\033[39;0H" + " " * 76)
+    print("\033[40;0H" + " " * 76)
+    print("\033[41;0H" + " " * 76)
+    print("\033[42;0H" + " " * 76)
+    print("\033[43;0H" + " " * 76)
+    print("\033[44;0H" + " " * 76)
 
 while(True):
     refresh_board()      
@@ -620,7 +631,6 @@ while(True):
         die1 = random.randint(1, 6)
         die2 = random.randint(1, 6)
         update_history(f"Player {turn} rolled {die1} and {die2}")
-
         board.update_location(players[turn], die1 + die2)
         update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
         refresh_board()
@@ -668,9 +678,134 @@ while(True):
             players[board.locations[cl][3]].receive(rent)
             update_history(f"{players[turn]} paid ${rent} to Player {board.locations[cl][3]}")
         refresh_board()
+        #Checks if the player rolled a Double then just reruns all the orginal "player's turn" code
         if die1 == die2:
+            BottomScreenWipe()
             update_history(f"{players[turn]} rolled doubles! Roll again.")
-            # @TODO implement rolling doubles
+            update_history(s.COLORS[f"Player{turn}"] + f"Player {turn}'s turn")
+            refresh_board()
+            print_commands()
+            input("\033[36;0HRoll dice?")
+            die1 = random.randint(1, 6)
+            die2 = random.randint(1, 6)
+            update_history(f"Player {turn} rolled {die1} and {die2}")
+            board.update_location(players[turn], die1 + die2)
+            update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
+        refresh_board()
+        if board.locations[players[turn].location][3] < 0:
+            match board.locations[players[turn].location][3]:
+                case -1: #unowned
+                    buy_logic()
+                case -2: #mortgaged
+                    pass
+                case -3: #community chest
+                    card = decks.draw_community_chest(players[turn])
+                    update_history(f"Player {turn} drew a Community Chest card! {card}")
+                case -4: #chance
+                    card = decks.draw_chance(players[turn])
+                    update_history(f"Player {turn} drew a Chance card! {card}")
+                    if(board.locations[players[turn].location][3] == -1):
+                        buy_logic()
+                    if(board.locations[players[turn].location][3] == -5):
+                        players[turn].pay(200)
+                        update_history(f"Player {turn} paid income tax ($200)")
+                case -5: #income tax
+                    players[turn].pay(200)
+                    update_history(f"Player {turn} paid income tax ($200)")
+                case -6: #jail
+                    pass
+                case -7: #go to jail
+                    players[turn].jail = True
+                    board.update_location(players[turn], -1)
+                case -8: #free parking
+                    pass
+                case -9: #luxury tax
+                    players[turn].pay(100)
+                    update_history(f"Player {turn} paid luxury tax ($100)")
+                case -10: #go
+                    pass
+        elif board.locations[players[turn].location][3] != players[turn].order:
+            # Pay another player rent
+            cl = players[turn].location
+            rent = board.deeds[board.locations[cl][0]][2 + board.locations[cl][2]] if board.locations[cl][0] in board.deeds else board.special_deeds[board.locations[cl][0]][board.locations[cl][2]]
+            if rent == 4 and board.locations[cl][0] in board.special_deeds:
+                rent = 4 * (die1 + die2)
+            elif rent == 10 and board.locations[cl][0] in board.special_deeds:
+                rent = 10 * (die1 + die2)
+            players[turn].pay(rent)
+            players[board.locations[cl][3]].receive(rent)
+            update_history(f"{players[turn]} paid ${rent} to Player {board.locations[cl][3]}")
+        refresh_board()
+        if die1 == die2:
+            #This is the players third turn, and if they roll another they go to jail.
+            BottomScreenWipe()
+            update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+            update_history(s.COLORS[f"Player{turn}"] + f"Player {turn}'s turn")
+            refresh_board()
+            print_commands()
+            input("\033[36;0HRoll dice?")
+            die1 = random.randint(1, 6)
+            die2 = random.randint(1, 6)
+            update_history(f"Player {turn} rolled {die1} and {die2}")
+
+
+            if die1 == die2:
+                update_history(f"Player {turn} rolled their third double!")
+                update_history(f"Player {turn} is going to jail!")
+                players[turn].jail = True
+                board.update_location(players[turn], -1)
+                refresh_board()
+
+            else:
+                board.update_location(players[turn], die1 + die2)
+                update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
+                refresh_board()
+                if board.locations[players[turn].location][3] < 0:
+                    match board.locations[players[turn].location][3]:
+                        case -1: #unowned
+                            buy_logic()
+                        case -2: #mortgaged
+                            pass
+                        case -3: #community chest
+                            card = decks.draw_community_chest(players[turn])
+                            update_history(f"Player {turn} drew a Community Chest card! {card}")
+                        case -4: #chance
+                            card = decks.draw_chance(players[turn])
+                            update_history(f"Player {turn} drew a Chance card! {card}")
+                            if(board.locations[players[turn].location][3] == -1):
+                                buy_logic()
+                            if(board.locations[players[turn].location][3] == -5):
+                                players[turn].pay(200)
+                                update_history(f"Player {turn} paid income tax ($200)")
+                        case -5: #income tax
+                            players[turn].pay(200)
+                            update_history(f"Player {turn} paid income tax ($200)")
+                        case -6: #jail
+                            pass
+                        case -7: #go to jail
+                            players[turn].jail = True
+                            board.update_location(players[turn], -1)
+                        case -8: #free parking
+                            pass
+                        case -9: #luxury tax
+                            players[turn].pay(100)
+                            update_history(f"Player {turn} paid luxury tax ($100)")
+                        case -10: #go
+                            pass
+                elif board.locations[players[turn].location][3] != players[turn].order:
+                    # Pay another player rent
+                    cl = players[turn].location
+                    rent = board.deeds[board.locations[cl][0]][2 + board.locations[cl][2]] if board.locations[cl][0] in board.deeds else board.special_deeds[board.locations[cl][0]][board.locations[cl][2]]
+                    if rent == 4 and board.locations[cl][0] in board.special_deeds:
+                        rent = 4 * (die1 + die2)
+                    elif rent == 10 and board.locations[cl][0] in board.special_deeds:
+                        rent = 10 * (die1 + die2)
+                    players[turn].pay(rent)
+                    players[board.locations[cl][3]].receive(rent)
+                    update_history(f"{players[turn]} paid ${rent} to Player {board.locations[cl][3]}")
+                refresh_board()
+                
+
         if(players[turn].cash > 0):
             choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
             while(choice != 'e'): # @TODO remove soon! players should not be able to do these actions during gameboard screen 
@@ -704,15 +839,7 @@ while(True):
             bankrupts += 1
 
     # Wipe the bottom of the screen (input area)
-    print("\033[36;0H" + " " * 76)
-    print("\033[37;0H" + " " * 76)
-    print("\033[38;0H" + " " * 76)
-    print("\033[39;0H" + " " * 76)
-    print("\033[40;0H" + " " * 76)
-    print("\033[41;0H" + " " * 76)
-    print("\033[42;0H" + " " * 76)
-    print("\033[43;0H" + " " * 76)
-    print("\033[44;0H" + " " * 76)
+    BottomScreenWipe()
 
     if(bankrupts == num_players - 1):
         break
