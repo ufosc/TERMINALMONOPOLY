@@ -288,14 +288,20 @@ class Cards:
                 p.jail = True
                 board.update_location(p, p.location, 10)
             case 12: 
-                # @TODO housing repairs, implement!
+                for property in p.properties:
+                    if(board.locations[property][2] == 5):
+                        p.pay(150) #price for 4 houses x1.5
+                    elif(board.locations[property][2] > 0):
+                        p.pay(25*board.locations[property][2])
                 pass
             case 13:
                 p.pay(15)
             case 14:
                 board.update_location(p, p.location, 5)
             case 15:
-                # @TODO: Implement chairman of the board
+                for receiver in players:
+                    p.pay(50)
+                    receiver.receive(50)
                 pass
             case 16: 
                 p.receive(150)
@@ -326,7 +332,9 @@ class Cards:
             case 8:
                 p.receive(20)
             case 9:
-                # Other players must pay $10, implement!
+                for payer in players:
+                    payer.pay(10)
+                    p.receive(10)
                 pass
             case 10:
                 p.receive(100)
@@ -337,8 +345,11 @@ class Cards:
             case 13:
                 p.receive(25)
             case 14: 
-                # Street repair, implement!
-                pass
+                for property in p.properties:
+                    if(board.locations[property][2] == 5):
+                        p.pay(240) #price for 4 houses x1.5
+                    elif(board.locations[property][2] > 0):
+                        p.pay(40*board.locations[property][2])
             case 15:
                 p.receive(10)
             case 16:
