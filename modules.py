@@ -17,50 +17,53 @@ class PlayerModules():
             "LIGHTGRAY": "\033[38;5;7m"}
 
     def calculator() -> str:
-        # Use stack to make a multi-operator calculator! 
+        #Uses recursion to calculate
+        def calculate(equation: str) -> int:
+            for i in range(0, len(equation)-1):
+                if(equation[i] == '+'):
+                    eqLeft = equation[:i]
+                    eqRight = equation[(i+1):]
+                    return calculate(eqLeft) + calculate(eqRight)
+            
+            for i in range(0, len(equation)-1):
+                if(equation[i] == '-'):
+                    eqLeft = equation[:i]
+                    eqRight = equation[(i+1):]
+                    return calculate(eqLeft) - calculate(eqRight)
+            
+            for i in range(0, len(equation)-1):
+                if(equation[i] == '*'):
+                    eqLeft = equation[:i]
+                    eqRight = equation[(i+1):]
+                    return calculate(eqLeft) * calculate(eqRight)
+
+            for i in range(0, len(equation)-1):
+                if(equation[i] == '/'):
+                    eqLeft = equation[:i]
+                    eqRight = equation[(i+1):]
+                    return calculate(eqLeft)/calculate(eqRight)
+            
+            for i in range(0, len(equation)-1):
+                if(equation[i] == '%'):
+                    eqLeft = equation[:i]
+                    eqRight = equation[(i+1):]
+                    return calculate(eqLeft)%calculate(eqRight) 
+            
+            return int(equation)
+
         response = '\nCALCULATOR TERMINAL\n'.center(ss.cols)
         digit_result = 0
-        operator = ''
-        first_number = 0
-        second_number = 0
         print("\r", end='')
+        equation = input(Fore.GREEN)
 
         try:
-            equation = input(Fore.GREEN)
-            for op in ['+', '-', '*', '/', '%']:
-                if op in equation:
-                    operator = op
-                    first_number = int(equation.split(op)[0])
-                    second_number = int(equation.split(op)[1])
-                    break
+            digit_result = calculate(equation)
         except:
-            return response + 'Malformed input!'
+            return response + '\nEquation is either undefined or malformed!'
 
-        # Addition (+)
-        if(operator == '+'):
-            digit_result += first_number + second_number
-        # Substraction (-)
-        elif(operator == '-'):
-            digit_result += first_number - second_number
-        # Multiplication (*)
-        elif(operator == '*'):
-            digit_result += first_number * second_number
-        # Division (/)
-        elif(operator == '/'):
-            if(second_number != 0):
-                digit_result += first_number / second_number
-            else:
-                response += 'Error! Cannot divide by zero!'
-        # Modulo (%)
-        elif(operator == '%'):
-            digit_result += first_number % second_number
-        # Unknown
-        else:
-            return response + 'Invalid operation!'
         response += f'{equation} = {digit_result}'
         print(Style.RESET_ALL, end='')
         return response
-        
 
     def deed(title: str) -> str:
         divider = s.get_graphics()['divider']
