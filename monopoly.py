@@ -293,7 +293,6 @@ class Cards:
                         p.pay(150) #price for 4 houses x1.5
                     elif(board.locations[property][2] > 0):
                         p.pay(25*board.locations[property][2])
-                pass
             case 13:
                 p.pay(15)
             case 14:
@@ -302,7 +301,6 @@ class Cards:
                 for receiver in players:
                     p.pay(50)
                     receiver.receive(50)
-                pass
             case 16: 
                 p.receive(150)
         return self.chance[-1]
@@ -335,7 +333,6 @@ class Cards:
                 for payer in players:
                     payer.pay(10)
                     p.receive(10)
-                pass
             case 10:
                 p.receive(100)
             case 11:
