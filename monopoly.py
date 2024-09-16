@@ -2,6 +2,9 @@
 from colorama import Fore, Style, Back
 import style as s
 import random
+import os
+import platform
+import ctypes
 
 class Player: 
     """
@@ -579,6 +582,26 @@ def log_error(error_message: str) -> None:
         formatted_datetime = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
+def make_fullscreen():
+    current_os = platform.system()
+
+    if current_os == "Windows":
+        # Maximize terminal on Windows
+        user32 = ctypes.WinDLL("user32")
+        SW_MAXIMIZE = 3
+        hWnd = user32.GetForegroundWindow()
+        user32.ShowWindow(hWnd, SW_MAXIMIZE)
+
+    elif current_os == "Linux" or current_os == "Darwin":
+        # Maximize terminal on Linux/macOS
+        os.system("printf '\033[9;1t'")
+    else:
+        print(f"Fullscreen not supported for OS: {current_os}")
+
+make_fullscreen()
+print()
+screen_test = input("Please make sure the terminal in full screen mode. Press enter to continue.")
+
 # CASH = input("Starting cash?")
 # num_players = int(input("Number players?"))
 CASH = 2000
@@ -595,7 +618,7 @@ board = Board(num_players)
 decks = Cards()
 
 import style as s
-import os
+
 gameboard = s.get_graphics().get('gameboard')
 os.system('cls' if os.name == 'nt' else 'clear')
 print(Fore.WHITE + "\033[0;0H", end="")
