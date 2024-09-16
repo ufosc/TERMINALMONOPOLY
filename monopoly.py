@@ -32,29 +32,25 @@ class Player:
         """
         self.properties.append(location)
         self.cash -= board.deeds[board.locations[location][0]][0] if board.locations[location][0] in board.deeds else board.special_deeds[board.locations[location][0]][0]
+        board.locations[location][3] = self.order
         if board.locations[location][0] in board.special_deeds:
-            if location % 5 == 0: #@TODO Only 3 of the railroads correctly appear as bought 
-                                    # in unittest1, please fix railroad property condition
-                railroads_owned = 0
-                # I totally fixed this 
-                for i in range(5, 36, 10):
-                    if board.locations[i][3] == self.order:
-                        railroads_owned += 1
-                for i in range(5, 36, 10):
-                    if board.locations[i][3] == self.order:
-                        board.locations[i][2] = railroads_owned
-            # visually unappealing code, fix if bored
-            elif location == 12:
+
+            if location == 5 or location == 15 or location == 25 or location == 35: # railroad
+                owned_rails = [k for k in range(5, 36, 10) if board.locations[k][3] == self.order]
+                for k in owned_rails:
+                    board.locations[k][2] = len(owned_rails)
+            
+            elif location == 12: # electric company, check if water works is owned
                 if board.locations[28][3] == self.order:
                     board.locations[12][2] = 2
                     board.locations[28][2] = 2
                 else: board.locations[12][2] = 1
-            elif location == 28:
+            
+            elif location == 28: # water works, check if electric company is owned
                 if board.locations[12][3] == self.order:
                     board.locations[28][2] = 2
                     board.locations[12][2] = 2
                 else: board.locations[28][2] = 1
-        board.locations[location][3] = self.order
     def pay(self, amount:int) -> None:
         """
         Pay amount\n
@@ -609,6 +605,8 @@ def unittest():
     players[2].buy(15)
     players[2].buy(25)
     players[2].buy(35)
+    players[3].buy(12)
+    players[3].buy(28)
 
 unittest()
 
