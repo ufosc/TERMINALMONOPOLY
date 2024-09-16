@@ -1,26 +1,60 @@
-from colorama import Style, Fore
-
 ## Custom theme colors, could be adjusted with more RGB values for more creative themes!
 ## Use these in place of colorama's Fore and Back color literals.
 ## Should add a "compatible" color set for terminals that cannot play nice with RGB values.
-COLORS = {"BROWN": "\033[38;2;138;96;25m",
-          "LIGHTBLUE": "\033[38;2;43;249;255m",
-          "ROUGE": "\033[38;2;240;93;231m",
-          "ORANGE": "\033[38;2;246;160;62m",
-          "RED": "\033[38;2;246;62;62m",
-          "YELLOW": "\033[38;2;240;255;91m",
-          "GREEN": "\033[38;2;41;129;32m",
-          "BLUE": "\033[38;2;44;37;255m",
-          "WHITE": "\033[38;2;255;255;255m",
-          "CYAN": "\033[38;2;0;255;239m",
-          "LIGHTGRAY": "\033[38;2;193;193;193m",
-          "LIGHTBLACK": "\033[38;2;88;88;88m",
-          "CHANCE": "\033[38;2;255;191;105m",
-          "COMMUNITY": "\033[38;2;0;137;255m",
-          "Player0": "\033[38;5;1m",
-          "Player1": "\033[38;5;2m",
-          "Player2": "\033[38;5;3m",
-          "Player3": "\033[38;5;4m",}
+## [https://en.wikipedia.org/wiki/ANSI_escape_code] for more info on ANSI escape codes.
+class COLORS:
+    BROWN = "\033[38;2;138;96;25m"
+    LIGHTBLUE = "\033[38;2;43;249;255m"
+    ROUGE = "\033[38;2;240;93;231m"
+    ORANGE = "\033[38;2;246;160;62m"
+    RED = "\033[38;2;246;62;62m"
+    YELLOW = "\033[38;2;240;255;91m"
+    GREEN = "\033[38;2;41;129;32m"
+    BLUE = "\033[38;2;44;37;255m"
+    WHITE = "\033[38;2;255;255;255m"
+    CYAN = "\033[38;2;0;255;239m"
+    LIGHTGRAY = "\033[38;2;193;193;193m"
+    LIGHTBLACK = "\033[38;2;88;88;88m"
+    CHANCE = "\033[38;2;255;191;105m"
+    COMMUNITY = "\033[38;2;0;137;255m"
+    BLACK = "\033[38;5;0m"
+    # Player colors: red, green, yellow, blue, respectively
+    playerColors = ["\033[38;5;1m", "\033[38;5;2m", "\033[38;5;3m", "\033[38;5;4m"]
+    # display colors are used for printing text in Terminal, like error messages, etc. Not to be used on gameboard.
+    dispGREEN = "\033[38;5;2m"
+    dispRED = "\033[38;5;9m"
+    dispBLUE = "\033[38;5;12m"
+    RESET = "\033[0m" # Reset color
+
+    backBROWN = BROWN.replace("38", "48")
+    backLIGHTBLUE = LIGHTBLUE.replace("38", "48")
+    backROUGE = ROUGE.replace("38", "48")
+    backORANGE = ORANGE.replace("38", "48")
+    backRED = RED.replace("38", "48")
+    backYELLOW = YELLOW.replace("38", "48")
+    backGREEN = GREEN.replace("38", "48")
+    backBLUE = BLUE.replace("38", "48")
+    backWHITE = WHITE.replace("38", "48")
+    backCYAN = CYAN.replace("38", "48")
+    backLIGHTGRAY = LIGHTGRAY.replace("38", "48")
+    backLIGHTBLACK = LIGHTBLACK.replace("38", "48")
+    backCHANCE = CHANCE.replace("38", "48")
+    backCOMMUNITY = COMMUNITY.replace("38", "48")
+    backBLACK = BLACK.replace("38", "48")
+    
+    # @TODO add default compatible colors for terminals that cannot handle RGB values (see issue #11). 
+    cBROWN = ""
+    cbBROWN = ""
+
+def colortest():
+    """
+    Prints a test of all colors defined in the COLORS class.
+    """
+    i = 0
+    for color in dir(COLORS):
+        if not color.startswith('__'):
+            print(str(i) + ": " + getattr(COLORS, color) + color + COLORS.RESET)
+            i += 1
 
 def print_w_dots(text: str, size: int=50, end: str='\n') -> None:
     """
@@ -36,7 +70,7 @@ def print_w_dots(text: str, size: int=50, end: str='\n') -> None:
     """
     for i in range(size-len(text)):
         text += '.'
-    print(Fore.GREEN+text, end=Style.RESET_ALL+end)
+    print(COLORS.dispGREEN+text, end=COLORS.RESET+end)
 
 def get_graphics() -> dict:
     """
