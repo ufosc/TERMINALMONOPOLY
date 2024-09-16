@@ -18,10 +18,8 @@ class COLORS:
     CHANCE = "\033[38;2;255;191;105m"
     COMMUNITY = "\033[38;2;0;137;255m"
     BLACK = "\033[38;5;0m"
-    Player0 = "\033[38;5;1m"
-    Player1 = "\033[38;5;2m"
-    Player2 = "\033[38;5;3m"
-    Player3 = "\033[38;5;4m"
+    # Player colors: red, green, yellow, blue, respectively
+    playerColors = ["\033[38;5;1m", "\033[38;5;2m", "\033[38;5;3m", "\033[38;5;4m"]
     # display colors are used for printing text in Terminal, like error messages, etc. Not to be used on gameboard.
     dispGREEN = "\033[38;5;2m"
     dispRED = "\033[38;5;9m"

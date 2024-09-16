@@ -387,7 +387,7 @@ def refresh_board():
     print(end=COLORS.RESET)
 
     for i in range(num_players):
-        color = f"\033[38;5;{i+1}m" # define player colors
+        color = COLORS.playerColors[i]
         token = "◙"
         print(color + f"\033[{board.locations[players[i].location][4][0]+1};{board.locations[players[i].location][4][1]+1+i}H{token}")
     
@@ -427,7 +427,7 @@ def update_status(p: Player, update: str, status: list = status):
     # Property status update (list all properties of player)
     status.clear()
     if(update == "properties"):
-        color = getattr(COLORS, f"Player{p.order}")
+        color = COLORS.playerColors[p.order]
         status.append(color + f"{p} has properties: " + COLORS.RESET)
         for i in range(len(p.properties)):
             status.append(f"{p.properties[i]}: {board.locations[p.properties[i]][0]}")
@@ -437,7 +437,7 @@ def update_status(p: Player, update: str, status: list = status):
             propertyid = int(propertyid)
             if board.locations[propertyid][0] in board.deeds or board.locations[propertyid][0] in board.special_deeds:
                 if(board.locations[propertyid][3] != -1):
-                    color = getattr(COLORS, f"Player{board.locations[propertyid][3]}")
+                    color = COLORS.playerColors[board.locations[propertyid][3]]
                     status.append(f"Current owner: " + color + f"Player{board.locations[propertyid][3]}" + COLORS.RESET)
                     status.append(f"Houses: {board.locations[propertyid][2]}")
             if(board.locations[propertyid][0] in board.deeds):
@@ -491,7 +491,7 @@ def refresh_h_and_s():
     sorted_players = sorted(players, key=lambda x: x.cash, reverse=True)
     for i in range(len(sorted_players)):
         if(sorted_players[i].order != -1):
-            color = getattr(COLORS, f"Player{sorted_players[i].order}")
+            color = COLORS.playerColors[sorted_players[i].order]
             print(color + f"\033[{31+i};122H{sorted_players[i].order} - ${sorted_players[i].cash}", end=COLORS.RESET)
 
 def buy_logic():
@@ -617,7 +617,7 @@ unittest()
 while(True):
     refresh_board()      
     if(players[turn].order != -1): # If player is not bankrupt
-        player_color = getattr(COLORS, f"Player{turn}")
+        player_color = COLORS.playerColors[turn]
         update_history(player_color + f"Player {turn}'s turn")
         print_commands()
         input("\033[36;0HRoll dice?")
@@ -725,7 +725,7 @@ while(True):
 
 for index, player in enumerate(players):
     if player.order != -1:
-        color = getattr(COLORS, f"Player{index}")
+        color = COLORS.playerColors[index]
         update_history(color + f"Player {index} wins!")
         break
 print("\033[40;0H", end="")
