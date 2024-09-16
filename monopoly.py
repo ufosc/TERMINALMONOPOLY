@@ -598,9 +598,30 @@ def make_fullscreen():
     else:
         print(f"Fullscreen not supported for OS: {current_os}")
 
+def scaling_print():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    gameboard = s.get_graphics().get('gameboard')
+    print(f"\033[0;0H" + gameboard, end="")
+    for i in range(len(border)):
+        print(f"\033[{i};79H", end="")
+        if(len(history) - i<= 0):
+            for j in range(len(border[i])):
+                print(border[i][j], end="")
+    print_commands()
+    print()
+    current_os = platform.system()
+
+    if current_os == "Darwin":
+        # Print out instructions for macOS users
+        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue.")
+    else:
+        # Print out instructions for Linux/Windows users
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue.")
+    scaling_test = input()
+
 make_fullscreen()
-print()
-screen_test = input("Please make sure the terminal in full screen mode. Press enter to continue.")
+scaling_print()
+
 
 # CASH = input("Starting cash?")
 # num_players = int(input("Number players?"))
@@ -633,6 +654,8 @@ def unittest():
     players[2].buy(35)
 
 unittest()
+
+
 
 while(True):
     refresh_board()      
