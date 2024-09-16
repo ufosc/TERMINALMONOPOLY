@@ -36,6 +36,7 @@ class Player:
             if location % 5 == 0: #@TODO Only 3 of the railroads correctly appear as bought 
                                     # in unittest1, please fix railroad property condition
                 railroads_owned = 0
+                # I totally fixed this 
                 for i in range(5, 36, 10):
                     if board.locations[i][3] == self.order:
                         railroads_owned += 1
