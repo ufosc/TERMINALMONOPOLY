@@ -1,6 +1,6 @@
 # Monopoly game is played on Banker's terminal. 
-from colorama import Fore, Style, Back
 import style as s
+from style import COLORS
 import random
 
 class Player: 
@@ -91,46 +91,46 @@ class Board:
             # locations[x][3] indicates who owns, but also is used for special codes below:
                 # Special codes: -1 is not owned, -2 is mortaged, -3 is community chest, -4 is chance, -5 is tax
                 # -6 is jail, -7 is go to jail, -8 is free parking, -9 is luxury, -10 is go 
-        0: ["Go", list(range(num_players)), 0, -10, (32,72), s.COLORS["LIGHTGRAY"]],
-        1: ["Mediterranean Avenue", [], 0, -1, (32,65), s.COLORS["BROWN"]],
-        2: ["Community Chest", [], 0, -3, (32, 58), s.COLORS["COMMUNITY"]],
-        3: ["Baltic Avenue", [], 0, -1, (32, 51), s.COLORS["BROWN"]],
-        4: ["Income Tax", [], 0, -5, (32, 44), s.COLORS["LIGHTGRAY"]],
-        5: ["Reading Railroad", [], 0, -1, (32, 37), s.COLORS["LIGHTBLACK"]],
-        6: ["Oriental Avenue", [], 0, -1, (32, 30), s.COLORS["LIGHTBLUE"]],
-        7: ["Chance", [], 0, -4, (32, 23), s.COLORS["CHANCE"]],
-        8: ["Vermont Avenue", [], 0, -1, (32, 16), s.COLORS["LIGHTBLUE"]],
-        9: ["Connecticut Avenue", [], 0, -1, (32, 9), s.COLORS["LIGHTBLUE"]],
-        10: ["Jail", [], 0, -7, (32, 2), s.COLORS["LIGHTGRAY"]],
-        11: ["St. Charles Place", [], 0, -1, (29, 2), s.COLORS["ROUGE"]],
-        12: ["Electric Company", [], 0, -1, (26, 2), s.COLORS["YELLOW"]],
-        13: ["States Avenue", [], 0, -1, (23, 2), s.COLORS["ROUGE"]],
-        14: ["Virginia Avenue", [], 0, -1, (20, 2), s.COLORS["ROUGE"]],
-        15: ["Pennsylvania Railroad", [], 0, -1, (17, 2), s.COLORS["LIGHTBLACK"]],
-        16: ["St. James Place", [], 0, -1, (14, 2), s.COLORS["ORANGE"]],
-        17: ["Community Chest", [], 0, -3, (11, 2), s.COLORS["COMMUNITY"]],
-        18: ["Tennessee Avenue", [], 0, -1, (8, 2), s.COLORS["ORANGE"]],
-        19: ["New York Avenue", [], 0, -1, (5, 2), s.COLORS["ORANGE"]],
-        20: ["Free Parking", [], 0, -8, (2, 2), s.COLORS["LIGHTGRAY"]],
-        21: ["Kentucky Avenue", [], 0, -1, (2, 9), s.COLORS["RED"]],
-        22: ["Chance", [], 0, -4, (2, 16), s.COLORS["CHANCE"]],
-        23: ["Indiana Avenue", [], 0, -1, (2, 23), s.COLORS["RED"]],
-        24: ["Illinois Avenue", [], 0, -1, (2, 30), s.COLORS["RED"]],
-        25: ["B&O Railroad", [], 0, -1, (2, 37), s.COLORS["LIGHTBLACK"]],
-        26: ["Atlantic Avenue", [], 0, -1, (2, 44), s.COLORS["YELLOW"]],
-        27: ["Ventnor Avenue", [], 0, -1, (2, 51), s.COLORS["YELLOW"]],
-        28: ["Water Works", [], 0, -1, (2, 58), s.COLORS["CYAN"]],
-        29: ["Marvin Gardens", [], 0, -1, (2, 65), s.COLORS["YELLOW"]],
-        30: ["Go To Jail", [], 0, -7, (2, 72), s.COLORS["LIGHTGRAY"]],
-        31: ["Pacific Avenue", [], 0, -1, (5, 72), s.COLORS["GREEN"]],
-        32: ["North Carolina Avenue", [], 0, -1, (8, 72), s.COLORS["GREEN"]],
-        33: ["Community Chest", [], 0, -3, (11, 72), s.COLORS["COMMUNITY"]],
-        34: ["Pennsylvania Avenue", [], 0, -1, (14, 72), s.COLORS["GREEN"]],
-        35: ["Short Line", [], 0, -1, (17, 72), s.COLORS["LIGHTBLACK"]],
-        36: ["Chance", [], 0, -4, (20, 72), s.COLORS["CHANCE"]],
-        37: ["Park Place", [], 0, -1, (23, 72), s.COLORS["BLUE"]],
-        38: ["Luxury Tax", [], 0, -9, (26, 72), s.COLORS["LIGHTGRAY"]],
-        39: ["Boardwalk", [], 0, -1, (29, 72), s.COLORS["BLUE"]]
+        0: ["Go", list(range(num_players)), 0, -10, (32,72), COLORS.LIGHTGRAY],
+        1: ["Mediterranean Avenue", [], 0, -1, (32,65), COLORS.BROWN],
+        2: ["Community Chest", [], 0, -3, (32, 58), COLORS.COMMUNITY],
+        3: ["Baltic Avenue", [], 0, -1, (32, 51), COLORS.BROWN],
+        4: ["Income Tax", [], 0, -5, (32, 44), COLORS.LIGHTGRAY],
+        5: ["Reading Railroad", [], 0, -1, (32, 37), COLORS.LIGHTBLACK],
+        6: ["Oriental Avenue", [], 0, -1, (32, 30), COLORS.LIGHTBLUE],
+        7: ["Chance", [], 0, -4, (32, 23), COLORS.CHANCE],
+        8: ["Vermont Avenue", [], 0, -1, (32, 16), COLORS.LIGHTBLUE],
+        9: ["Connecticut Avenue", [], 0, -1, (32, 9), COLORS.LIGHTBLUE],
+        10: ["Jail", [], 0, -7, (32, 2), COLORS.LIGHTGRAY],
+        11: ["St. Charles Place", [], 0, -1, (29, 2), COLORS.ROUGE],
+        12: ["Electric Company", [], 0, -1, (26, 2), COLORS.YELLOW],
+        13: ["States Avenue", [], 0, -1, (23, 2), COLORS.ROUGE],
+        14: ["Virginia Avenue", [], 0, -1, (20, 2), COLORS.ROUGE],
+        15: ["Pennsylvania Railroad", [], 0, -1, (17, 2), COLORS.LIGHTBLACK],
+        16: ["St. James Place", [], 0, -1, (14, 2), COLORS.ORANGE],
+        17: ["Community Chest", [], 0, -3, (11, 2), COLORS.COMMUNITY],
+        18: ["Tennessee Avenue", [], 0, -1, (8, 2), COLORS.ORANGE],
+        19: ["New York Avenue", [], 0, -1, (5, 2), COLORS.ORANGE],
+        20: ["Free Parking", [], 0, -8, (2, 2), COLORS.LIGHTGRAY],
+        21: ["Kentucky Avenue", [], 0, -1, (2, 9), COLORS.RED],
+        22: ["Chance", [], 0, -4, (2, 16), COLORS.CHANCE],
+        23: ["Indiana Avenue", [], 0, -1, (2, 23), COLORS.RED],
+        24: ["Illinois Avenue", [], 0, -1, (2, 30), COLORS.RED],
+        25: ["B&O Railroad", [], 0, -1, (2, 37), COLORS.LIGHTBLACK],
+        26: ["Atlantic Avenue", [], 0, -1, (2, 44), COLORS.YELLOW],
+        27: ["Ventnor Avenue", [], 0, -1, (2, 51), COLORS.YELLOW],
+        28: ["Water Works", [], 0, -1, (2, 58), COLORS.CYAN],
+        29: ["Marvin Gardens", [], 0, -1, (2, 65), COLORS.YELLOW],
+        30: ["Go To Jail", [], 0, -7, (2, 72), COLORS.LIGHTGRAY],
+        31: ["Pacific Avenue", [], 0, -1, (5, 72), COLORS.GREEN],
+        32: ["North Carolina Avenue", [], 0, -1, (8, 72), COLORS.GREEN],
+        33: ["Community Chest", [], 0, -3, (11, 72), COLORS.COMMUNITY],
+        34: ["Pennsylvania Avenue", [], 0, -1, (14, 72), COLORS.GREEN],
+        35: ["Short Line", [], 0, -1, (17, 72), COLORS.LIGHTBLACK],
+        36: ["Chance", [], 0, -4, (20, 72), COLORS.CHANCE],
+        37: ["Park Place", [], 0, -1, (23, 72), COLORS.BLUE],
+        38: ["Luxury Tax", [], 0, -9, (26, 72), COLORS.LIGHTGRAY],
+        39: ["Boardwalk", [], 0, -1, (29, 72), COLORS.BLUE]
     }
         """Dictionary of Monopoly locations\n
         @locations: {int: [str, list, int, bool]}\n
@@ -349,49 +349,49 @@ def refresh_board():
     """
     Refresh the gameboard\n
     """
-    print(Style.RESET_ALL + "\033[0;0H", end="")
+    print(COLORS.RESET + "\033[0;0H", end="")
     print(gameboard)
     for i in range(40): 
         # This loop paints the properties on the board with respective color schemes
         color = board.locations[i][5]
         backcolor = board.locations[i][5].replace("38", "48")
-        print(Back.BLACK + color + f"\033[{board.locations[i][4][0]};{board.locations[i][4][1]}H{i}" + backcolor + " " * (4 + (1 if i < 10 else 0)))
+        print(COLORS.backBLACK + color + f"\033[{board.locations[i][4][0]};{board.locations[i][4][1]}H{i}" + backcolor + " " * (4 + (1 if i < 10 else 0)))
         
         if(board.locations[i][3] != -1): # If owned
-            print(end=Style.RESET_ALL)
+            print(end=COLORS.RESET)
             color = f"\033[38;5;{board.locations[i][3]+1}m"
             print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]}H" + color + "▀")
 
         if(board.locations[i][3] == -3): # If community chest
-            print(end=Style.RESET_ALL)
-            print(f"\033[{board.locations[i][4][0] + 1};{board.locations[i][4][1]}H" + s.COLORS["COMMUNITY"] + "█" * 6)
-            print(f"\033[{board.locations[i][4][0] + 2};{board.locations[i][4][1]}H" + s.COLORS["COMMUNITY"] + "▀" * 6)
+            print(end=COLORS.RESET)
+            print(f"\033[{board.locations[i][4][0] + 1};{board.locations[i][4][1]}H" + COLORS.COMMUNITY + "█" * 6)
+            print(f"\033[{board.locations[i][4][0] + 2};{board.locations[i][4][1]}H" + COLORS.COMMUNITY + "▀" * 6)
 
         if(board.locations[i][3] == -4): # If chance
-            print(end=Style.RESET_ALL)
-            print(f"\033[{board.locations[i][4][0] + 1};{board.locations[i][4][1]}H" + s.COLORS["CHANCE"] + "█" * 6)
-            print(f"\033[{board.locations[i][4][0] + 2};{board.locations[i][4][1]}H" + s.COLORS["CHANCE"] + "▀" * 6)
+            print(end=COLORS.RESET)
+            print(f"\033[{board.locations[i][4][0] + 1};{board.locations[i][4][1]}H" + COLORS.CHANCE + "█" * 6)
+            print(f"\033[{board.locations[i][4][0] + 2};{board.locations[i][4][1]}H" + COLORS.CHANCE + "▀" * 6)
         
         if(board.locations[i][2] > 0): # If there are houses
-            print(end=Style.RESET_ALL)
-            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]+1}H" + s.COLORS["GREEN"] + "▀" * (board.locations[i][2]))
+            print(end=COLORS.RESET)
+            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]+1}H" + COLORS.GREEN + "▀" * (board.locations[i][2]))
         
         if(board.locations[i][2] == 5): # If there is a hotel
-            print(end=Style.RESET_ALL)
-            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]+5}H" + s.COLORS["RED"] + "▀")
+            print(end=COLORS.RESET)
+            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]+5}H" + COLORS.RED + "▀")
 
         if(board.locations[i][3] == -2): # If mortgaged
-            print(end=Style.RESET_ALL)
-            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]}H" + s.COLORS["LIGHTGRAY"].replace("38", "48") + "M")
+            print(end=COLORS.RESET)
+            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]}H" + COLORS.backLIGHTGRAY + "M")
 
-    print(end=Style.RESET_ALL)
+    print(end=COLORS.RESET)
 
     for i in range(num_players):
         color = f"\033[38;5;{i+1}m" # define player colors
         token = "◙"
         print(color + f"\033[{board.locations[players[i].location][4][0]+1};{board.locations[players[i].location][4][1]+1+i}H{token}")
     
-    print(end=Style.RESET_ALL)
+    print(end=COLORS.RESET)
 
 def print_commands():
     """
@@ -427,7 +427,8 @@ def update_status(p: Player, update: str, status: list = status):
     # Property status update (list all properties of player)
     status.clear()
     if(update == "properties"):
-        status.append(s.COLORS[f"Player{p.order}"] + f"{p} has properties: " + Style.RESET_ALL)
+        color = getattr(COLORS, f"Player{p.order}")
+        status.append(color + f"{p} has properties: " + COLORS.RESET)
         for i in range(len(p.properties)):
             status.append(f"{p.properties[i]}: {board.locations[p.properties[i]][0]}")
     if(update == "deed"):
@@ -436,7 +437,8 @@ def update_status(p: Player, update: str, status: list = status):
             propertyid = int(propertyid)
             if board.locations[propertyid][0] in board.deeds or board.locations[propertyid][0] in board.special_deeds:
                 if(board.locations[propertyid][3] != -1):
-                    status.append(f"Current owner: " + s.COLORS[f"Player{board.locations[propertyid][3]}"] + f"Player{board.locations[propertyid][3]}" + Style.RESET_ALL)
+                    color = getattr(COLORS, f"Player{board.locations[propertyid][3]}")
+                    status.append(f"Current owner: " + color + f"Player{board.locations[propertyid][3]}" + COLORS.RESET)
                     status.append(f"Houses: {board.locations[propertyid][2]}")
             if(board.locations[propertyid][0] in board.deeds):
                 deed = board.deeds.get(board.locations[propertyid][0])
@@ -478,18 +480,19 @@ def refresh_h_and_s():
             for j in range(len(border[i])):
                 print(border[i][j], end="")
     for i in range(len(history)):
-        print(f"\033[{i+4};81H" + history[i] if i < len(history) else "", end=Style.RESET_ALL)
+        print(f"\033[{i+4};81H" + history[i] if i < len(history) else "", end=COLORS.RESET)
     
     # Refresh status
     for i in range(len(status)):
         print(f"\033[{i+4};122H" + status[i] if i < len(status) else "")
-    print(Style.RESET_ALL, end="")
+    print(COLORS.RESET, end="")
 
     # Refresh leaderboard
     sorted_players = sorted(players, key=lambda x: x.cash, reverse=True)
     for i in range(len(sorted_players)):
         if(sorted_players[i].order != -1):
-            print(s.COLORS[f"Player{sorted_players[i].order}"] + f"\033[{31+i};122H{sorted_players[i].order} - ${sorted_players[i].cash}", end=Style.RESET_ALL)
+            color = getattr(COLORS, f"Player{sorted_players[i].order}")
+            print(color + f"\033[{31+i};122H{sorted_players[i].order} - ${sorted_players[i].cash}", end=COLORS.RESET)
 
 def buy_logic():
     CL = players[turn].location
@@ -523,14 +526,14 @@ def housing_logic(p: Player):
         else:
             propertyid =  int(propertyid)
     except ValueError: ###AHHHHHHHH clean me please
-        print(f"\033[42;0" + s.COLORS["RED"] + f"Invalid input, please enter a number in {p.properties}", end=Style.RESET_ALL)
+        print(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {p.properties}", end=COLORS.RESET)
         flag = False
     if flag and not exit:
         if not propertyid in p.properties:
             print("You do not own this property!")
         else: 
             family = board.locations[propertyid][5]
-            if family == s.COLORS["CYAN"] or family == s.COLORS["LIGHTBLACK"] or board.locations[propertyid][0].startswith("Electric"):
+            if family == COLORS.CYAN or family == COLORS.LIGHTBLACK or board.locations[propertyid][0].startswith("Electric"):
                 print("This property cannot be improved.")
                 flag = False
             if flag: 
@@ -598,7 +601,7 @@ import style as s
 import os
 gameboard = s.get_graphics().get('gameboard')
 os.system('cls' if os.name == 'nt' else 'clear')
-print(Fore.WHITE + "\033[0;0H", end="")
+print(COLORS.WHITE + "\033[0;0H", end="")
 print(gameboard)
 
 def unittest():
@@ -614,7 +617,8 @@ unittest()
 while(True):
     refresh_board()      
     if(players[turn].order != -1): # If player is not bankrupt
-        update_history(s.COLORS[f"Player{turn}"] + f"Player {turn}'s turn")
+        player_color = getattr(COLORS, f"Player{turn}")
+        update_history(player_color + f"Player {turn}'s turn")
         print_commands()
         input("\033[36;0HRoll dice?")
         die1 = random.randint(1, 6)
@@ -721,6 +725,7 @@ while(True):
 
 for index, player in enumerate(players):
     if player.order != -1:
-        update_history(s.COLORS[f"Player{index}"] + f"Player {index} wins!")
+        color = getattr(COLORS, f"Player{index}")
+        update_history(color + f"Player {index} wins!")
         break
 print("\033[40;0H", end="")
