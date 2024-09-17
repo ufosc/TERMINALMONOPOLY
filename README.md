@@ -1,21 +1,24 @@
-Important links and credits:
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ea1839ed-fdfc-487e-935e-6876131d00fa" alt="TM logo", class="center">!
+</p>
 
-During the research phase of this project, I found many Terminal-Based Monopoly versions. No ideas were explicitly derived from this material, but I wanted to mention the project. 
-https://mattsi98.github.io/posts/monopoly.html
+## The last game your computer will play...
 
-Many of the ASCII art text throughout the project were generated from this website. 
-https://patorjk.com/software/taag/
+# What is TERMINALMONOPOLY? 
+Terminal Monopoly is a rapid-pace, eclectic game which merges a classic board game with retro graphics, while satisfying the modern need of constant stimulation. Played entirely over a computer's command line, Terminal Monopoly brings nostalgic feelings of ancient terminal games on the first computers, while ensuring anyone can play due to the minimal graphical and computing requirements.
 
-This page was helpful in finding ASCII characters for the UI throughout the project. 
-https://theasciicode.com.ar/
+Terminal Monopoly is only 25% board game. Inspired by inane but hilarious Yakuza-type side quests, overcomplicated mechanics like in Cookie Clicker, and minigames such as those in Mario Party, Terminal Monopoly has so much more to offer than just rolling dice.
 
-Printing certain characters to the gameboard, so this stack overflow page helped a lot during development. 
-https://stackoverflow.com/questions/4020539/process-escape-sequences-in-a-string-in-python 
+Terminal Monopoly is written entirely in Python. The source code is available on GitHub
 
-To-be implemented: 
-https://stackoverflow.com/questions/5458048/how-can-i-make-a-python-script-standalone-executable-to-run-without-any-dependen
+An initial release of Terminal Monopoly is expected to be completed by the end of Fall 2024 (roughly December).
 
+# Installation
+Currently, Terminal Monopoly is still in-development. Check back in December 2024!
 
-*** include open source licensing soon!
+# Contributing
+Interested in adding to Terminal Monopoly? This is a beginner-friendly project that anyone should feel welcome to work on. Check out CONTRIBUTING.md for how to get started.
 
-**Many of the design decisions in this project are based on my current skill level and my preference to make software that is compatible on the majority of devices, immediately out-of-the-box. No extra installations, straightforward user-interfaces, and low-graphical / storage requirements.** 
+The base Terminal Monopoly game will have a large collection of modules which should promote a large number of playstyles, but if you have ideas for modules, code them up and create a pull request! This game is always looking for creative additions. 
+
+In the future, Terminal Monopoly may support "direct modding," that is, an interface will be available which will make module creation very simple. 

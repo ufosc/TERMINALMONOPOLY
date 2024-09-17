@@ -7,7 +7,7 @@
 WIDTH = 150
 HEIGHT = 40
 import os
-from colorama import Fore, Style, Back
+from style import COLORS
 
 class Player:
     ### Player Printing below ###
@@ -130,7 +130,7 @@ class Player:
         Parameters: None
         Returns: None
         """
-        print(Style.RESET_ALL,end='')
+        print(COLORS['RESET'],end='')
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def print_screen() -> None:
@@ -152,42 +152,42 @@ class Player:
         # Resets cursor position to top left
         print("\033[1A" * (HEIGHT + 4), end='\r')
         # Prints the top border, with ternary conditions if terminal 1 or 2 are active
-        print(Back.BLACK + Fore.LIGHTYELLOW_EX+(Fore.GREEN+'╔' if active_terminal == 1 else '╔')+('═' * (cols))+
-            (Fore.GREEN if active_terminal == 1 or active_terminal == 2 else Fore.LIGHTYELLOW_EX) +'╦'
-            +(Fore.GREEN if active_terminal == 2 else Fore.LIGHTYELLOW_EX)+('═' * (cols))+'╗' + Fore.LIGHTYELLOW_EX + "   ") # Additional spaces to fill remaining 3 columns
+        print(COLORS.backBLACK + COLORS.LIGHTGRAY+(COLORS.GREEN+'╔' if active_terminal == 1 else '╔')+('═' * (cols))+
+            (COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY) +'╦'
+            +(COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+('═' * (cols))+'╗' + COLORS.LIGHTGRAY + "   ") # Additional spaces to fill remaining 3 columns
         
         # Prints the middle rows
         for y in range(rows):
-            print((Fore.GREEN if active_terminal == 1 else Fore.LIGHTYELLOW_EX)+'║', end=Style.RESET_ALL) 
+            print((COLORS.GREEN if active_terminal == 1 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
             for x in range(2*cols):
                 if x < cols:
                     print(quadrant1[y][x], end='')
                 elif x == cols:
-                    print((Fore.GREEN if active_terminal == 1 or active_terminal == 2 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + quadrant2[y][x - cols], end='')
+                    print((COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrant2[y][x - cols], end='')
                 else:
                     print(quadrant2[y][x-cols], end='') 
-            print((Fore.GREEN if active_terminal == 2 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + "   ")
+            print((COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
         
         # Middle divider
-        print((Fore.GREEN if active_terminal == 1 or active_terminal == 3 else Fore.LIGHTYELLOW_EX)+'╠' + '═' * (cols)
-            +Fore.GREEN + '╬' + (Fore.GREEN if active_terminal == 2 or active_terminal == 4 else Fore.LIGHTYELLOW_EX)+ '═' * (cols) + '╣' + Style.RESET_ALL + "   ")
+        print((COLORS.GREEN if active_terminal == 1 or active_terminal == 3 else COLORS.LIGHTGRAY)+'╠' + '═' * (cols)
+            +COLORS.GREEN + '╬' + (COLORS.GREEN if active_terminal == 2 or active_terminal == 4 else COLORS.LIGHTGRAY)+ '═' * (cols) + '╣' + COLORS.RESET + "   ")
         
         # Prints the bottom rows
         for y in range(rows):
-            print((Fore.GREEN if active_terminal == 3 else Fore.LIGHTYELLOW_EX)+'║', end=Style.RESET_ALL) 
+            print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
             for x in range(2 * cols):
                 if x < cols:
                     print(quadrant3[y][x], end='')
                 elif x == cols:
-                    print((Fore.GREEN if active_terminal == 3 or active_terminal == 4 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + quadrant4[y][x - cols], end='')
+                    print((COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrant4[y][x - cols], end='')
                 else:
                     print(quadrant4[y][x - cols], end='')
-            print((Fore.GREEN if active_terminal == 4 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + "   ")
+            print((COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
         
         # Print final row
-        print((Fore.GREEN if active_terminal == 3 else Fore.LIGHTYELLOW_EX)+'╚' + '═' * (cols) + 
-            (Fore.GREEN if active_terminal == 3 or active_terminal == 4 else Fore.LIGHTYELLOW_EX) +'╩'
-                + (Fore.GREEN if active_terminal == 4 else Fore.LIGHTYELLOW_EX) + '═' * (cols) + '╝'+ Style.RESET_ALL + "   ")
+        print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'╚' + '═' * (cols) + 
+            (COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY) +'╩'
+                + (COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY) + '═' * (cols) + '╝'+ COLORS.RESET + "   ")
         # Fills the rest of the terminal
         print(' ' * WIDTH, end='\r')
 
@@ -234,41 +234,41 @@ class Banker:
         # Resets cursor position to top left
         print("\033[1A" * (HEIGHT + 4), end='\r')
         # Prints the top border, with ternary conditions if terminal 1 or 2 are active
-        print(Back.BLACK + Fore.LIGHTYELLOW_EX+(Fore.GREEN+'╔' if active_terminal == 1 else '╔')+('═' * (cols))+
-            (Fore.GREEN if active_terminal == 1 or active_terminal == 2 else Fore.LIGHTYELLOW_EX) +'╦'
-            +(Fore.GREEN if active_terminal == 2 else Fore.LIGHTYELLOW_EX)+('═' * (cols))+'╗' + Fore.LIGHTYELLOW_EX + "   ") # Additional spaces to fill remaining 3 columns
+        print(COLORS.backBLACK + COLORS.LIGHTGRAY+(COLORS.GREEN+'╔' if active_terminal == 1 else '╔')+('═' * (cols))+
+            (COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY) +'╦'
+            +(COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+('═' * (cols))+'╗' + COLORS.LIGHTGRAY + "   ") # Additional spaces to fill remaining 3 columns
         
         # Prints the middle rows
         for y in range(rows):
-            print((Fore.GREEN if active_terminal == 1 else Fore.LIGHTYELLOW_EX)+'║', end=Style.RESET_ALL) 
+            print((COLORS.GREEN if active_terminal == 1 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
             for x in range(2*cols):
                 if x < cols:
                     print(quadrant1[y][x], end='')
                 elif x == cols:
-                    print((Fore.GREEN if active_terminal == 1 or active_terminal == 2 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + quadrant2[y][x - cols], end='')
+                    print((COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrant2[y][x - cols], end='')
                 else:
                     print(quadrant2[y][x-cols], end='') 
-            print((Fore.GREEN if active_terminal == 2 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + "   ")
+            print((COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
         
         # Middle divider
-        print((Fore.GREEN if active_terminal == 1 or active_terminal == 3 else Fore.LIGHTYELLOW_EX)+'╠' + '═' * (cols)
-            +Fore.GREEN + '╬' + (Fore.GREEN if active_terminal == 2 or active_terminal == 4 else Fore.LIGHTYELLOW_EX)+ '═' * (cols) + '╣' + Style.RESET_ALL + "   ")
+        print((COLORS.GREEN if active_terminal == 1 or active_terminal == 3 else COLORS.LIGHTGRAY)+'╠' + '═' * (cols)
+            +COLORS.GREEN + '╬' + (COLORS.GREEN if active_terminal == 2 or active_terminal == 4 else COLORS.LIGHTGRAY)+ '═' * (cols) + '╣' + COLORS.RESET + "   ")
         
         # Prints the bottom rows
         for y in range(rows):
-            print((Fore.GREEN if active_terminal == 3 else Fore.LIGHTYELLOW_EX)+'║', end=Style.RESET_ALL) 
+            print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
             for x in range(2 * cols):
                 if x < cols:
                     print(quadrant3[y][x], end='')
                 elif x == cols:
-                    print((Fore.GREEN if active_terminal == 3 or active_terminal == 4 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + quadrant4[y][x - cols], end='')
+                    print((COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrant4[y][x - cols], end='')
                 else:
                     print(quadrant4[y][x - cols], end='')
-            print((Fore.GREEN if active_terminal == 4 else Fore.LIGHTYELLOW_EX)+'║'+Style.RESET_ALL + "   ")
+            print((COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
         
         # Print final row
-        print((Fore.GREEN if active_terminal == 3 else Fore.LIGHTYELLOW_EX)+'╚' + '═' * (cols) + 
-            (Fore.GREEN if active_terminal == 3 or active_terminal == 4 else Fore.LIGHTYELLOW_EX) +'╩'
-                + (Fore.GREEN if active_terminal == 4 else Fore.LIGHTYELLOW_EX) + '═' * (cols) + '╝'+ Style.RESET_ALL + "   ")
+        print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'╚' + '═' * (cols) + 
+            (COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY) +'╩'
+                + (COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY) + '═' * (cols) + '╝'+ COLORS.RESET + "   ")
         # Fills the rest of the terminal
         print(' ' * WIDTH, end='\r')
