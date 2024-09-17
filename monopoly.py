@@ -600,6 +600,16 @@ def make_fullscreen():
 
 def scaling_print():
     os.system('cls' if os.name == 'nt' else 'clear')
+    current_os = platform.system()
+    if current_os == "Darwin":
+        # Print out instructions for macOS users
+        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
+    else:
+        # Print out instructions for Linux/Windows users
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
+    print("After finishing scaling, please press enter to continue.")
+    scaling_test = input()
+    os.system('cls' if os.name == 'nt' else 'clear')
     gameboard = s.get_graphics().get('gameboard')
     print(f"\033[0;0H" + gameboard, end="")
     for i in range(len(border)):
@@ -609,18 +619,11 @@ def scaling_print():
                 print(border[i][j], end="")
     print_commands()
     print()
-    current_os = platform.system()
-
-    if current_os == "Darwin":
-        # Print out instructions for macOS users
-        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue.")
-    else:
-        # Print out instructions for Linux/Windows users
-        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue.")
-    scaling_test = input()
 
 make_fullscreen()
 scaling_print()
+print(f"\033[36;0H" + "Press enter to play.", end="")
+scaling_test = input()
 
 
 # CASH = input("Starting cash?")

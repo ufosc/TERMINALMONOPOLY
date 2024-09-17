@@ -5,6 +5,8 @@ from colorama import Fore, Style, Back
 import style as s
 from screenspace import Player as ss
 from modules import PlayerModules as m
+import platform
+import ctypes
 
 game_running = False
 text_dict = {}
@@ -249,12 +251,53 @@ def get_input():
         ss.overwrite(Fore.RED + "You are still in a game!")
         get_input()
 
+def make_fullscreen():
+    current_os = platform.system()
+
+    if current_os == "Windows":
+        # Maximize terminal on Windows
+        user32 = ctypes.WinDLL("user32")
+        SW_MAXIMIZE = 3
+        hWnd = user32.GetForegroundWindow()
+        user32.ShowWindow(hWnd, SW_MAXIMIZE)
+
+    elif current_os == "Linux" or current_os == "Darwin":
+        # Maximize terminal on Linux/macOS
+        os.system("printf '\033[9;1t'")
+    else:
+        print(f"Fullscreen not supported for OS: {current_os}")
+
+def scaling_print():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    current_os = platform.system()
+    if current_os == "Darwin":
+        # Print out instructions for macOS users
+        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
+    else:
+        # Print out instructions for Linux/Windows users
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
+    print("After finishing scaling, please press enter to continue.")
+    scaling_test = input()
+
+    os.system('cls' if os.name == 'nt' else 'clear')
+    ss.update_quadrant(2, text_dict.get('help'))
+    ss.print_screen()
+
+    print(f"\033[44;0H" + "Press enter to play.", end="")
+    scaling_test = input()
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 if __name__ == "__main__":
+    make_fullscreen()
     """
     Main driver function for player.
     """
     get_graphics()
-    initialize()
+
+    #initialize()
+
+    scaling_print()
+
     # Prints help in quadrant 2 to orient player.
     ss.update_quadrant(2, text_dict.get('help'))
     # ss.update_quadrant(1, text_dict.get('gameboard'))
