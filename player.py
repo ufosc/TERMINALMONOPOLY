@@ -280,7 +280,6 @@ def scaling_print():
     scaling_test = input()
 
     os.system('cls' if os.name == 'nt' else 'clear')
-    ss.update_quadrant(2, text_dict.get('help'))
     ss.print_screen()
 
     print(f"\033[44;0H" + "Press enter to play.", end="")
@@ -294,7 +293,7 @@ if __name__ == "__main__":
     """
     get_graphics()
 
-    #initialize()
+    initialize()
 
     scaling_print()
 
