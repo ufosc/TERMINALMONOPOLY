@@ -18,7 +18,17 @@ class PlayerModules():
 
     def calculator() -> str:
         #Uses recursion to calculate
-        def calculate(equation: str) -> int:
+        #To-do
+        '''
+        History
+        Left-Justified - DONE
+        Keep calculator open after multiple operations
+        A proper wrapping for long equations - DONE?
+        Add eponents - DONE
+        Strip extra spaces and pad operators with spaces - DONE
+        Add support for unary operator '-' - DONE
+        '''
+        def calculate(equation: str) -> float:
             for i in range(0, len(equation)-1):
                 if(equation[i] == '+'):
                     eqLeft = equation[:i]
@@ -27,7 +37,11 @@ class PlayerModules():
             
             for i in range(0, len(equation)-1):
                 if(equation[i] == '-'):
-                    eqLeft = equation[:i]
+                    #Checks for unary operator
+                    if(i == 0):
+                        eqLeft = "0"
+                    else:
+                        eqLeft = equation[:i]
                     eqRight = equation[(i+1):]
                     return calculate(eqLeft) - calculate(eqRight)
             
@@ -48,20 +62,46 @@ class PlayerModules():
                     eqLeft = equation[:i]
                     eqRight = equation[(i+1):]
                     return calculate(eqLeft)%calculate(eqRight) 
+                
+            for i in range(0, len(equation)-1):
+                if(equation[i] == '^'):
+                    eqLeft = equation[:i]
+                    eqRight = equation[(i+1):]
+                    return calculate(eqLeft) ** calculate(eqRight)
             
-            return int(equation)
+            return float(equation)
 
-        response = '\nCALCULATOR TERMINAL\n'.center(ss.cols)
+        response = '\nCALCULATOR TERMINAL\n' 
         digit_result = 0
         print("\r", end='')
         equation = input(Fore.GREEN)
+        equation = equation.replace(" ", "")
+        for op in ['+', '-', '*', '/', '%', '^']:
+            equation = equation.replace(op, " " + op + " ")
+        
+        #Removes spaces from negative number
+        if(len(equation) > 1 and equation[1] == '-'):
+            equation = "-" + equation[3:]
 
         try:
             digit_result = calculate(equation)
         except:
             return response + '\nEquation is either undefined or malformed!'
-
+            
         response += f'{equation} = {digit_result}'
+
+    
+        numOverflowingChar = len(response) - 75
+        lineNumber = 0
+        wrappedResponse = ""
+        while(numOverflowingChar > 0):
+            wrappedResponse += response[(75*lineNumber):(75*(lineNumber + 1))] + '\n'
+            lineNumber = lineNumber + 1
+            numOverflowingChar = numOverflowingChar - 75
+        
+        wrappedResponse += response[(75*lineNumber):(75*(lineNumber + 1))+ numOverflowingChar]
+        response = wrappedResponse
+
         print(Style.RESET_ALL, end='')
         return response
 
