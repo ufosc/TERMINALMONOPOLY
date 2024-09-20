@@ -1,5 +1,5 @@
 Clock:
-    need to get the minutes to incrememnt by 1 really quickly instead
+    need to get the minutes to increment by 1 really quickly instead
     of incrementing by 12 every second so it resembles something like
     changing quickly on a stopwatch
 
