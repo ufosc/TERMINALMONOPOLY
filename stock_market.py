@@ -5,6 +5,8 @@ from os import system, name
 from xml.etree.ElementTree import tostring
 
 
+
+
 #hello
 
 
@@ -34,8 +36,6 @@ class stock:
 
    def update_price(self):
        self.price = self.fluctuate_stock_price(self.price)
-
-
 
 
    def fluctuate_stock_price(self, current_stock_price):
