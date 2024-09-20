@@ -1,0 +1,11 @@
+Clock:
+    need to get the minutes to incrememnt by 1 really quickly instead
+    of incrementing by 12 every second so it resembles something like
+    changing quickly on a stopwatch
+
+Display:
+    need to work out how we want to display all of this in the terminal
+
+Terminal:
+    need to work out terminal commands/what commands we want
+    (ex: buy, sell, stop loss, etc...)
