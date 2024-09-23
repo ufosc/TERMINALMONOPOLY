@@ -1,5 +1,6 @@
 import random
 import time
+import sys
 from datetime import datetime, timedelta
 from os import system, name
 from xml.etree.ElementTree import tostring
@@ -120,11 +121,47 @@ class stock_market:
 
 
 if __name__ == '__main__':
+
    market = stock_market()
    market.add_stock("PLZA", 20.00, -5, 5)
    market.add_stock("BLVD", 5.00, -10, 10)
    market.add_stock("DRVE", 0.01, -15, 15)
 
+   user_input = input("Please select one of the following: 1: BUY 2: SELL \n")
+
+   if (user_input == "BUY"):
+       # print("buy executed")
+       ticker_name = input("Please enter name of ticker you want to buy: \n")
+       for each_stock in market.stocks:
+           if (each_stock == ticker_name):
+               amount = input("Enter number of stocks: \n")
+               choice = input("LIMIT or BUY NOW \n")
+               if (choice == "LIMIT"):
+                   limit = input("Enter amount:\n")
+                   break
+               if (choice == "BUY NOW"):
+                   print("You have bought " + ticker_name + "!\n")
+                   break
+       print("Invalid ticker!")
+
+
+
+   if (user_input == "SELL"):
+       # print("sell executed")
+       ticker_name = input("Please enter name of ticker you want to sell: \n")
+       for each_stock in market.stocks:
+           if (each_stock == ticker_name):
+               amount = input("Enter number of stocks: \n")
+               choice = input("STOPLOSS or SELL NOW \n")
+               if (choice == "STOPLOSS"):
+                   stop_loss = input("Enter amount: \n")
+                   break
+               if (choice == "SELL NOW"):
+                   print("You have sold " + ticker_name + "! \n")
+                   break
+       print("Invalid ticker!")
+
+   # print (sys.argv)
 
    condition = True
    counter = 0
