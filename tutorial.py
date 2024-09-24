@@ -34,3 +34,29 @@ players represented by a colored tile with circle   '
 - possibly add additional argument for starting game without getting tutorial screen/question
 - info section on different screens, enter to continue to next section screen
 """
+
+import screenspace as ss
+from style import COLORS
+import style
+
+cols = ss.WIDTH // 2
+rows = ss.HEIGHT // 2
+
+# Resets cursor position to top left
+print("\033[1A" * (rows + 4), end='\r')
+
+# Prints the top border, with ternary conditions if terminal 1 or 2 are active
+print(COLORS.LIGHTGRAY+'╔'+('═' * (cols))+
+    ('═' * (cols))+'╗' + "   ") # Additional spaces to fill remaining 3 columns
+
+# Prints the middle rows
+for y in range(rows*2):
+    print(COLORS.LIGHTGRAY+'║', end=COLORS.RESET) 
+    print((" "*cols*2), end='') 
+    print(COLORS.LIGHTGRAY+'║'+COLORS.RESET + "   ")
+
+# Print final row
+print(COLORS.LIGHTGRAY+'╚' + '═' * (cols*2) + '╝'+ COLORS.RESET + "   ")
+
+# Fills the rest of the terminal
+print(' ' * ss.WIDTH, end='\r')
