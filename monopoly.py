@@ -693,7 +693,7 @@ while(True):
                     update_status(players[turn], "deed")
                 else:
                     print("Invalid option!")
-                choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
+                choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
             update_history(f"{players[turn]} ended their turn.")
         else:
             update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
