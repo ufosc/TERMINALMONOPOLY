@@ -15,6 +15,7 @@ class Player:
         self.location = 0
         self.jail = False
         self.jailcards = 0
+        self.name = "Player #" + str(order + 1)
     """
     Player cash\n
     @cash: int\n
@@ -137,7 +138,7 @@ class Board:
                     "Baltic Avenue":          (60, 50, 4, 20, 60, 180, 320, 450, 30),
                     "Oriental Avenue":        (100, 50, 6, 30, 90, 270, 400, 550, 50),
                     "Vermont Avenue":         (100, 50, 6, 30, 90, 270, 400, 550, 50),
-                    "Connecticut Avenue":      (120, 50, 8, 40, 100, 300, 450, 600, 60),
+                    "Connecticut Avenue":     (120, 50, 8, 40, 100, 300, 450, 600, 60),
                     "St. Charles Place":      (140, 100, 10, 50, 150, 450, 625, 750, 70),
                     "States Avenue":          (140, 100, 10, 50, 150, 450, 625, 750, 70),
                     "Virginia Avenue":        (160, 100, 12, 60, 180, 500, 700, 900, 80),
@@ -433,7 +434,7 @@ def update_status(p: Player, update: str, status: list = status):
     status.clear()
     if(update == "properties"):
         color = COLORS.playerColors[p.order]
-        status.append(color + f"{p} has properties: " + COLORS.RESET)
+        status.append(color + f"{p.name} has properties: " + COLORS.RESET)
         for i in range(len(p.properties)):
             status.append(f"{p.properties[i]}: {board.locations[p.properties[i]][0]}")
     if(update == "deed"):
@@ -507,17 +508,17 @@ def buy_logic():
         if(players[turn].cash > price):
             players[turn].buy(CL)
             board.locations[CL][3] = turn
-            update_history(f"Player {turn} bought {board.locations[CL][0]} for ${price}")
+            update_history(f"{players[turn].name} bought {board.locations[CL][0]} for ${price}")
         else:
-            update_history(f"Player {turn} did not buy {board.locations[CL][0]}")
+            update_history(f"{players[turn].name} did not buy {board.locations[CL][0]}")
     else:
         price = board.special_deeds[board.locations[CL][0]][0]
         if(players[turn].cash > price):
             players[turn].buy(CL)
             board.locations[CL][3] = turn
-            update_history(f"Player {turn} bought {board.locations[CL][0]} for ${price}")
+            update_history(f"{players[turn].name} bought {board.locations[CL][0]} for ${price}")
         else:
-            update_history(f"Player {turn} did not buy {board.locations[CL][0]}")
+            update_history(f"{players[turn].name} did not buy {board.locations[CL][0]}")
 
 def housing_logic(p: Player):
     update_status(p, "properties")
@@ -601,7 +602,6 @@ turn = 0
 
 board = Board(num_players)
 decks = Cards()
-
 import style as s
 import os
 gameboard = s.get_graphics().get('gameboard')
@@ -620,20 +620,19 @@ def unittest():
     players[3].buy(28)
 
 unittest()
-
 while(True):
-    refresh_board()      
+    refresh_board() 
     if(players[turn].order != -1): # If player is not bankrupt
         player_color = COLORS.playerColors[turn]
-        update_history(player_color + f"Player {turn}'s turn")
+        update_history(player_color + f"{players[turn].name}'s turn")
         print_commands()
         input("\033[36;0HRoll dice?")
         die1 = random.randint(1, 6)
         die2 = random.randint(1, 6)
-        update_history(f"Player {turn} rolled {die1} and {die2}")
+        update_history(f"{players[turn].name} rolled {die1} and {die2}")
 
         board.update_location(players[turn], die1 + die2)
-        update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
+        update_history(f"{players[turn].name} landed on {board.locations[players[turn].location][0]}")
         refresh_board()
         if board.locations[players[turn].location][3] < 0:
             match board.locations[players[turn].location][3]:
@@ -643,18 +642,18 @@ while(True):
                     pass
                 case -3: #community chest
                     card = decks.draw_community_chest(players[turn])
-                    update_history(f"Player {turn} drew a Community Chest card! {card}")
+                    update_history(f"{players[turn].name} drew a Community Chest card! {card}")
                 case -4: #chance
                     card = decks.draw_chance(players[turn])
-                    update_history(f"Player {turn} drew a Chance card! {card}")
+                    update_history(f"{players[turn].name} drew a Chance card! {card}")
                     if(board.locations[players[turn].location][3] == -1):
                         buy_logic()
                     if(board.locations[players[turn].location][3] == -5):
                         players[turn].pay(200)
-                        update_history(f"Player {turn} paid income tax ($200)")
+                        update_history(f"{players[turn].name} paid income tax ($200)")
                 case -5: #income tax
                     players[turn].pay(200)
-                    update_history(f"Player {turn} paid income tax ($200)")
+                    update_history(f"{players[turn].name} paid income tax ($200)")
                 case -6: #jail
                     pass
                 case -7: #go to jail
@@ -664,7 +663,7 @@ while(True):
                     pass
                 case -9: #luxury tax
                     players[turn].pay(100)
-                    update_history(f"Player {turn} paid luxury tax ($100)")
+                    update_history(f"{players[turn].name} paid luxury tax ($100)")
                 case -10: #go
                     pass
         elif board.locations[players[turn].location][3] != players[turn].order:
@@ -677,10 +676,10 @@ while(True):
                 rent = 10 * (die1 + die2)
             players[turn].pay(rent)
             players[board.locations[cl][3]].receive(rent)
-            update_history(f"{players[turn]} paid ${rent} to Player {board.locations[cl][3]}")
+            update_history(f"{players[turn].name} paid ${rent} to Player {board.locations[cl][3]}")
         refresh_board()
         if die1 == die2:
-            update_history(f"{players[turn]} rolled doubles! Roll again.")
+            update_history(f"{players[turn].name} rolled doubles! Roll again.")
             # @TODO implement rolling doubles
         if(players[turn].cash > 0):
             choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
@@ -694,12 +693,12 @@ while(True):
                 else:
                     print("Invalid option!")
                 choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
-            update_history(f"{players[turn]} ended their turn.")
+            update_history(f"{players[turn].name} ended their turn.")
         else:
-            update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
+            update_history(f"{players[turn].name} is in debt. Resolve debts before ending turn.")
             option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
             if(option == "b"): # Declare bankruptcy
-                update_history(f"Player {turn} declared bankruptcy.")
+                update_history(f"{players[turn].name} declared bankruptcy.")
                 players[turn].order = -1
             elif(option == "m"): # Mortgage properties
                 pass
@@ -709,7 +708,7 @@ while(True):
             # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
 
             else:
-                update_history(f"Player {turn} declared bankruptcy.")
+                update_history(f"{players[turn].name} declared bankruptcy.")
                 players[turn].order = -1
             # Need to fix all this sometime erghhghh
             bankrupts += 1
@@ -727,7 +726,6 @@ while(True):
 
     if(bankrupts == num_players - 1):
         break
-
     turn = (turn + 1)%num_players
 
 for index, player in enumerate(players):
