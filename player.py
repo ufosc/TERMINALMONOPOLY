@@ -275,15 +275,22 @@ def scaling_print():
         print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
     else:
         # Print out instructions for Linux/Windows users
-        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
+    print("If you are having trouble with scaling, please try lowering your device scaling setting and enter r to reset the display.")
+    print("For most devices the scaling setting could be found under Settings -> System -> Display.")
     print("After finishing scaling, please press enter to continue.")
     scaling_test = input()
 
     os.system('cls' if os.name == 'nt' else 'clear')
     ss.print_screen()
 
-    print(f"\033[44;0H" + "Press enter to play.", end="")
+    print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
     scaling_test = input()
+    while scaling_test != "":
+        os.system('cls' if os.name == 'nt' else 'clear')
+        ss.print_screen()
+        print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
+        scaling_test = input()
     os.system('cls' if os.name == 'nt' else 'clear')
 
 if __name__ == "__main__":
@@ -293,7 +300,7 @@ if __name__ == "__main__":
     """
     get_graphics()
 
-    initialize()
+    #initialize()
 
     scaling_print()
 
