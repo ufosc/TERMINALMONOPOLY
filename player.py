@@ -254,7 +254,7 @@ if __name__ == "__main__":
     Main driver function for player.
     """
     get_graphics()
-    initialize()
+    # initialize() # temporarily commented out for testing because player and banker do not interact at this moment
     # Prints help in quadrant 2 to orient player.
     ss.update_quadrant(2, text_dict.get('help'))
     # ss.update_quadrant(1, text_dict.get('gameboard'))
