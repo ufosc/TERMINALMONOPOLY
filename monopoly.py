@@ -5,6 +5,7 @@ import random
 import os
 import platform
 import ctypes
+import shutil
 
 class Player: 
     """
@@ -606,7 +607,24 @@ def make_fullscreen():
     else:
         print(f"Fullscreen not supported for OS: {current_os}")
 
+def print_with_wrap(char, start_row, start_col):
+    # Get the terminal size
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
+    
+    # If the position exceeds the terminal width, handle wrapping
+    if start_col >= width:
+        # Calculate new row and column if it exceeds width
+        new_row = start_row + (start_col // width)
+        new_col = start_col % width
+        print(f"\033[{new_row};{new_col}H" + char, end="")
+    else:
+        # Default print
+        print(f"\033[{start_row};{start_col}H" + char, end="")
+
 def scaling_print():
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
     os.system('cls' if os.name == 'nt' else 'clear')
     current_os = platform.system()
     if current_os == "Darwin":
@@ -615,8 +633,8 @@ def scaling_print():
     else:
         # Print out instructions for Linux/Windows users
         print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
-    print("If you are having trouble with scaling, please try lowering your device scaling setting and enter r to reset the display.")
-    print("For most devices the scaling setting could be found under Settings -> System -> Display.")
+    print("Proper scaling should only displays 4 cross that marks the corners of the board.")
+    print("If you are having trouble with scaling, try entering r to reset the display.")
     print("After finishing scaling, please press enter to continue.")
     scaling_test = input()
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -628,6 +646,10 @@ def scaling_print():
             for j in range(len(border[i])):
                 print(border[i][j], end="")
     print_commands()
+    print_with_wrap("X", 0, 0)
+    print_with_wrap("X", 0, 156)
+    print_with_wrap("X", 50, 156)
+    print_with_wrap("X", 50, 0)
     print(f"\033[36;0H" + "Press enter to play or enter r to reset the display.", end="")
     scaling_test = input()
     while scaling_test != "":
@@ -641,6 +663,10 @@ def scaling_print():
                     for j in range(len(border[i])):
                         print(border[i][j], end="")
             print_commands()
+            print_with_wrap("X", 0, 0)
+            print_with_wrap("X", 0, 156)
+            print_with_wrap("X", 50, 156)
+            print_with_wrap("X", 50, 0)
             print(f"\033[36;0H" + "Press enter to play or enter r to reset the display.", end="")
         scaling_test = input()
 
