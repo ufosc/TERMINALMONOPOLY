@@ -19,9 +19,32 @@ from xml.etree.ElementTree import tostring
 
 #portfolio class will be owned by players
 class portfolio:
-    def __init__(self, player_name):
-        self.portfolio = {}
+    def __init__(self, player_name, stock_market):
         self.player_name = player_name
+        self.stock_market = stock_market
+        self.owned_stocks = {}
+
+
+    def buy_stock(self, stock_ticker, num_shares):
+        if stock_ticker in self.stock_market.stocks:
+            self.owned_stocks[stock_ticker] += num_shares
+            print(f"{self.player_name} bought {num_shares} shares of {stock_ticker}.")
+        else:
+            print(f"Stock {stock_ticker} not found!")
+
+
+    def sell_stock(self, stock_ticker, num_shares):
+        if stock_ticker in self.owned_stocks and self.owned_stocks[stock_ticker] >= num_shares:
+            self.owned_stocks[stock_ticker] -= num_shares
+            print(f"{self.player_name} sold {num_shares} shares of {stock_ticker}.")
+        else:
+            print(f"{self.player_name} doesn't have enough shares of {stock_ticker} to sell.")
+
+    def display_portfolio(self):
+        print(f"{self.player_name}'s Portfolio:")
+        for stock_ticker, num_shares in self.owned_stocks.items():
+            stock_price = self.stock_market.get_stock_price(stock_ticker)  # Fetch the latest price
+            print(f"{stock_ticker}: {num_shares} shares, Current Price: ${stock_price:.2f}")
 
 
 
@@ -124,14 +147,14 @@ class stock_market:
 
 
 
-
 if __name__ == '__main__':
 
    market = stock_market()
+
    market.add_stock("PLZA", 20.00, -5, 5)
    market.add_stock("BLVD", 5.00, -10, 10)
    market.add_stock("DRVE", 0.01, -15, 15)
-
+    #put an escape code in front of this \033
    user_input = input("Please select one of the following: 1: BUY 2: SELL \n")
 
    if (user_input == "BUY"):
@@ -173,7 +196,7 @@ if __name__ == '__main__':
    last_time = time.time()
 
 
-   while condition:
+   while not condition:
 
 
        current_time = time.time()
@@ -187,6 +210,9 @@ if __name__ == '__main__':
 
        market.update_time(seconds_passed)
        market.update_stock_prices()
+
+
+
        time.sleep(1)
 
 
@@ -198,5 +224,9 @@ if __name__ == '__main__':
        if(counter == 10):
            condition = False
        counter += 1
+
+
+       print(f"\a")
+
 
 
