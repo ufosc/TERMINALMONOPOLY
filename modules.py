@@ -17,17 +17,17 @@ class PlayerModules():
             "LIGHTGRAY": "\033[38;5;7m"}
 
     def calculator() -> str:
-        #Uses recursion to calculate
         #To-do
         '''
         History
         Left-Justified - DONE
         Keep calculator open after multiple operations
-        A proper wrapping for long equations - DONE?
+        A proper wrapping for long equations - DONE
         Add eponents - DONE
         Strip extra spaces and pad operators with spaces - DONE
         Add support for unary operator '-' - DONE
         '''
+        #Uses recursion to calculate.
         def calculate(equation: str) -> float:
             for i in range(0, len(equation)-1):
                 if(equation[i] == '+'):
@@ -37,7 +37,7 @@ class PlayerModules():
             
             for i in range(0, len(equation)-1):
                 if(equation[i] == '-'):
-                    #Checks for unary operator
+                    #Checks for unary operator '-'
                     if(i == 0):
                         eqLeft = "0"
                     else:
@@ -75,6 +75,10 @@ class PlayerModules():
         digit_result = 0
         print("\r", end='')
         equation = input(Fore.GREEN)
+        if(equation == "e"):
+            return equation
+        
+        #Trims unnecessary spaces and pads operators with spaces
         equation = equation.replace(" ", "")
         for op in ['+', '-', '*', '/', '%', '^']:
             equation = equation.replace(op, " " + op + " ")
@@ -86,24 +90,24 @@ class PlayerModules():
         try:
             digit_result = calculate(equation)
         except:
-            return response + '\nEquation is either undefined or malformed!'
+            return "error"
             
-        response += f'{equation} = {digit_result}'
+        responseEQ = f'{equation} = {digit_result}'
 
-    
-        numOverflowingChar = len(response) - 75
+        #There are 75 columns for each terminal, making any string longer than 75 characters overflow.
+        numOverflowingChar = len(responseEQ) - 75
         lineNumber = 0
         wrappedResponse = ""
         while(numOverflowingChar > 0):
-            wrappedResponse += response[(75*lineNumber):(75*(lineNumber + 1))] + '\n'
+            wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1))] + '\n'
             lineNumber = lineNumber + 1
             numOverflowingChar = numOverflowingChar - 75
         
-        wrappedResponse += response[(75*lineNumber):(75*(lineNumber + 1))+ numOverflowingChar]
-        response = wrappedResponse
+        wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1)) + numOverflowingChar] + '\n'
+        #response += wrappedResponse
 
         print(Style.RESET_ALL, end='')
-        return response
+        return wrappedResponse
 
     def deed(title: str) -> str:
         divider = s.get_graphics()['divider']
