@@ -620,21 +620,55 @@ def unittest():
     players[3].buy(28)
 
 unittest()
+#wipes the bottom of the screen where the player does all of their input
+def bottom_screen_wipe():
+    print("\033[36;0H" + " " * 76)
+    print("\033[37;0H" + " " * 76)
+    print("\033[38;0H" + " " * 76)
+    print("\033[39;0H" + " " * 76)
+    print("\033[40;0H" + " " * 76)
+    print("\033[41;0H" + " " * 76)
+    print("\033[42;0H" + " " * 76)
+    print("\033[43;0H" + " " * 76)
+    print("\033[44;0H" + " " * 76)
 
-while(True):
-    refresh_board()      
+#Rolls the dice and returns them for the player as a tuple
+def roll():
+    die1 = random.randint(1, 6)
+    die2 = random.randint(1, 6)
+    return(die1,die2)
+#The function that handles the players 
+#second and third correspond to if its the players second or third consecutive turn, they are bools
+def player_roll(num_rolls):
+    print_commands()
+    bottom_screen_wipe()   
     if(players[turn].order != -1): # If player is not bankrupt
         player_color = COLORS.playerColors[turn]
         update_history(player_color + f"Player {turn}'s turn")
         print_commands()
         input("\033[36;0HRoll dice?")
-        die1 = random.randint(1, 6)
-        die2 = random.randint(1, 6)
-        update_history(f"Player {turn} rolled {die1} and {die2}")
+        dice = roll()
+        bottom_screen_wipe()
+        update_history(f"Player {turn} rolled {dice[0]} and {dice[1]}")
 
-        board.update_location(players[turn], die1 + die2)
-        update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
+        if dice[0] == dice[1]:
+            if  num_rolls == 1:
+                update_history(f"{players[turn]} rolled doubles! Roll again.")
+            
+            elif num_rolls == 2:
+                update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+                
+            elif num_rolls == 3:
+                update_history(f"Player {turn} rolled doubles three times\n in a row!")
+                update_history(f"Player {turn} is going to jail!")
+                players[turn].jail = True
+                board.update_location(players[turn], -1)
         refresh_board()
+        #if player rolled their third double they will be in jail and their location doesn't update
+        if players[turn].jail == False:
+            board.update_location(players[turn], dice[0] + dice[1])
+            update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
+            refresh_board()
         if board.locations[players[turn].location][3] < 0:
             match board.locations[players[turn].location][3]:
                 case -1: #unowned
@@ -672,58 +706,56 @@ while(True):
             cl = players[turn].location
             rent = board.deeds[board.locations[cl][0]][2 + board.locations[cl][2]] if board.locations[cl][0] in board.deeds else board.special_deeds[board.locations[cl][0]][board.locations[cl][2]]
             if rent == 4 and board.locations[cl][0] in board.special_deeds:
-                rent = 4 * (die1 + die2)
+                rent = 4 * (dice[0] + dice[1])
             elif rent == 10 and board.locations[cl][0] in board.special_deeds:
-                rent = 10 * (die1 + die2)
+                rent = 10 * (dice[0] + dice[1])
             players[turn].pay(rent)
             players[board.locations[cl][3]].receive(rent)
             update_history(f"{players[turn]} paid ${rent} to Player {board.locations[cl][3]}")
         refresh_board()
-        if die1 == die2:
-            update_history(f"{players[turn]} rolled doubles! Roll again.")
-            # @TODO implement rolling doubles
-        if(players[turn].cash > 0):
-            choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
-            while(choice != 'e'): # @TODO remove soon! players should not be able to do these actions during gameboard screen 
-                if choice == "e":
-                    pass
-                elif choice == "p":
-                    housing_logic(players[turn])
-                elif choice == "d":
-                    update_status(players[turn], "deed")
-                else:
-                    print("Invalid option!")
-                choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
-            update_history(f"{players[turn]} ended their turn.")
-        else:
-            update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
-            option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
-            if(option == "b"): # Declare bankruptcy
-                update_history(f"Player {turn} declared bankruptcy.")
-                players[turn].order = -1
-            elif(option == "m"): # Mortgage properties
+        #checks if player rolled a double, and has them roll again if they did.
+        if dice[0] == dice[1] and players[turn].jail == False:
+            num_rolls +=1
+            player_roll(num_rolls)
+
+while(True):
+    # First time the player who's turn it is rolls their dice
+    #if they roll a double the function calls itself and updates its their number of consecutive rolls
+    player_roll(num_rolls=1)
+    if(players[turn].cash > 0):
+        choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
+        while(choice != 'e'): # @TODO remove soon! players should not be able to do these actions during gameboard screen 
+            if choice == "e":
                 pass
-            elif(option == "s"): # Sell houses/hotels
-                housing_logic()
-
-            # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
-
+            elif choice == "p":
+                housing_logic(players[turn])
+            elif choice == "d":
+                update_status(players[turn], "deed")
             else:
-                update_history(f"Player {turn} declared bankruptcy.")
-                players[turn].order = -1
-            # Need to fix all this sometime erghhghh
-            bankrupts += 1
+                print("Invalid option!")
+            choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
+        update_history(f"{players[turn]} ended their turn.")
+    else:
+        update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
+        option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
+        if(option == "b"): # Declare bankruptcy
+            update_history(f"Player {turn} declared bankruptcy.")
+            players[turn].order = -1
+        elif(option == "m"): # Mortgage properties
+            pass
+        elif(option == "s"): # Sell houses/hotels
+            housing_logic()
+
+        # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
+
+        else:
+            update_history(f"Player {turn} declared bankruptcy.")
+            players[turn].order = -1
+        # Need to fix all this sometime erghhghh
+        bankrupts += 1
 
     # Wipe the bottom of the screen (input area)
-    print("\033[36;0H" + " " * 76)
-    print("\033[37;0H" + " " * 76)
-    print("\033[38;0H" + " " * 76)
-    print("\033[39;0H" + " " * 76)
-    print("\033[40;0H" + " " * 76)
-    print("\033[41;0H" + " " * 76)
-    print("\033[42;0H" + " " * 76)
-    print("\033[43;0H" + " " * 76)
-    print("\033[44;0H" + " " * 76)
+    bottom_screen_wipe()
 
     if(bankrupts == num_players - 1):
         break
