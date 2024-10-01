@@ -92,7 +92,7 @@ def get_graphics() -> dict:
 
     with open("ascii.txt", encoding='utf-8') as f:
         text = f.read().split("BREAK_TEXT")
-    text_dict = {'help': text[0],
+    text_dict = {'help': text[0].strip(),
                  'properties': text[1],
                  # Use .strip() to remove whitespace if necessary
                  'divider': text[2].lstrip(),
@@ -104,5 +104,12 @@ def get_graphics() -> dict:
                  'commands': text[8],
                  'chance cards text': text[9].strip(),
                  'community chest text': text[10].strip(),
+                 'popup 1': text[11].strip()
                  } 
     return text_dict
+
+def set_cursor(x: int, y: int) -> None:
+    print(f"\033[{y};{x}H",end="")
+
+def set_cursor_str(x:int ,y:int) -> str:
+    return f"\033[{y};{x}H"

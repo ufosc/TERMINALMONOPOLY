@@ -2,9 +2,10 @@ import socket
 import threading
 import os
 import style as s
-from screenspace import Banker as ss
+import screenspace as ss 
+import battleship
+import networking
 
-import socket
 import select
 from time import sleep
 
@@ -13,40 +14,25 @@ starting_cash = 1500
 players = 0
 port = 3131
 board = ""
+active_games = []
+global timer
+timer = 0
 
-player_data = {1: {
-                    socket.socket: "",
-                    "name": "",
-                    "money": starting_cash,
-                    "properties": []
+class Game:
+    def __init__(self, name: str, players: list, board: str, other_data):
+        self.name = name
+        self.players = players
+        self.board = board
+        self.other_data = other_data
 
-                }, 2: {
-                    socket.socket: "",
-                    "name": "",
-                    "money": starting_cash,
-                    "properties": []    
 
-                }, 3: {
-                    socket.socket: "",
-                    "name": "",
-                    "money": starting_cash,
-                    "properties": []
-
-                }, 4: {
-                    socket.socket: "",
-                    "name": "",
-                    "money": starting_cash,
-                    "properties": []
-
-                }}
-"""
-Players are stored in a dictionary with integer keys 1, 2, 3, and 4. 
-Each value is another dictionary, with the following values  
-\n(socket.socket) socket to communicate with. Default = ""
-\n(name) Name of player. Default = ""
-\n(money) Current amount of money. Default = starting_cash
-\n(properties) List of properties owned. Default = []
-"""
+class Client:
+    def __init__(self, socket: socket.socket, name: str, money: int, properties: list):
+        self.socket = socket
+        self.name = name
+        self.money = money
+        self.properties = properties
+        self.active_games = []
 
 def initialize_terminal():
     """
@@ -69,7 +55,7 @@ def start_server() -> socket.socket:
     Parameters: None
     Returns: Transmitter socket aka the Banker's sender socket.  
     """
-    global players
+    global players, port
     # Create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -130,7 +116,7 @@ def start_receiver():
     Parameters: None
     Returns: None
     """
-    global player_data
+    global player_data, timer, port
     s.print_w_dots('[RECEIVER] Receiver started!') 
     # Credit to https://stackoverflow.com/a/43151772/19535084 for seamless server-client handling. 
     with socket.socket() as server:
@@ -141,7 +127,6 @@ def start_receiver():
         s.print_w_dots('[RECEIVER] Receiver accepting connections at {}'.format(port+1))
         to_read = [server]  # add server to list of readable sockets.
         players = {}
-        timer = 0
         while True:
             # check for a connection to the server or data ready from clients.
             # readers will be empty on timeout.
@@ -149,20 +134,13 @@ def start_receiver():
             for reader in readers:
                 if reader is server:
                     player,address = reader.accept()
+                    # Client(player, 'Player', starting_cash, [])
                     s.print_w_dots('Player connected from: ' + address[0])
                     players[player] = address # store address of client in dict
                     to_read.append(player) # add client to list of readable sockets
                 else:
                     data = reader.recv(1024)
-                    if data.decode() == 'request_board':
-                        timer = 0
-                        # Player requests board:
-                        # Send board size, then board
-                        size = len(board.encode())
-                        reader.send(size.to_bytes(4,byteorder='big'))
-                        reader.send(board.encode())
-                        s.print_w_dots(f'Gameboard sent to player {address[0]}')
-                    
+                    handle_data(data, reader)
                     ### Else ifs chain here for all player input options
                     
                     if not data: # No data indicates disconnect
@@ -175,32 +153,49 @@ def start_receiver():
             print(f'Time passed since last command: {timer}. ',flush=True,end='\r')
             timer += 1
 
-def location_stats(x: int = 0, y:int = 0):
+def handle_data(data: bytes, client: socket.socket = None) -> str:
     """
-    Function to return data about a specific location at (x,y). 
+    Handles all data received from player sockets. 
+    
+    Parameters:
+    data (str) Data received from player sockets. 
+    
+    Returns:
+    str representing the response to the player's data. 
     """
-    # basically need to check adjacent coordinates if and only if they are within a location's 
-    # 3x3 "square." Reject all boundary lines and all internal coordinates. 
-    # Write a smart function using math to see if the specified coordinate is an edge of a 3x3, 
-    # maybe use distance formula 
+    global timer
 
+    # Example usage
+    if data.decode() == 'request_board':
+        timer = 0
+        # Player requests board:
+        # Send board size, then board in segments
+        board_data = board.encode()
+        s.print_w_dots(f'Gameboard sent to player {client[0]}')
 
-def update_board(x:int = 0, y:int = 0, player:int = -1, house:bool = False, hotel:bool = False):
-    """
-    Function to update board at coordinates x,y with several possible parameter combinations.
-    
-    Parameters: 
-    x (int) Exact x position on gameboard to update. [0-79]. Default = 0
-    y (int) Exact y position on gameboard to update. [0-34]. Default = 0
-    player (int) Player to update gameboard by color. [1-4]. Default = -1
-    """
-    global board
-    if(len(board) == 0):
-        board = s.get_graphics().get('gameboard')
-    # Proof of concept function- simply set the position to player value
-    board[y*80+x] = player
-    
-    
+    elif data.decode() == 'ships':
+        if len(active_games) == 0:
+            s.print_w_dots('No active games to join.')
+            number_of_players = 2
+            s.print_w_dots('Creating new game with 2 players.')
+            battleship_game = battleship.start_game()
+            active_games.append(Game('Battleship', [None * number_of_players], battleship_game.get_board(), battleship_game))
+            s.print_w_dots('Game created.')
+            active_games[0].players[0] = client
+            s.print_w_dots(f'Player {client} joined game.')
+            battleship_board = battleship_game.board
+
+            print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
+            networking.send_message(client, battleship_board)
+            
+            s.print_w_dots(f'Gameboard sent to player {client}')
+        else:
+            battleship_board = active_games[0].other_data.board
+            
+            print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
+            networking.send_message(client, battleship_board)
+            
+            s.print_w_dots(f'Gameboard sent to player {client}')
 
 def handshake(client_socket: socket.socket, handshakes: list):
     """
@@ -219,12 +214,9 @@ def handshake(client_socket: socket.socket, handshakes: list):
     if message == "Connected!":
         handshakes[players] = True
         players += 1
-        player_data[players][socket.socket] = client_socket
+        # player_data[players][socket.socket] = client_socket
     else: 
         handshakes[players] = False
-
-def update_clients(client_socket: socket.socket):
-    pass
 
 def set_gamerules() -> None:
     """

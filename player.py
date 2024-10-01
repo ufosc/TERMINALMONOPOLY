@@ -3,11 +3,12 @@ import socket
 from time import sleep
 import style as s
 from style import COLORS
-from screenspace import Player as ss
-from modules import PlayerModules as m
+import screenspace as ss
+import modules as m
 import platform
 import ctypes
 import shutil
+import networking as n
 
 game_running = False
 text_dict = {}
@@ -219,7 +220,7 @@ def game_input() -> None:
     
     while(stdIn != "back"):
         print(COLORS.GREEN+"Monopoly Screen: Type 'back' to return to the main menu.")
-        stdIn = input(COLORS.backYELLOW+COLORS.backBLACK+'\r').lower().strip()
+        stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
         if stdIn == "back":
             ss.print_screen()
             # Breaks the loop, returns to get_input() 
@@ -245,12 +246,14 @@ def get_input():
     """
     stdIn = ""
     while(stdIn != "exit"):
-        stdIn = input(COLORS.backYELLOW+COLORS.BLACK+'\r').lower().strip()
+        stdIn = input(COLORS.WHITE+'\r').lower().strip()
         if stdIn.startswith("help"):
             if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
-                ss.update_quadrant(active_terminal, text_dict.get(stdIn))
-            else: ss.update_quadrant(active_terminal, text_dict.get('help'))
-            ss.print_screen()
+                ss.update_quadrant_2(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
+            else: 
+                ss.update_quadrant_2(active_terminal, text_dict.get('help'), padding=True)
+                ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
+            # ss.print_screen()
         elif stdIn == "game":
             game_input()
             stdIn = ""
@@ -261,25 +264,16 @@ def get_input():
             balance()
         elif stdIn == "list":
             list_properties()
-        elif stdIn.startswith("dance"):
-            try: 
-                for i in range(int(stdIn[6:])):
-                    for j in range(4):
-                        set_terminal(j+1)
-                        sleep(0.05)
-            except:
-                ss.overwrite(COLORS.RESET + COLORS.RED + "Something went wrong.")
         elif stdIn.startswith("term "):
             if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
-                set_terminal(int(stdIn.strip().split(" ")[1]))
-                ss.print_screen()
-                ss.overwrite(COLORS.RESET + COLORS.GREEN + "\nActive terminal set to " + str(active_terminal) + ".")
+                n = int(stdIn.strip().split(" ")[1])
+                ss.update_active_terminal(n)
+                ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
             else:
                 ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
-            pass
         elif stdIn.startswith("deed"):
             if(len(stdIn) > 4):
-                ss.update_quadrant(active_terminal, m.deed(stdIn[5:]))
+                ss.update_quadrant_2(active_terminal, m.deed(stdIn[5:]), padding=True)
                 ss.print_screen()
         elif stdIn == "disable":
             ss.update_quadrant_strictly(active_terminal, m.disable())
@@ -290,12 +284,14 @@ def get_input():
         elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
             # On empty input make sure to jump up one console line
             ss.overwrite("\r")
-        elif stdIn == "promo":
-            import promo
-            promo.main()
+        elif stdIn == "ships":
+            sockets[1].send('ships'.encode())
+            sleep(0.1)
+            board_data = n.receive_message(sockets[1])
+            ss.update_quadrant_2(active_terminal, board_data)
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
-            ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
+            ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
     if stdIn == "exit" and game_running:
         ss.overwrite('\n' + ' ' * ss.WIDTH)
         ss.overwrite(COLORS.RED + "You are still in a game!")
@@ -378,9 +374,8 @@ if __name__ == "__main__":
     scaling_print()
 
     # Prints help in quadrant 2 to orient player.
+    os.system("cls")
     ss.update_quadrant(2, text_dict.get('help'))
-    # ss.update_quadrant(1, text_dict.get('gameboard'))
-
     ss.print_screen()
 
     get_input()

@@ -1,4 +1,4 @@
-   ___         
+...___         
  _|\  \__                          === HELP (1) ===
 |\   ____\      Welcome to Terminal Monopoly!                           
 \ \  \___|_         
@@ -6,8 +6,8 @@
   \|____|\  \   available in the TerminalMonopoly interface. 
     ____\_\  \  
    |\___    __\
-   \|___|\__\_|             Command List:                                 
-        \|__|   help <num> - display help messages (num = 1 by default)                
+   \|___|\__\_|             Command List:                          
+        \|__|   help <num> - display help messages (num = 1 by default)
                 game - switches ALL terminals to gameboard view___
                 term <num> - switch active terminal          _|\  \__
                   to num                                    |\   ____\
@@ -15,9 +15,9 @@
                 calc - calculator module for basic           \ \_____  \ 
                   arithmetic                                  \|____|\  \
                 deed <name> - access a property by name         ____\_\  \
-                  (accepts partial names)                      |\___    __\ 
-                                                               \|___|\__\_|  
-                                                                    \|__|                                             
+                  (accepts partial names)                      |\___    __\
+                                                               \|___|\__\_|
+                                                                    \|__| 
 BREAK_TEXT
                         === PROPERTY LIST ===
 
@@ -221,4 +221,10 @@ BREAK_TEXT
 14. You are assessed for street repair. $40 per house. $115 per hotel. 
 15. You have won second prize in beauty contest. Collect $10.
 16. You inherit $100. 
+BREAK_TEXT
+╔════════════════════════════╗
+║                            ║
+║                            ║
+║                            ║
+╚════════════════════════════╝
 BREAK_TEXT
