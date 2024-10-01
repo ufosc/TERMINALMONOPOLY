@@ -414,14 +414,20 @@ def update_history(message: str):
     Text added here needs to be a maximum of 40 characters, or wrap around\n
     Split the text into multiple lines (multiple entries to history variable)\n
     """
-    if len(message) > 40:
-        while len(message) > 40:
-            history.append(message[:40] + " " * (40 - len(message)))
-            message = message[40:]
-    history.append(message + " " * (40 - len(message)))
-    if len(history) > 31:
-        while(len(history) > 31):
-            history.pop(0)
+    if "[38;5" in message:
+        if(((40 - (len(message) - 9)) * 2) == 0):
+            history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((40 - (len(message) - 9)) // 2))
+        else:
+            history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((39 - (len(message) - 9)) // 2))
+    else:
+        if len(message) > 40:
+            while len(message) > 40:
+                history.append(message[:40] + " " * (40 - len(message)))
+                message = message[40:]
+        history.append(message + " " * (40 - len(message)))
+        if len(history) > 31:
+            while(len(history) > 31):
+                history.pop(0)
     refresh_h_and_s()
 
 status = []
