@@ -39,24 +39,61 @@ import screenspace as ss
 from style import COLORS
 import style
 
-cols = ss.WIDTH // 2
-rows = ss.HEIGHT // 2
+cols = ss.WIDTH
+rows = ss.HEIGHT
+graphics = style.get_graphics()
 
-# Resets cursor position to top left
-print("\033[1A" * (rows + 4), end='\r')
+def print_tutorial_screen(cols, rows, title, obj_list) -> None:
+    """
+    Parameters:
+    cols (int): number of columns in the terminal
+    rows (int): number of rows in the terminal
+    title (str): text to go inline with the screen border
+    obj_list (list[dict]): a list of dictionary objects with all text to render to the screen
+        "x" (int): x position of the object
+        "y" (int): y position of the object
+        "num_lines" (int): the number of rows that the object takes up
+        "text" (str): the text to render to the screen 
 
-# Prints the top border, with ternary conditions if terminal 1 or 2 are active
-print(COLORS.LIGHTGRAY+'╔'+('═' * (cols))+
-    ('═' * (cols))+'╗' + "   ") # Additional spaces to fill remaining 3 columns
+    Returns:
+    None
+    """
+    if (len(obj_list) > 0):
+        pass
 
-# Prints the middle rows
-for y in range(rows*2):
-    print(COLORS.LIGHTGRAY+'║', end=COLORS.RESET) 
-    print((" "*cols*2), end='') 
-    print(COLORS.LIGHTGRAY+'║'+COLORS.RESET + "   ")
+    print("\033[1A" * (rows + 4), end='\r') #reset cursor to top left
+    print(COLORS.LIGHTGRAY+'╔' + ('═' * (cols//2 - (len(title)//2) - 1)) + " " + title + " " + ('═' * (cols//2 - (len(title)//2) - 1 - (len(title)%2 == 1) * 1)) + '╗' + "   ")#super ugly ik
 
-# Print final row
-print(COLORS.LIGHTGRAY+'╚' + '═' * (cols*2) + '╝'+ COLORS.RESET + "   ")
+    screen_content = []
+    for y in range(rows):
+        screen_content.insert(y, "") #initializes index
+        screen_content[y] = screen_content[y] + COLORS.LIGHTGRAY + '║'
+
+        for obj in obj_list:
+            if obj["y"] == y:
+                data = obj["text"].split("\n")
+
+                screen_content[y] = screen_content[y] + (" " * (obj["x"] - len(screen_content[y])))
+                screen_content[y] = screen_content[y] + data[obj["y"] - y]
+
+        screen_content[y] = screen_content[y] + (" " * (cols - len(screen_content[y])))
+
+        screen_content[y] = screen_content[y] + '║'
+
+
+    for y in range(rows):
+        print(screen_content[y])
+
+    print(COLORS.LIGHTGRAY+'╚' + ('═' * (cols//2 - (len(title)//2) - 1)) + " " + title + " " + ('═' * (cols//2 - (len(title)//2) - 1 - (len(title)%2 == 1) * 1)) + '╝' + "   ")
+
+    input("Press Enter to continue...")
+
+
+print_tutorial_screen(cols, rows, "Tutorial", [
+    {"x": 10, "y": 1, "num_lines": 1, "text":"Welcome to:"},
+    {"x": 1, "y": 2, "num_lines": 17, "text":graphics["logo"]}
+])
 
 # Fills the rest of the terminal
 print(' ' * ss.WIDTH, end='\r')
+
