@@ -324,7 +324,7 @@ if __name__ == "__main__":
     """
     get_graphics()
 
-    #initialize()
+    initialize()
 
     scaling_print()
 
