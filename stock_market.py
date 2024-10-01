@@ -17,6 +17,11 @@ from xml.etree.ElementTree import tostring
 #first commit
 
 
+#portfolio class will be owned by players
+class portfolio:
+    def __init__(self, player_name):
+        self.portfolio = {}
+        self.player_name = player_name
 
 
 
