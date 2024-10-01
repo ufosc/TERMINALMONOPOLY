@@ -640,23 +640,24 @@ def player_roll(num_rolls):
         bottom_screen_wipe()
         update_history(f"Player {turn} rolled {dice[0]} and {dice[1]}")
 
-        if dice[0] == dice[1] and num_rolls == 1:
-            update_history(f"{players[turn]} rolled doubles! Roll again.")
-        
-        elif dice[0] == dice[1] and num_rolls == 2:
-            update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+        if dice[0] == dice[1]:
+            if  num_rolls == 1:
+                update_history(f"{players[turn]} rolled doubles! Roll again.")
             
-        elif dice[0] == dice[1] and num_rolls == 3:
-            update_history(f"Player {turn} rolled doubles three times\n in a row!")
-            update_history(f"Player {turn} is going to jail!")
-            players[turn].jail = True
-            board.update_location(players[turn], -1)
+            elif num_rolls == 2:
+                update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+                
+            elif num_rolls == 3:
+                update_history(f"Player {turn} rolled doubles three times\n in a row!")
+                update_history(f"Player {turn} is going to jail!")
+                players[turn].jail = True
+                board.update_location(players[turn], -1)
         refresh_board()
         #if player rolled their third double they will be in jail and their location doesn't update
         if players[turn].jail == False:
             board.update_location(players[turn], dice[0] + dice[1])
             update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
-            refresh_board()    
+            refresh_board()
         if board.locations[players[turn].location][3] < 0:
             match board.locations[players[turn].location][3]:
                 case -1: #unowned
@@ -702,7 +703,7 @@ def player_roll(num_rolls):
             update_history(f"{players[turn]} paid ${rent} to Player {board.locations[cl][3]}")
         refresh_board()
         #checks if player rolled a double, and has them roll again if they did.
-        if dice[0] == dice[1]:
+        if dice[0] == dice[1] and players[turn].jail == False:
             num_rolls +=1
             player_roll(num_rolls)
 
