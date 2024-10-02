@@ -1,10 +1,13 @@
 import os
 import socket
 from time import sleep
-from colorama import Fore, Style, Back
 import style as s
+from style import COLORS
 from screenspace import Player as ss
 from modules import PlayerModules as m
+import platform
+import ctypes
+import shutil
 
 game_running = False
 text_dict = {}
@@ -48,9 +51,9 @@ def initialize():
     input()
     try:
         client_receiver.connect((ADDRESS, int(PORT)))
-        print(Fore.BLUE+"Connection successful!"+Style.RESET_ALL)
+        print(COLORS.BLUE+"Connection successful!"+COLORS.RESET)
     except:
-        n = input(Fore.RED+"Connection failed. Type 'exit' to quit or press enter to try again.\n"+Style.RESET_ALL)
+        n = input(COLORS.RED+"Connection failed. Type 'exit' to quit or press enter to try again.\n"+COLORS.RESET)
         if n == "exit":
             quit()
         else:
@@ -59,7 +62,7 @@ def initialize():
         handshake(client_receiver)
     except Exception as e:
         print(e)
-        n = input(Fore.RED+"Handshake failed. Type 'exit' to quit or press enter to try again.\n"+Style.RESET_ALL)
+        n = input(COLORS.RED+"Handshake failed. Type 'exit' to quit or press enter to try again.\n"+COLORS.RESET)
         if n == "exit":
             quit()
         else:
@@ -90,7 +93,7 @@ def handshake(sock: socket.socket) -> str:
         sock.send(bytes("Connected!", 'utf-8'))
         return message
     else:
-        s.print_w_dots(Fore.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
+        s.print_w_dots(COLORS.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
 
 def calculate() -> None:
     """
@@ -211,22 +214,22 @@ def game_input() -> None:
         ss.clear_screen()
         ss.print_board(board) ## Failing line
     except Exception as e:
-        ss.overwrite(Fore.RED + "Something went wrong. The Banker may not be ready to start the game.\n")
+        ss.overwrite(COLORS.RED + "Something went wrong. The Banker may not be ready to start the game.\n")
         print(e)
     
     while(stdIn != "back"):
-        print(Fore.GREEN+"Monopoly Screen: Type 'back' to return to the main menu.")
-        stdIn = input(Back.LIGHTWHITE_EX+Fore.BLACK+'\r').lower().strip()
+        print(COLORS.GREEN+"Monopoly Screen: Type 'back' to return to the main menu.")
+        stdIn = input(COLORS.backYELLOW+COLORS.backBLACK+'\r').lower().strip()
         if stdIn == "back":
             ss.print_screen()
             # Breaks the loop, returns to get_input() 
             return
         elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
             # On empty input make sure to jump back on the console line instead of printing anew
-            ss.overwrite(Style.RESET_ALL + "\n\r")
+            ss.overwrite(COLORS.RESET + "\n\r")
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
-            ss.overwrite(Style.RESET_ALL + Fore.RED + "Invalid command. Type 'help' for a list of commands.")
+            ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
     # sockets[1].close()
     # ss.print_screen()
@@ -242,7 +245,7 @@ def get_input():
     """
     stdIn = ""
     while(stdIn != "exit"):
-        stdIn = input(Back.BLACK + Back.LIGHTWHITE_EX+Fore.BLACK+'\r').lower().strip()
+        stdIn = input(COLORS.backYELLOW+COLORS.BLACK+'\r').lower().strip()
         if stdIn.startswith("help"):
             if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
                 ss.update_quadrant(active_terminal, text_dict.get(stdIn))
@@ -265,14 +268,14 @@ def get_input():
                         set_terminal(j+1)
                         sleep(0.05)
             except:
-                ss.overwrite(Style.RESET_ALL + Fore.RED + "Something went wrong.")
+                ss.overwrite(COLORS.RESET + COLORS.RED + "Something went wrong.")
         elif stdIn.startswith("term "):
             if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                 set_terminal(int(stdIn.strip().split(" ")[1]))
                 ss.print_screen()
-                ss.overwrite(Style.RESET_ALL + Fore.GREEN + "\nActive terminal set to " + str(active_terminal) + ".")
+                ss.overwrite(COLORS.RESET + COLORS.GREEN + "\nActive terminal set to " + str(active_terminal) + ".")
             else:
-                ss.overwrite(Style.RESET_ALL + Fore.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
+                ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             pass
         elif stdIn.startswith("deed"):
             if(len(stdIn) > 4):
@@ -292,18 +295,88 @@ def get_input():
             promo.main()
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
-            ss.overwrite(Style.RESET_ALL + Fore.RED + "Invalid command. Type 'help' for a list of commands.")
+            ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
     if stdIn == "exit" and game_running:
         ss.overwrite('\n' + ' ' * ss.WIDTH)
-        ss.overwrite(Fore.RED + "You are still in a game!")
+        ss.overwrite(COLORS.RED + "You are still in a game!")
         get_input()
 
+def make_fullscreen():
+    current_os = platform.system()
+
+    if current_os == "Windows":
+        # Maximize terminal on Windows
+        user32 = ctypes.WinDLL("user32")
+        SW_MAXIMIZE = 3
+        hWnd = user32.GetForegroundWindow()
+        user32.ShowWindow(hWnd, SW_MAXIMIZE)
+
+    elif current_os == "Linux" or current_os == "Darwin":
+        # Maximize terminal on Linux/macOS
+        os.system("printf '\033[9;1t'")
+    else:
+        print(f"Fullscreen not supported for OS: {current_os}")
+    
+def print_with_wrap(char, start_row, start_col):
+    # Get the terminal size
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
+    
+    # If the position exceeds the terminal width, handle wrapping
+    if start_col >= width:
+        # Calculate new row and column if it exceeds width
+        new_row = start_row + (start_col // width)
+        new_col = start_col % width
+        print(f"\033[{new_row};{new_col}H" + char, end="")
+    else:
+        # Default print
+        print(f"\033[{start_row};{start_col}H" + char, end="")
+
+def scaling_print():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    current_os = platform.system()
+    if current_os == "Darwin":
+        # Print out instructions for macOS users
+        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
+    else:
+        # Print out instructions for Linux/Windows users
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
+    print("Proper scaling should only displays 4 cross that marks the corners of the board.")
+    print("If you are having trouble with scaling, try entering r to reset the display.")
+    print("After finishing scaling, please press enter to continue.")
+    scaling_test = input()
+
+    os.system('cls' if os.name == 'nt' else 'clear')
+    ss.print_screen()
+
+    print_with_wrap("X", 0, 0)
+    print_with_wrap("X", 0, 153)
+    print_with_wrap("X", 43, 153)
+    print_with_wrap("X", 43, 0)
+    print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
+    scaling_test = input()
+    while scaling_test != "":
+        os.system('cls' if os.name == 'nt' else 'clear')
+        ss.print_screen()
+        print_with_wrap("X", 0, 0)
+        print_with_wrap("X", 0, 153)
+        print_with_wrap("X", 43, 153)
+        print_with_wrap("X", 43, 0)
+        print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
+        scaling_test = input()
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 if __name__ == "__main__":
+    make_fullscreen()
     """
     Main driver function for player.
     """
     get_graphics()
+
     initialize()
+
+    scaling_print()
+
     # Prints help in quadrant 2 to orient player.
     ss.update_quadrant(2, text_dict.get('help'))
     # ss.update_quadrant(1, text_dict.get('gameboard'))
