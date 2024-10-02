@@ -6,353 +6,10 @@ import os
 import platform
 import ctypes
 import shutil
-
-class Player: 
-    """
-    Player class for Monopoly game\n
-    Contains player data.\n
-    """
-    def __init__(self, cash:int, order:int) -> None:
-        self.cash = cash
-        self.properties = []
-        self.order = order
-        self.location = 0
-        self.jail = False
-        self.jailcards = 0
-    """
-    Player cash\n
-    @cash: int\n
-    Player properties\n
-    @properties: list\n
-    Player location\n
-    @location: int\n
-    Player jail status\n
-    @jail: bool\n
-    """
-    def buy(self, location:int) -> None:
-        """
-        Buy property\n
-        @location: int\n
-        """
-        self.properties.append(location)
-        self.cash -= board.deeds[board.locations[location][0]][0] if board.locations[location][0] in board.deeds else board.special_deeds[board.locations[location][0]][0]
-        board.locations[location][3] = self.order
-        if board.locations[location][0] in board.special_deeds:
-
-            if location == 5 or location == 15 or location == 25 or location == 35: # railroad
-                owned_rails = [k for k in range(5, 36, 10) if board.locations[k][3] == self.order]
-                for k in owned_rails:
-                    board.locations[k][2] = len(owned_rails)
-            
-            elif location == 12: # electric company, check if water works is owned
-                if board.locations[28][3] == self.order:
-                    board.locations[12][2] = 2
-                    board.locations[28][2] = 2
-                else: board.locations[12][2] = 1
-            
-            elif location == 28: # water works, check if electric company is owned
-                if board.locations[12][3] == self.order:
-                    board.locations[28][2] = 2
-                    board.locations[12][2] = 2
-                else: board.locations[28][2] = 1
-    def pay(self, amount:int) -> None:
-        """
-        Pay amount\n
-        @amount: int\n
-        """
-        self.cash -= amount
-    def receive(self, amount:int) -> None:
-        """
-        Receive amount\n
-        @amount: int\n
-        """
-        self.cash += amount
-    def jail(self) -> None:
-        """
-        Go to jail\n
-        """
-        self.location = 10
-        self.jail = True
-    def leave_jail(self) -> None:
-        """
-        Leave jail\n
-        """
-        self.jail = False
-
-    def __str__(self) -> str:
-        return f"Player {self.order}"
-
-class Board:
-    """
-    Board class for Monopoly game\n
-    Contains location data.\n
-    """
-    def __init__(self, num_players) -> None:
-        self.locations = {
-            # locations[x][3] indicates who owns, but also is used for special codes below:
-                # Special codes: -1 is not owned, -2 is mortaged, -3 is community chest, -4 is chance, -5 is tax
-                # -6 is jail, -7 is go to jail, -8 is free parking, -9 is luxury, -10 is go 
-        0: ["Go", list(range(num_players)), 0, -10, (32,72), COLORS.LIGHTGRAY],
-        1: ["Mediterranean Avenue", [], 0, -1, (32,65), COLORS.BROWN],
-        2: ["Community Chest", [], 0, -3, (32, 58), COLORS.COMMUNITY],
-        3: ["Baltic Avenue", [], 0, -1, (32, 51), COLORS.BROWN],
-        4: ["Income Tax", [], 0, -5, (32, 44), COLORS.LIGHTGRAY],
-        5: ["Reading Railroad", [], 0, -1, (32, 37), COLORS.LIGHTBLACK],
-        6: ["Oriental Avenue", [], 0, -1, (32, 30), COLORS.LIGHTBLUE],
-        7: ["Chance", [], 0, -4, (32, 23), COLORS.CHANCE],
-        8: ["Vermont Avenue", [], 0, -1, (32, 16), COLORS.LIGHTBLUE],
-        9: ["Connecticut Avenue", [], 0, -1, (32, 9), COLORS.LIGHTBLUE],
-        10: ["Jail", [], 0, -7, (32, 2), COLORS.LIGHTGRAY],
-        11: ["St. Charles Place", [], 0, -1, (29, 2), COLORS.ROUGE],
-        12: ["Electric Company", [], 0, -1, (26, 2), COLORS.YELLOW],
-        13: ["States Avenue", [], 0, -1, (23, 2), COLORS.ROUGE],
-        14: ["Virginia Avenue", [], 0, -1, (20, 2), COLORS.ROUGE],
-        15: ["Pennsylvania Railroad", [], 0, -1, (17, 2), COLORS.LIGHTBLACK],
-        16: ["St. James Place", [], 0, -1, (14, 2), COLORS.ORANGE],
-        17: ["Community Chest", [], 0, -3, (11, 2), COLORS.COMMUNITY],
-        18: ["Tennessee Avenue", [], 0, -1, (8, 2), COLORS.ORANGE],
-        19: ["New York Avenue", [], 0, -1, (5, 2), COLORS.ORANGE],
-        20: ["Free Parking", [], 0, -8, (2, 2), COLORS.LIGHTGRAY],
-        21: ["Kentucky Avenue", [], 0, -1, (2, 9), COLORS.RED],
-        22: ["Chance", [], 0, -4, (2, 16), COLORS.CHANCE],
-        23: ["Indiana Avenue", [], 0, -1, (2, 23), COLORS.RED],
-        24: ["Illinois Avenue", [], 0, -1, (2, 30), COLORS.RED],
-        25: ["B&O Railroad", [], 0, -1, (2, 37), COLORS.LIGHTBLACK],
-        26: ["Atlantic Avenue", [], 0, -1, (2, 44), COLORS.YELLOW],
-        27: ["Ventnor Avenue", [], 0, -1, (2, 51), COLORS.YELLOW],
-        28: ["Water Works", [], 0, -1, (2, 58), COLORS.CYAN],
-        29: ["Marvin Gardens", [], 0, -1, (2, 65), COLORS.YELLOW],
-        30: ["Go To Jail", [], 0, -7, (2, 72), COLORS.LIGHTGRAY],
-        31: ["Pacific Avenue", [], 0, -1, (5, 72), COLORS.GREEN],
-        32: ["North Carolina Avenue", [], 0, -1, (8, 72), COLORS.GREEN],
-        33: ["Community Chest", [], 0, -3, (11, 72), COLORS.COMMUNITY],
-        34: ["Pennsylvania Avenue", [], 0, -1, (14, 72), COLORS.GREEN],
-        35: ["Short Line", [], 0, -1, (17, 72), COLORS.LIGHTBLACK],
-        36: ["Chance", [], 0, -4, (20, 72), COLORS.CHANCE],
-        37: ["Park Place", [], 0, -1, (23, 72), COLORS.BLUE],
-        38: ["Luxury Tax", [], 0, -9, (26, 72), COLORS.LIGHTGRAY],
-        39: ["Boardwalk", [], 0, -1, (29, 72), COLORS.BLUE]
-    }
-        """Dictionary of Monopoly locations\n
-        @locations: {int: [str, list, int, bool]}\n
-        key: number
-        value: [name, players, number of houses [0-4], owned, (x,y) coordinates on gameboard, color code]"""
-        self.deeds = {"Mediterranean Avenue": (60, 50, 2, 10, 30, 90, 160, 250, 30),
-                    "Baltic Avenue":          (60, 50, 4, 20, 60, 180, 320, 450, 30),
-                    "Oriental Avenue":        (100, 50, 6, 30, 90, 270, 400, 550, 50),
-                    "Vermont Avenue":         (100, 50, 6, 30, 90, 270, 400, 550, 50),
-                    "Connecticut Avenue":      (120, 50, 8, 40, 100, 300, 450, 600, 60),
-                    "St. Charles Place":      (140, 100, 10, 50, 150, 450, 625, 750, 70),
-                    "States Avenue":          (140, 100, 10, 50, 150, 450, 625, 750, 70),
-                    "Virginia Avenue":        (160, 100, 12, 60, 180, 500, 700, 900, 80),
-                    "St. James Place":        (180, 100, 14, 70, 200, 550, 750, 950, 90),
-                    "Tennessee Avenue":       (180, 100, 14, 70, 200, 550, 750, 950, 90),
-                    "New York Avenue":        (200, 100, 16, 80, 220, 600, 800, 1000, 100),
-                    "Kentucky Avenue":        (220, 150, 18, 90, 250, 700, 875, 1050, 110),
-                    "Indiana Avenue":         (220, 150, 18, 90, 250, 700, 875, 1050, 110),
-                    "Illinois Avenue":        (240, 150, 20, 100, 300, 750, 925, 1100, 120),
-                    "Atlantic Avenue":        (260, 150, 22, 110, 330, 800, 975, 1150, 130),
-                    "Ventnor Avenue":         (260, 150, 22, 110, 330, 800, 975, 1150, 130),
-                    "Marvin Gardens":         (280, 150, 24, 120, 360, 850, 1025, 1200, 140),
-                    "Pacific Avenue":         (300, 200, 26, 130, 390, 900, 1100, 1275, 150),
-                    "North Carolina Avenue":  (300, 200, 26, 130, 390, 900, 1100, 1275, 150),
-                    "Pennsylvania Avenue":    (320, 200, 28, 150, 450, 1000, 1200, 1400, 160),
-                    "Park Place":             (350, 200, 35, 175, 500, 1100, 1300, 1500, 175),
-                    "Boardwalk":              (400, 200, 50, 200, 600, 1400, 1700, 2000, 200)
-                    }
-        """dict[str, tuple]: properties
-        Key: title
-        Value: tuple with values as follows:\n
-            0 - Purchase Price\n
-            1 - Price Per House\n
-            2 - Rent\n
-            3 - Rent w 1 House\n
-            4 - Rent w 2 House\n
-            5 - Rent w 3 House\n
-            6 - Rent w 4 House\n
-            7 - Rent w Hotel\n
-            8 - Mortgage Value\n
-        """
-        """
-        @RR_VALUES constants for the purchase, rent, mortgage, and color code values of the railroads
-        """
-        RR_VALUES = [200, 25, 50, 100, 200, 100]
-        """
-            Key: title
-            Value: tuple with values as follows:
-                0 - Purchase Price
-                1 - Price / multiplier with 1 property 
-                2 - Price / multiplier with 2 properties
-                3 - Price with 3 railroads (or -1 if utility)
-                4 - Price with 4 railroads (or -1 if utility)
-                5 - Mortgage Value
-        """
-        self.special_deeds = {
-                "Reading Railroad":       ([value for value in RR_VALUES]),
-                "Pennsylvania Railroad":  ([value for value in RR_VALUES]),
-                "B&O Railroad":           ([value for value in RR_VALUES]),
-                "Short Line":             ([value for value in RR_VALUES]),
-                "Electric Company":       (150, 4, 10, -1, -1, 75),
-                "Water Works":            (150, 4, 10, -1, -1, 75)
-                }
-
-    def update_location(self, player:Player, roll: int, new = None) -> None:
-        """
-        Update location with player\n
-        @location: int\n
-        @player: Player object\n
-        """
-        if(new == None):
-            new_location = player.location + roll
-            if new_location > 39:
-                new_location -= 40
-                player.receive(200)
-                update_history(f"Player {player.order} passed Go and received $200")
-            self.locations[player.location][1].remove(player.order)
-            self.locations[new_location][1].append(player.order)
-            player.location = new_location
-
-            if(roll == -1):
-                self.locations[player.location][1].remove(player.order)
-                self.locations[10][1].append(player.order)
-                player.location = 10
-        else: # Used mostly for chance and community chest cards (roll = old location, new = new location)
-            if roll > new and new != 10 and new != player.location-3:
-                player.receive(200)
-            self.locations[roll][1].remove(player.order)
-            self.locations[new][1].append(player.order)
-            player.location = new
-        
-    def current_location(self, player:Player) -> int:
-        """
-        Return current location\n
-        @player: Player object\n
-        """
-        return player.location
-
-class Cards:
-    """
-    Cards class for Monopoly game\n
-    Contains card data.\n
-    """
-    def __init__(self) -> None:
-        self.chance = s.get_graphics().get('chance cards text').split("\n")
-        self.community_chest = s.get_graphics().get('community chest text').split("\n")
-        random.shuffle(self.chance)
-        random.shuffle(self.community_chest)
-    def draw_chance(self, p: Player) -> str:
-        """
-        Draw chance card\n
-        """
-        self.chance.append(self.chance.pop(0))
-
-        card_number = int(self.chance[-1].split(".")[0])
-        match card_number:
-            case 1: 
-                board.update_location(p, p.location, 39)
-            case 2: 
-                board.update_location(p, p.location, 0)
-            case 3:
-                board.update_location(p, p.location, 24)
-            case 4: 
-                board.update_location(p, p.location, 11)
-            case 5:
-                if p.location < 5 or p.location > 35:
-                    board.update_location(p, p.location, 5)
-                elif p.location < 15:
-                    board.update_location(p, p.location, 15)
-                elif p.location < 25:
-                    board.update_location(p, p.location, 25)
-                else:
-                    board.update_location(p, p.location, 35)
-            case 6: 
-                if p.location < 5 or p.location > 35:
-                    board.update_location(p, p.location, 5)
-                elif p.location < 15:
-                    board.update_location(p, p.location, 15)
-                elif p.location < 25:
-                    board.update_location(p, p.location, 25)
-                else:
-                    board.update_location(p, p.location, 35)
-            case 7: 
-                if p.location < 12 or p.location > 28:
-                    board.update_location(p, p.location, 12)
-                else:
-                    board.update_location(p, p.location, 28)
-            case 8: 
-                p.receive(50)
-            case 9: 
-                p.jailcards += 1
-            case 10: 
-                board.update_location(p, p.location, p.location - 3)
-            case 11: 
-                p.jail = True
-                board.update_location(p, p.location, 10)
-            case 12: 
-                for property in p.properties:
-                    if(board.locations[property][2] == 5):
-                        p.pay(150) #price for 4 houses x1.5
-                    elif(board.locations[property][2] > 0):
-                        p.pay(25*board.locations[property][2])
-            case 13:
-                p.pay(15)
-            case 14:
-                board.update_location(p, p.location, 5)
-            case 15:
-                for receiver in players:
-                    p.pay(50)
-                    receiver.receive(50)
-            case 16: 
-                p.receive(150)
-        return self.chance[-1]
-    def draw_community_chest(self, p: Player) -> str:
-        """
-        Draw community chest card\n
-        """
-        self.community_chest.append(self.community_chest.pop(0))
-
-        card_number = int(self.community_chest[-1].split(".")[0])
-        match card_number:
-            case 1:
-                board.update_location(p, p.location, 0)
-            case 2:
-                p.receive(200)
-            case 3:
-                p.pay(50)
-            case 4: 
-                p.receive(50)
-            case 5:
-                p.jailcards += 1
-            case 6:
-                board.update_location(p, p.location, 10)
-                p.jail = True
-            case 7:
-                p.receive(100)
-            case 8:
-                p.receive(20)
-            case 9:
-                for payer in players:
-                    payer.pay(10)
-                    p.receive(10)
-            case 10:
-                p.receive(100)
-            case 11:
-                p.pay(100)
-            case 12:
-                p.pay(50)
-            case 13:
-                p.receive(25)
-            case 14: 
-                for property in p.properties:
-                    if(board.locations[property][2] == 5):
-                        p.pay(240) #price for 4 houses x1.5
-                    elif(board.locations[property][2] > 0):
-                        p.pay(40*board.locations[property][2])
-            case 15:
-                p.receive(10)
-            case 16:
-                p.receive(100)
-        return self.community_chest[-1]
+from properties import Property
+from cards import Cards
+from board import Board
+from player_class import Player
 
 def refresh_board():
     """
@@ -362,43 +19,43 @@ def refresh_board():
     print(gameboard)
     for i in range(40): 
         # This loop paints the properties on the board with respective color schemes
-        color = board.locations[i][5]
-        backcolor = board.locations[i][5].replace("38", "48")
-        print(COLORS.backBLACK + color + f"\033[{board.locations[i][4][0]};{board.locations[i][4][1]}H{i}" + backcolor + " " * (4 + (1 if i < 10 else 0)))
+        color = board.locations[i].color
+        backcolor = board.locations[i].color.replace("38", "48")
+        print(COLORS.backBLACK + color + f"\033[{board.locations[i].x};{board.locations[i].y}H{i}" + backcolor + " " * (4 + (1 if i < 10 else 0)))
         
-        if(board.locations[i][3] != -1): # If owned
+        if(board.locations[i].owner != -1): # If owned
             print(end=COLORS.RESET)
-            color = f"\033[38;5;{board.locations[i][3]+1}m"
-            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]}H" + color + "▀")
+            color = f"\033[38;5;{board.locations[i].owner+1}m"
+            print(f"\033[{board.locations[i].x+2};{board.locations[i].y}H" + color + "▀")
 
-        if(board.locations[i][3] == -3): # If community chest
+        if(board.locations[i].owner == -3): # If community chest
             print(end=COLORS.RESET)
-            print(f"\033[{board.locations[i][4][0] + 1};{board.locations[i][4][1]}H" + COLORS.COMMUNITY + "█" * 6)
-            print(f"\033[{board.locations[i][4][0] + 2};{board.locations[i][4][1]}H" + COLORS.COMMUNITY + "▀" * 6)
+            print(f"\033[{board.locations[i].x + 1};{board.locations[i].y}H" + COLORS.COMMUNITY + "█" * 6)
+            print(f"\033[{board.locations[i].x + 2};{board.locations[i].y}H" + COLORS.COMMUNITY + "▀" * 6)
 
-        if(board.locations[i][3] == -4): # If chance
+        if(board.locations[i].owner == -4): # If chance
             print(end=COLORS.RESET)
-            print(f"\033[{board.locations[i][4][0] + 1};{board.locations[i][4][1]}H" + COLORS.CHANCE + "█" * 6)
-            print(f"\033[{board.locations[i][4][0] + 2};{board.locations[i][4][1]}H" + COLORS.CHANCE + "▀" * 6)
+            print(f"\033[{board.locations[i].x + 1};{board.locations[i].y}H" + COLORS.CHANCE + "█" * 6)
+            print(f"\033[{board.locations[i].x + 2};{board.locations[i].y}H" + COLORS.CHANCE + "▀" * 6)
         
-        if(board.locations[i][2] > 0): # If there are houses
+        if(board.locations[i].houses > 0): # If there are houses
             print(end=COLORS.RESET)
-            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]+1}H" + COLORS.GREEN + "▀" * (board.locations[i][2]))
+            print(f"\033[{board.locations[i].x+2};{board.locations[i].y+1}H" + COLORS.GREEN + "▀" * (board.locations[i].houses))
         
-        if(board.locations[i][2] == 5): # If there is a hotel
+        if(board.locations[i].houses == 5): # If there is a hotel
             print(end=COLORS.RESET)
-            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]+5}H" + COLORS.RED + "▀")
+            print(f"\033[{board.locations[i].x+2};{board.locations[i].y+5}H" + COLORS.RED + "▀")
 
-        if(board.locations[i][3] == -2): # If mortgaged
+        if(board.locations[i].owner == -2): # If mortgaged
             print(end=COLORS.RESET)
-            print(f"\033[{board.locations[i][4][0]+2};{board.locations[i][4][1]}H" + COLORS.backLIGHTGRAY + "M")
+            print(f"\033[{board.locations[i].x+2};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
 
     print(end=COLORS.RESET)
 
     for i in range(num_players):
         color = COLORS.playerColors[i]
         token = "◙"
-        print(color + f"\033[{board.locations[players[i].location][4][0]+1};{board.locations[players[i].location][4][1]+1+i}H{token}")
+        print(color + f"\033[{board.locations[players[i].location].x+1};{board.locations[players[i].location].y+1+i}H{token}")
     
     print(end=COLORS.RESET)
 
@@ -443,39 +100,36 @@ def update_status(p: Player, update: str, status: list = status):
     status.clear()
     if(update == "properties"):
         color = COLORS.playerColors[p.order]
-        status.append(color + f"{p} has properties: " + COLORS.RESET)
+        status.append(color + f"{p.name} has properties: " + COLORS.RESET)
         for i in range(len(p.properties)):
-            status.append(f"{p.properties[i]}: {board.locations[p.properties[i]][0]}")
+            status.append(f"{p.properties[i]}: {board.locations[p.properties[i]].name}")
     if(update == "deed"):
         propertyid = input("What property to view? Enter property #")
         try:
-            propertyid = int(propertyid)
-            if board.locations[propertyid][0] in board.deeds or board.locations[propertyid][0] in board.special_deeds:
-                if(board.locations[propertyid][3] != -1):
-                    color = COLORS.playerColors[board.locations[propertyid][3]]
-                    status.append(f"Current owner: " + color + f"Player{board.locations[propertyid][3]}" + COLORS.RESET)
-                    status.append(f"Houses: {board.locations[propertyid][2]}")
-            if(board.locations[propertyid][0] in board.deeds):
-                deed = board.deeds.get(board.locations[propertyid][0])
-                status.append(f"{board.locations[propertyid][5]}=== {board.locations[propertyid][0]} ===")
-                status.append(f"Purchase Price: {deed[0]}")
-                status.append(f"Price Per House: {deed[1]}")
-                status.append(f"Rent: {deed[2]}")
-                status.append(f"Rent w 1 house: {deed[3]}")
-                status.append(f"Rent w 2 houses: {deed[4]}")
-                status.append(f"Rent w 3 houses: {deed[5]}")
-                status.append(f"Rent w 4 houses: {deed[6]}")
-                status.append(f"Rent w hotel: {deed[7]}")
-                status.append(f"Mortgage Value: {deed[8]}")
-            elif board.locations[propertyid][0] in board.special_deeds:
-                deed = board.special_deeds.get(board.locations[propertyid][0])
-                status.append(f"{board.locations[propertyid][5]}=== {board.locations[propertyid][0]} ===")
-                status.append(f"Purchase Price: {deed[0]}")
-                status.append(f"Rent (or mltplr) with 1 owned: {deed[1]}")
-                status.append(f"Rent (or mltplr) with 2 owned: {deed[2]}")
-                status.append(f"Rent with 3 locations owned: {deed[3]}")
-                status.append(f"Rent with 4 locations owned: {deed[4]}")
-                status.append(f"Mortgage Value: {deed[5]}")
+            location = board.locations[int(propertyid)]
+            if location.owner > -1: # if the location is owned
+                color = COLORS.playerColors[location.owner]
+                status.append(f"Current owner: " + color + f"Player{location.owner}" + COLORS.RESET)
+                status.append(f"Houses: {location.houses}")
+            if(location.rent != 0): # if location could be owned and is not a utility or railroad
+                status.append(f"{location.color}=== {location.name} ===")
+                status.append(f"Purchase Price: {location.purchasePrice}")
+                status.append(f"Price Per House: {location.housePrice}")
+                status.append(f"Rent: {location.rent}")
+                status.append(f"Rent w 1 house: {location.rent1H}")
+                status.append(f"Rent w 2 houses: {location.rent2H}")
+                status.append(f"Rent w 3 houses: {location.rent3H}")
+                status.append(f"Rent w 4 houses: {location.rent4H}")
+                status.append(f"Rent w hotel: {location.rentHotel}")
+                status.append(f"Mortgage Value: {location.mortgage}")
+            elif (location.owner >= -2 and location.rent == 0): # if is a railroad or utility
+                status.append(f"{location.color}=== {location.name} ===")
+                status.append(f"Purchase Price: {location.purchasePrice}")
+                status.append(f"Rent (or mltplr) with 1 owned: {location.rent1H}")
+                status.append(f"Rent (or mltplr) with 2 owned: {location.rent2H}")
+                status.append(f"Rent with 3 locations owned: {location.rent3H}")
+                status.append(f"Rent with 4 locations owned: {location.rent4H}")
+                status.append(f"Mortgage Value: {location.mortgage}")
             else:
                 raise ValueError
         except ValueError:
@@ -512,22 +166,14 @@ def refresh_h_and_s():
 def buy_logic():
     CL = players[turn].location
     input("\033[37;0HBuy?") # Add buy logic
-    if(board.locations[CL][0] in board.deeds):
-        price = board.deeds[board.locations[CL][0]][0]
+    if(board.locations[CL].purchasePrice != 0):
+        price = board.locations[CL].purchasePrice
         if(players[turn].cash > price):
-            players[turn].buy(CL)
-            board.locations[CL][3] = turn
-            update_history(f"Player {turn} bought {board.locations[CL][0]} for ${price}")
+            players[turn].buy(CL, board)
+            board.locations[CL].owner = turn
+            update_history(f"{players[turn].name} bought {board.locations[CL].name} for ${price}")
         else:
-            update_history(f"Player {turn} did not buy {board.locations[CL][0]}")
-    else:
-        price = board.special_deeds[board.locations[CL][0]][0]
-        if(players[turn].cash > price):
-            players[turn].buy(CL)
-            board.locations[CL][3] = turn
-            update_history(f"Player {turn} bought {board.locations[CL][0]} for ${price}")
-        else:
-            update_history(f"Player {turn} did not buy {board.locations[CL][0]}")
+            update_history(f"{players[turn].name} did not buy {board.locations[CL].name}")
 
 def housing_logic(p: Player):
     update_status(p, "properties")
@@ -547,13 +193,13 @@ def housing_logic(p: Player):
         if not propertyid in p.properties:
             print("You do not own this property!")
         else: 
-            family = board.locations[propertyid][5]
-            if family == COLORS.CYAN or family == COLORS.LIGHTBLACK or board.locations[propertyid][0].startswith("Electric"):
+            family = board.locations[propertyid].color
+            if family == COLORS.CYAN or family == COLORS.LIGHTBLACK or board.locations[propertyid].name.startswith("Electric"):
                 print("This property cannot be improved.")
                 flag = False
             if flag: 
                 for i in range(propertyid-3 if propertyid > 3 else 0, propertyid+5 if propertyid < 35 else 39): # check only a few properties around for efficiency
-                    if board.locations[i][5] == family:
+                    if board.locations[i].color == family:
                         if not i in p.properties:
                             print("You do not own a monopoly on these properties!")
                             flag = False
@@ -568,14 +214,14 @@ def housing_logic(p: Player):
                         cost = 150
                     elif 30 < propertyid < 40:
                         cost = 200
-                    max = 5 - board.locations[propertyid][2]
+                    max = 5 - board.locations[propertyid].houses
                     houses = input(f"Cost of housing is ${cost}. How many houses would you like to buy? (Max {max}/min 0)")
                     try:
                         houses = int(houses)
                         if(0 <= houses <= max):
                             p.cash -= cost * houses
-                            update_history(f"{p} bought {houses} houses on {board.locations[propertyid][0]}!")
-                            board.locations[propertyid][2] += houses
+                            update_history(f"{p} bought {houses} houses on {board.locations[propertyid].name}!")
+                            board.locations[propertyid].houses += houses
                             refresh_board()
                         else:
                             raise ValueError
@@ -693,7 +339,6 @@ turn = 0
 
 board = Board(num_players)
 decks = Cards()
-
 import style as s
 
 gameboard = s.get_graphics().get('gameboard')
@@ -702,14 +347,14 @@ print(COLORS.WHITE + "\033[0;0H", end="")
 print(gameboard)
 
 def unittest():
-    players[1].buy(1)
-    players[1].buy(3)
-    players[2].buy(5)
-    players[2].buy(15)
-    players[2].buy(25)
-    players[2].buy(35)
-    players[3].buy(12)
-    players[3].buy(28)
+    players[1].buy(1, board)
+    players[1].buy(3, board)
+    players[2].buy(5, board)
+    players[2].buy(15, board)
+    players[2].buy(25, board)
+    players[2].buy(35, board)
+    players[3].buy(12, board)
+    players[3].buy(28, board)
 
 unittest()
 #wipes the bottom of the screen where the player does all of their input
@@ -736,7 +381,7 @@ def player_roll(num_rolls):
     bottom_screen_wipe()   
     if(players[turn].order != -1): # If player is not bankrupt
         player_color = COLORS.playerColors[turn]
-        update_history(player_color + f"Player {turn}'s turn")
+        update_history(player_color + f"{players[turn].name}'s turn")
         print_commands()
         input("\033[36;0HRoll dice?")
         dice = roll()
@@ -754,56 +399,54 @@ def player_roll(num_rolls):
                 update_history(f"Player {turn} rolled doubles three times\n in a row!")
                 update_history(f"Player {turn} is going to jail!")
                 players[turn].jail = True
-                board.update_location(players[turn], -1)
+                board.update_location(players[turn], -1, update_history)
         refresh_board()
         #if player rolled their third double they will be in jail and their location doesn't update
         if players[turn].jail == False:
-            board.update_location(players[turn], dice[0] + dice[1])
-            update_history(f"Player {turn} landed on {board.locations[players[turn].location][0]}")
+            board.update_location(players[turn], dice[0] + dice[1], update_history)
+            update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
             refresh_board()
-        if board.locations[players[turn].location][3] < 0:
-            match board.locations[players[turn].location][3]:
+        if board.locations[players[turn].location].owner < 0:
+            match board.locations[players[turn].location].owner:
                 case -1: #unowned
                     buy_logic()
                 case -2: #mortgaged
                     pass
                 case -3: #community chest
-                    card = decks.draw_community_chest(players[turn])
-                    update_history(f"Player {turn} drew a Community Chest card! {card}")
+                    card = decks.draw_community_chest(players[turn], board, players)
+                    update_history(f"{players[turn].name} drew a Community Chest card! {card}")
                 case -4: #chance
-                    card = decks.draw_chance(players[turn])
-                    update_history(f"Player {turn} drew a Chance card! {card}")
-                    if(board.locations[players[turn].location][3] == -1):
+                    card = decks.draw_chance(players[turn], board, players)
+                    update_history(f"{players[turn].name} drew a Chance card! {card}")
+                    if(board.locations[players[turn].location].owner == -1):
                         buy_logic()
-                    if(board.locations[players[turn].location][3] == -5):
+                    if(board.locations[players[turn].location].owner == -5):
                         players[turn].pay(200)
-                        update_history(f"Player {turn} paid income tax ($200)")
+                        update_history(f"{players[turn].name} paid income tax ($200)")
                 case -5: #income tax
                     players[turn].pay(200)
-                    update_history(f"Player {turn} paid income tax ($200)")
+                    update_history(f"{players[turn].name} paid income tax ($200)")
                 case -6: #jail
                     pass
                 case -7: #go to jail
                     players[turn].jail = True
-                    board.update_location(players[turn], -1)
+                    board.update_location(players[turn], -1, update_history)
                 case -8: #free parking
                     pass
                 case -9: #luxury tax
                     players[turn].pay(100)
-                    update_history(f"Player {turn} paid luxury tax ($100)")
+                    update_history(f"{players[turn].name} paid luxury tax ($100)")
                 case -10: #go
                     pass
-        elif board.locations[players[turn].location][3] != players[turn].order:
+        elif board.locations[players[turn].location].owner != players[turn].order:
             # Pay another player rent
             cl = players[turn].location
-            rent = board.deeds[board.locations[cl][0]][2 + board.locations[cl][2]] if board.locations[cl][0] in board.deeds else board.special_deeds[board.locations[cl][0]][board.locations[cl][2]]
-            if rent == 4 and board.locations[cl][0] in board.special_deeds:
-                rent = 4 * (dice[0] + dice[1])
-            elif rent == 10 and board.locations[cl][0] in board.special_deeds:
-                rent = 10 * (dice[0] + dice[1])
+            rent = board.locations[cl].getRent()
+            if board.locations[cl].name == "Electric Company" or board.locations[cl].name == "Water Works":
+                rent *= dice[0] + dice[1]
             players[turn].pay(rent)
-            players[board.locations[cl][3]].receive(rent)
-            update_history(f"{players[turn]} paid ${rent} to Player {board.locations[cl][3]}")
+            players[board.locations[cl].owner].receive(rent)
+            update_history(f"{players[turn].name} paid ${rent} to {players[board.locations[cl].owner].name}")
         refresh_board()
         #checks if player rolled a double, and has them roll again if they did.
         if dice[0] == dice[1] and players[turn].jail == False:
@@ -841,7 +484,7 @@ while(True):
         # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
 
         else:
-            update_history(f"Player {turn} declared bankruptcy.")
+            update_history(f"{players[turn].name} declared bankruptcy.")
             players[turn].order = -1
         # Need to fix all this sometime erghhghh
         bankrupts += 1
@@ -851,7 +494,6 @@ while(True):
 
     if(bankrupts == num_players - 1):
         break
-
     turn = (turn + 1)%num_players
 
 for index, player in enumerate(players):
