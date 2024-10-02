@@ -22,7 +22,7 @@ class Player:
     quadrant2 = ['2' * cols] * rows
     quadrant3 = ['3' * cols] * rows
     quadrant4 = ['4' * cols] * rows
-    active_terminal = 1
+    active_terminal = 0
 
     def print_board(gameboard: list[str]) -> None:
         """
