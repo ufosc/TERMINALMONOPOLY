@@ -24,10 +24,9 @@ An initial release of Terminal Monopoly is expected to be completed by the end o
 
 # Installation
 Ensure you have the following installed: 
-- Python 3.8+
+- Python 3.10+
 - install necessary python packages using pip
-- pip install colorama
-- run using python monoploy.py
+- run using python monopoly.py
 
 # Instructions
 - Banker runs the entire game and manages whose turn it is
