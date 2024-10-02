@@ -2,6 +2,10 @@
 import style as s
 from style import COLORS
 import random
+import os
+import platform
+import ctypes
+import shutil
 from properties import Property
 from cards import Cards
 from board import Board
@@ -71,14 +75,20 @@ def update_history(message: str):
     Text added here needs to be a maximum of 40 characters, or wrap around\n
     Split the text into multiple lines (multiple entries to history variable)\n
     """
-    if len(message) > 40:
-        while len(message) > 40:
-            history.append(message[:40] + " " * (40 - len(message)))
-            message = message[40:]
-    history.append(message + " " * (40 - len(message)))
-    if len(history) > 31:
-        while(len(history) > 31):
-            history.pop(0)
+    if "[38;5" in message:
+        if(((40 - (len(message) - 9)) * 2) == 0):
+            history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((40 - (len(message) - 9)) // 2))
+        else:
+            history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((39 - (len(message) - 9)) // 2))
+    else:
+        if len(message) > 40:
+            while len(message) > 40:
+                history.append(message[:40] + " " * (40 - len(message)))
+                message = message[40:]
+        history.append(message + " " * (40 - len(message)))
+        if len(history) > 31:
+            while(len(history) > 31):
+                history.pop(0)
     refresh_h_and_s()
 
 status = []
@@ -113,7 +123,7 @@ def update_status(p: Player, update: str, status: list = status):
                 status.append(f"Rent w hotel: {location.rentHotel}")
                 status.append(f"Mortgage Value: {location.mortgage}")
             elif (location.owner >= -2 and location.rent == 0): # if is a railroad or utility
-                status.append(f"{location[5]}=== {location[0]} ===")
+                status.append(f"{location.color}=== {location.name} ===")
                 status.append(f"Purchase Price: {location.purchasePrice}")
                 status.append(f"Rent (or mltplr) with 1 owned: {location.rent1H}")
                 status.append(f"Rent (or mltplr) with 2 owned: {location.rent2H}")
@@ -233,6 +243,88 @@ def log_error(error_message: str) -> None:
         formatted_datetime = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
+def make_fullscreen():
+    current_os = platform.system()
+
+    if current_os == "Windows":
+        # Maximize terminal on Windows
+        user32 = ctypes.WinDLL("user32")
+        SW_MAXIMIZE = 3
+        hWnd = user32.GetForegroundWindow()
+        user32.ShowWindow(hWnd, SW_MAXIMIZE)
+
+    elif current_os == "Linux" or current_os == "Darwin":
+        # Maximize terminal on Linux/macOS
+        os.system("printf '\033[9;1t'")
+    else:
+        print(f"Fullscreen not supported for OS: {current_os}")
+
+def print_with_wrap(char, start_row, start_col):
+    # Get the terminal size
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
+    
+    # If the position exceeds the terminal width, handle wrapping
+    if start_col >= width:
+        # Calculate new row and column if it exceeds width
+        new_row = start_row + (start_col // width)
+        new_col = start_col % width
+        print(f"\033[{new_row};{new_col}H" + char, end="")
+    else:
+        # Default print
+        print(f"\033[{start_row};{start_col}H" + char, end="")
+
+def scaling_print():
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
+    os.system('cls' if os.name == 'nt' else 'clear')
+    current_os = platform.system()
+    if current_os == "Darwin":
+        # Print out instructions for macOS users
+        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
+    else:
+        # Print out instructions for Linux/Windows users
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
+    print("Proper scaling should only displays 4 cross that marks the corners of the board.")
+    print("If you are having trouble with scaling, try entering r to reset the display.")
+    print("After finishing scaling, please press enter to continue.")
+    scaling_test = input()
+    os.system('cls' if os.name == 'nt' else 'clear')
+    gameboard = s.get_graphics().get('gameboard')
+    print(f"\033[0;0H" + gameboard, end="")
+    for i in range(len(border)):
+        print(f"\033[{i};79H", end="")
+        if(len(history) - i<= 0):
+            for j in range(len(border[i])):
+                print(border[i][j], end="")
+    print_commands()
+    print_with_wrap("X", 0, 0)
+    print_with_wrap("X", 0, 156)
+    print_with_wrap("X", 50, 156)
+    print_with_wrap("X", 50, 0)
+    print(f"\033[36;0H" + "Press enter to play or enter r to reset the display.", end="")
+    scaling_test = input()
+    while scaling_test != "":
+        if scaling_test == "r":
+            os.system('cls' if os.name == 'nt' else 'clear')
+            gameboard = s.get_graphics().get('gameboard')
+            print(f"\033[0;0H" + gameboard, end="")
+            for i in range(len(border)):
+                print(f"\033[{i};79H", end="")
+                if(len(history) - i<= 0):
+                    for j in range(len(border[i])):
+                        print(border[i][j], end="")
+            print_commands()
+            print_with_wrap("X", 0, 0)
+            print_with_wrap("X", 0, 156)
+            print_with_wrap("X", 50, 156)
+            print_with_wrap("X", 50, 0)
+            print(f"\033[36;0H" + "Press enter to play or enter r to reset the display.", end="")
+        scaling_test = input()
+
+make_fullscreen()
+scaling_print()
+
 # CASH = input("Starting cash?")
 # num_players = int(input("Number players?"))
 CASH = 2000
@@ -248,7 +340,7 @@ turn = 0
 board = Board(num_players)
 decks = Cards()
 import style as s
-import os
+
 gameboard = s.get_graphics().get('gameboard')
 os.system('cls' if os.name == 'nt' else 'clear')
 print(COLORS.WHITE + "\033[0;0H", end="")
@@ -265,20 +357,55 @@ def unittest():
     players[3].buy(28, board)
 
 unittest()
-while(True):
-    refresh_board() 
+#wipes the bottom of the screen where the player does all of their input
+def bottom_screen_wipe():
+    print("\033[36;0H" + " " * 76)
+    print("\033[37;0H" + " " * 76)
+    print("\033[38;0H" + " " * 76)
+    print("\033[39;0H" + " " * 76)
+    print("\033[40;0H" + " " * 76)
+    print("\033[41;0H" + " " * 76)
+    print("\033[42;0H" + " " * 76)
+    print("\033[43;0H" + " " * 76)
+    print("\033[44;0H" + " " * 76)
+
+#Rolls the dice and returns them for the player as a tuple
+def roll():
+    die1 = random.randint(1, 6)
+    die2 = random.randint(1, 6)
+    return(die1,die2)
+#The function that handles the players 
+#second and third correspond to if its the players second or third consecutive turn, they are bools
+def player_roll(num_rolls):
+    print_commands()
+    bottom_screen_wipe()   
     if(players[turn].order != -1): # If player is not bankrupt
         player_color = COLORS.playerColors[turn]
         update_history(player_color + f"{players[turn].name}'s turn")
         print_commands()
         input("\033[36;0HRoll dice?")
-        die1 = random.randint(1, 6)
-        die2 = random.randint(1, 6)
-        update_history(f"{players[turn].name} rolled {die1} and {die2}")
+        dice = roll()
+        bottom_screen_wipe()
+        update_history(f"Player {turn} rolled {dice[0]} and {dice[1]}")
 
-        board.update_location(players[turn], die1 + die2, update_history)
-        update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
+        if dice[0] == dice[1]:
+            if  num_rolls == 1:
+                update_history(f"{players[turn]} rolled doubles! Roll again.")
+            
+            elif num_rolls == 2:
+                update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+                
+            elif num_rolls == 3:
+                update_history(f"Player {turn} rolled doubles three times\n in a row!")
+                update_history(f"Player {turn} is going to jail!")
+                players[turn].jail = True
+                board.update_location(players[turn], -1, update_history)
         refresh_board()
+        #if player rolled their third double they will be in jail and their location doesn't update
+        if players[turn].jail == False:
+            board.update_location(players[turn], dice[0] + dice[1], update_history)
+            update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
+            refresh_board()
         if board.locations[players[turn].location].owner < 0:
             match board.locations[players[turn].location].owner:
                 case -1: #unowned
@@ -316,56 +443,54 @@ while(True):
             cl = players[turn].location
             rent = board.locations[cl].getRent()
             if board.locations[cl].name == "Electric Company" or board.locations[cl].name == "Water Works":
-                rent *= die1 + die2
+                rent *= dice[0] + dice[1]
             players[turn].pay(rent)
             players[board.locations[cl].owner].receive(rent)
             update_history(f"{players[turn].name} paid ${rent} to {players[board.locations[cl].owner].name}")
         refresh_board()
-        if die1 == die2:
-            update_history(f"{players[turn].name} rolled doubles! Roll again.")
-            # @TODO implement rolling doubles
-        if(players[turn].cash > 0):
-            choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
-            while(choice != 'e'): # @TODO remove soon! players should not be able to do these actions during gameboard screen 
-                if choice == "e":
-                    pass
-                elif choice == "p":
-                    housing_logic(players[turn])
-                elif choice == "d":
-                    update_status(players[turn], "deed")
-                else:
-                    print("Invalid option!")
-                choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
-            update_history(f"{players[turn].name} ended their turn.")
-        else:
-            update_history(f"{players[turn].name} is in debt. Resolve debts before ending turn.")
-            option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
-            if(option == "b"): # Declare bankruptcy
-                update_history(f"{players[turn].name} declared bankruptcy.")
-                players[turn].order = -1
-            elif(option == "m"): # Mortgage properties
+        #checks if player rolled a double, and has them roll again if they did.
+        if dice[0] == dice[1] and players[turn].jail == False:
+            num_rolls +=1
+            player_roll(num_rolls)
+
+while(True):
+    # First time the player who's turn it is rolls their dice
+    #if they roll a double the function calls itself and updates its their number of consecutive rolls
+    player_roll(num_rolls=1)
+    if(players[turn].cash > 0):
+        choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
+        while(choice != 'e'): # @TODO remove soon! players should not be able to do these actions during gameboard screen 
+            if choice == "e":
                 pass
-            elif(option == "s"): # Sell houses/hotels
-                housing_logic()
-
-            # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
-
+            elif choice == "p":
+                housing_logic(players[turn])
+            elif choice == "d":
+                update_status(players[turn], "deed")
             else:
-                update_history(f"{players[turn].name} declared bankruptcy.")
-                players[turn].order = -1
-            # Need to fix all this sometime erghhghh
-            bankrupts += 1
+                print("Invalid option!")
+            choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
+        update_history(f"{players[turn]} ended their turn.")
+    else:
+        update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
+        option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
+        if(option == "b"): # Declare bankruptcy
+            update_history(f"Player {turn} declared bankruptcy.")
+            players[turn].order = -1
+        elif(option == "m"): # Mortgage properties
+            pass
+        elif(option == "s"): # Sell houses/hotels
+            housing_logic()
+
+        # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
+
+        else:
+            update_history(f"{players[turn].name} declared bankruptcy.")
+            players[turn].order = -1
+        # Need to fix all this sometime erghhghh
+        bankrupts += 1
 
     # Wipe the bottom of the screen (input area)
-    print("\033[36;0H" + " " * 76)
-    print("\033[37;0H" + " " * 76)
-    print("\033[38;0H" + " " * 76)
-    print("\033[39;0H" + " " * 76)
-    print("\033[40;0H" + " " * 76)
-    print("\033[41;0H" + " " * 76)
-    print("\033[42;0H" + " " * 76)
-    print("\033[43;0H" + " " * 76)
-    print("\033[44;0H" + " " * 76)
+    bottom_screen_wipe()
 
     if(bankrupts == num_players - 1):
         break

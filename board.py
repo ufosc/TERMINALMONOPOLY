@@ -32,7 +32,7 @@ class Board:
             19: Property(0, "New York Avenue", -1, (5,2), COLORS.ORANGE, 200, 100, 16, 80, 220, 600, 800, 1000, 100),
             20: Property(0, "Free Parking", -1, (2,2), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             21: Property(0, "Kentucky Avenue", -1, (2,9), COLORS.RED, 220, 150, 18, 90, 250, 700, 875, 1050, 110),
-            22: Property(0, "Chance", -1, (2,16), COLORS.CHANCE, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+            22: Property(0, "Chance", -4, (2,16), COLORS.CHANCE, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             23: Property(0, "Indiana Avenue", -1, (2,23), COLORS.RED, 220, 150, 18, 90, 250, 700, 875, 1050, 110),
             24: Property(0, "Illinois Avenue", -1, (2,30), COLORS.RED, 240, 150, 20, 100, 300, 750, 925, 1100, 120),
             25: Property(0, "B&O Railroad", -1, (2,37), COLORS.LIGHTBLACK, 200, 0, 0, 25, 50, 100, 200, 0, 100),
