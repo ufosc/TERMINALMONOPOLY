@@ -17,7 +17,8 @@ ADDRESS = ""
 PORT = 0
 balance = 0
 properties = 0
-
+calculator_history_queue = []
+calculator_history_current_capacity = 15
 
 def get_graphics():
     """Grab text from ascii.txt and split into dictionary"""
@@ -99,13 +100,61 @@ def calculate() -> None:
     Helper method for calling calculator() in modules.py. Updates screen accordingly. 
     Parameters: None
     Returns: None
+    
+    Four parts of response
+    Terminal header (i.e CALCULATOR TERMINAL)
+    Calculator history
+    Letting the user know they are able to input
+    Prompt that lets the user know to press "e" to exit
     """
+    calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
+    calculator_footer1 = "Awaiting an equation...\nPress \'e\' to exit the calculator terminal"
+    calculator_footer2 = "Type \'calc\' to begin the calculator!"
+    calculator_footer3 = "Equation either malformed or undefined! Try again!\nPress \'e\' to exit the calculator terminal"
+    
+    # Helper function that contructs terminal printing.
+    def calculator_terminal_response(footer_option: int) -> str:
+        response = calculator_header
+        for i in range(len(calculator_history_queue)-1, -1, -1):
+            response += calculator_history_queue[i][0]
+        if footer_option == 1:
+            response += calculator_footer1
+        elif footer_option == 2:
+            response += calculator_footer2
+        elif footer_option == 3:
+            response += calculator_footer3
+        
+        return response
+    
+    #Helper function to update calculator history
+    def update_history(equation: str) -> None:
+        global calculator_history_current_capacity
+
+        numLines = (len(equation)//75) + 1
+        while(numLines > calculator_history_current_capacity):
+            calculator_history_current_capacity += calculator_history_queue[0][1]
+            calculator_history_queue.pop(0)
+        
+        calculator_history_current_capacity -= numLines
+        calculator_history_queue.append((equation, numLines))
+
     # Initial comment in active terminal
-    ss.update_quadrant(active_terminal, "Enter a single operation equation:")
+    ss.update_quadrant(active_terminal, calculator_terminal_response(1))
     ss.print_screen()
     # All other work is done on the work line (bottom of the screen)
-    ss.update_quadrant(active_terminal, m.calculator())
-    ss.print_screen()
+    while True:
+        player_equation = m.calculator()
+        if(player_equation == "e"):
+            ss.update_quadrant(active_terminal, calculator_terminal_response(2))
+            ss.print_screen()
+            break
+        elif(player_equation == "error"):
+            ss.update_quadrant(active_terminal, calculator_terminal_response(3))
+            ss.print_screen()
+        else:
+            update_history(player_equation)
+            ss.update_quadrant(active_terminal, calculator_terminal_response(1))
+            ss.print_screen()
 
 def balance() -> None:
     """
