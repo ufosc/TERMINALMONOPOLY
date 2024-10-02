@@ -18,9 +18,38 @@ Terminal Monopoly is a rapid-pace, eclectic game which merges a classic board ga
 
 Terminal Monopoly is only 25% board game. Inspired by inane but hilarious Yakuza-type side quests, overcomplicated mechanics like in Cookie Clicker, and minigames such as those in Mario Party, Terminal Monopoly has so much more to offer than just rolling dice.
 
-Terminal Monopoly is written entirely in Python. The source code is available on GitHub
+Terminal Monopoly is written entirely in Python. The source code is available on GitHub.
 
 An initial release of Terminal Monopoly is expected to be completed by the end of Fall 2024 (roughly December).
+
+## Table of Contents
+- [Workflow](#workflow)
+- [Installation](#installation)
+- [Contributing](#contributing)
+  - [CONTRIBUTING.md](CONTRIBUTING.md)
+  - [Style Guide](StyleGuide.md)
+ 
+# Workflow
+
+1. Start by reviewing the [issues list](https://github.com/ufosc/TERMINALMONOPOLY/issues) and pick a task or propose a new feature.
+
+2. Go to https://github.com/ufosc/TERMINALMONOPOLY and press the "fork" button in the top right:
+
+3. Clone your fork's main branch onto your local system:
+
+```sh
+git clone https://github.com/<your account name>/TERMINALMONOPOLY.git
+```
+
+4. Create a new branch with a descriptive (but short) title regarding what you're working on **(ensure your branch focuses on a specific, fully working feature e.g. documentation, implementing new authentication logic)**:
+
+```sh
+git checkout -b feature-name
+```
+
+Before submitting a pull request, write a couple (2-3) unit tests if applicable. If possible, follow the Test-Driven Development (TDD) paradigm, which involves writing tests before coding the feature itself. [Learn more about TDD here](https://www.browserstack.com/guide/what-is-test-driven-development).
+
+5. Push your feature branch and submit a pull request (PR). That's it! Your code will be reviewed by a tech lead and if approved, merged into the main branch. Congrats on your contribution!
 
 # Installation
 Ensure you have the following installed: 
@@ -58,7 +87,9 @@ For the purposes of testing the program, the number of players and starting cash
 - Number of Players: Change 'num_players = 4' to set how many people are in the game
 
 # Contributing
-Interested in adding to Terminal Monopoly? This is a beginner-friendly project that anyone should feel welcome to work on. Check out CONTRIBUTING.md for how to get started.
+Interested in adding to Terminal Monopoly? This is a beginner-friendly project that anyone should feel welcome to work on. Check out [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started.
+
+All code contributions should also be sure to adhere to the [style guide](StyleGuide.md).
 
 
 With regards to troubleshooting, this program logs errors to an `errorlog.txt` file using the `log_error()` function.
