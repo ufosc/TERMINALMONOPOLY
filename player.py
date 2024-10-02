@@ -110,7 +110,7 @@ def calculate() -> None:
     calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
     calculator_footer1 = "Awaiting an equation...\nPress \'e\' to exit the calculator terminal"
     calculator_footer2 = "Type \'calc\' to begin the calculator!"
-    calculator_footer3 = "Equation either malformed or undefined! Try Aagin!\nPress \'e\' to exit the calculator terminal"
+    calculator_footer3 = "Equation either malformed or undefined! Try again!\nPress \'e\' to exit the calculator terminal"
     
     # Helper function that contructs terminal printing.
     def calculator_terminal_response(footer_option: int) -> str:

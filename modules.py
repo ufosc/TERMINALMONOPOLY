@@ -16,16 +16,7 @@ class PlayerModules():
             "LIGHTGRAY": "\033[38;5;7m"}
 
     def calculator() -> str:
-        #To-do
-        '''
-        History
-        Left-Justified - DONE
-        Keep calculator open after multiple operations
-        A proper wrapping for long equations - DONE
-        Add eponents - DONE
-        Strip extra spaces and pad operators with spaces - DONE
-        Add support for unary operator '-' - DONE
-        '''
+        """A simple calculator module that can perform basic arithmetic operations."""
         #Uses recursion to calculate.
         def calculate(equation: str) -> float:
             for i in range(0, len(equation)-1):
