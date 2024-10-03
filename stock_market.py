@@ -22,23 +22,18 @@ class portfolio:
     def __init__(self, player_name, stock_market):
         self.player_name = player_name
         self.stock_market = stock_market
-        self.owned_stocks = {}
+        self.owned_stocks = {"BLVD": 0, "PLZA": 0, "DRVE": 0}
 
 
     def buy_stock(self, stock_ticker, num_shares):
         if stock_ticker in self.stock_market.stocks:
             self.owned_stocks[stock_ticker] += num_shares
-            print(f"{self.player_name} bought {num_shares} shares of {stock_ticker}.")
-        else:
-            print(f"Stock {stock_ticker} not found!")
+
 
 
     def sell_stock(self, stock_ticker, num_shares):
         if stock_ticker in self.owned_stocks and self.owned_stocks[stock_ticker] >= num_shares:
             self.owned_stocks[stock_ticker] -= num_shares
-            print(f"{self.player_name} sold {num_shares} shares of {stock_ticker}.")
-        else:
-            print(f"{self.player_name} doesn't have enough shares of {stock_ticker} to sell.")
 
     def display_portfolio(self):
         print(f"{self.player_name}'s Portfolio:")
@@ -150,27 +145,41 @@ class stock_market:
 if __name__ == '__main__':
 
    market = stock_market()
+   num_players = 4
+
+   #find out where we are getting name from
+   player_name = "Name"
+
+   #implement check to create either 2, 3, or 4 portfolios tbd
+   player1_portfolio = portfolio(player_name, market)
+   player2_portfolio = portfolio(player_name, market)
+   player3_portfolio = portfolio(player_name, market)
+   player4_portfolio = portfolio(player_name, market)
 
    market.add_stock("PLZA", 20.00, -5, 5)
    market.add_stock("BLVD", 5.00, -10, 10)
    market.add_stock("DRVE", 0.01, -15, 15)
     #put an escape code in front of this \033
-   user_input = input("Please select one of the following: 1: BUY 2: SELL \n")
+   user_input = input("Please select one of the following: BUY or SELL \n")
 
+
+   #implement check for which of the players is making the request
    if (user_input == "BUY"):
        # print("buy executed")
        ticker_name = input("Please enter name of ticker you want to buy: \n")
        for each_stock in market.stocks:
            if (each_stock == ticker_name):
-               amount = input("Enter number of stocks: \n")
+               amount = (int)(input("Enter number of stocks: \n"))
                choice = input("LIMIT or BUY NOW \n")
                if (choice == "LIMIT"):
                    limit = input("Enter amount:\n")
                    break
                if (choice == "BUY NOW"):
                    print("You have bought " + ticker_name + "!\n")
+                   player1_portfolio.buy_stock(ticker_name, amount)
                    break
-       print("Invalid ticker!")
+       else:
+           print("Invalid ticker!")
 
 
 
@@ -179,15 +188,17 @@ if __name__ == '__main__':
        ticker_name = input("Please enter name of ticker you want to sell: \n")
        for each_stock in market.stocks:
            if (each_stock == ticker_name):
-               amount = input("Enter number of stocks: \n")
+               amount = (int)(input("Enter number of stocks: \n"))
                choice = input("STOPLOSS or SELL NOW \n")
                if (choice == "STOPLOSS"):
                    stop_loss = input("Enter amount: \n")
                    break
                if (choice == "SELL NOW"):
                    print("You have sold " + ticker_name + "! \n")
+                   player1_portfolio.buy_stock(ticker_name, amount)
                    break
-       print("Invalid ticker!")
+       else:
+        print("Invalid ticker!")
 
    # print (sys.argv)
 
@@ -195,6 +206,7 @@ if __name__ == '__main__':
    counter = 0
    last_time = time.time()
 
+   player1_portfolio.display_portfolio()
 
    while not condition:
 
