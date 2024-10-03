@@ -393,7 +393,8 @@ def player_roll(num_rolls):
                     if choice == 'f':
                         players[turn].pay_jail_fine()
                         update_history(f"{players[turn].name} paid $50 to leave jail.")
-                        break
+                        update_history(f"{players[turn].name} cannot roll after paying the fine.")
+                        return  # End the turn after paying the fine
                     elif choice == 'r':
                         update_history(f"{players[turn].name} will attempt to roll doubles.")
                         break
@@ -401,7 +402,7 @@ def player_roll(num_rolls):
                         update_history(f"Invalid choice. Please enter 'f' to pay fine or 'r' to roll.")
             else:
                 update_history(f"This is {players[turn].name}'s third turn in jail. They must attempt to roll doubles.")
-
+                
         input("\033[36;0HRoll dice?")
         dice = roll()
         bottom_screen_wipe()
@@ -415,6 +416,8 @@ def player_roll(num_rolls):
                 elif reason == "third_turn":
                     update_history(f"{players[turn].name} didn't roll doubles on their third turn. They paid $50 and left jail.")
                     players[turn].pay_jail_fine()
+                    update_history(f"{players[turn].name} cannot roll after paying the fine.")
+                    return  # End the turn after paying the fine on third turn
             else:
                 update_history(f"{players[turn].name} didn't roll doubles and is still in jail. Turns in jail: {players[turn].jail_turns}")
                 return
