@@ -341,23 +341,61 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
         player_color = COLORS.playerColors[turn]
         update_history(player_color + f"{players[turn].name}'s turn")
         print_commands()
+        
+        was_in_jail = players[turn].jail  # Flag to check if player was in jail before rolling
+        
+        if players[turn].jail:
+            if players[turn].jail_turns < 3:
+                while True:
+                    choice = input("\033[36;0HYou're in jail. Pay $50 fine (f) or attempt to roll doubles (r)?").lower().strip()
+                    if choice == 'f':
+                        players[turn].pay_jail_fine()
+                        update_history(f"{players[turn].name} paid $50 to leave jail.")
+                        break
+                    elif choice == 'r':
+                        update_history(f"{players[turn].name} will attempt to roll doubles.")
+                        break
+                    else:
+                        update_history(f"Invalid choice. Please enter 'f' to pay fine or 'r' to roll.")
+            else:
+                update_history(f"This is {players[turn].name}'s third turn in jail. They must attempt to roll doubles.")
+
         input("\033[36;0HRoll dice?")
         dice = roll()
         bottom_screen_wipe()
         update_history(f"{players[turn]} rolled {dice[0]} and {dice[1]}")
 
-        if dice[0] == dice[1]:
-            if  num_rolls == 1:
+        if players[turn].jail:
+            left_jail, reason = players[turn].attempt_jail_roll(dice)
+            if left_jail:
+                if reason == "doubles":
+                    update_history(f"{players[turn].name} rolled doubles and got out of jail!")
+                elif reason == "third_turn":
+                    update_history(f"{players[turn].name} didn't roll doubles on their third turn. They paid $50 and left jail.")
+                    players[turn].pay_jail_fine()
+            else:
+                update_history(f"{players[turn].name} didn't roll doubles and is still in jail. Turns in jail: {players[turn].jail_turns}")
+                return
+
+        refresh_board()
+        board.update_location(players[turn], dice[0] + dice[1], update_history)
+        update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
+        refresh_board()
+        
+        # Only check for doubles if the player wasn't in jail at the start of their turn
+        if dice[0] == dice[1] and not was_in_jail:
+            if num_rolls == 1:
                 update_history(f"{players[turn]} rolled doubles! Roll again.")
 
             elif num_rolls == 2:
                 update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
-                update_history(f"{players[turn]} rolled doubles three times\n in a row!")
-                update_history(f"{players[turn]} is going to jail!")
-                players[turn].jail = True
-                board.update_location(players[turn], -1)
+                update_history(f"Player {turn} rolled doubles three times in a row!")
+                update_history(f"Player {turn} is going to jail!")
+                players[turn].go_to_jail()
+                return
+
         refresh_board()
         #if player rolled their third double they will be in jail and their location doesn't update
         if players[turn].jail == False:
@@ -540,9 +578,10 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
             players[board.locations[cl].owner].receive(rent)
             update_history(f"{players[turn].name} paid ${rent} to {players[board.locations[cl].owner].name}")
     refresh_board()
-    #checks if player rolled a double, and has them roll again if they did.
-    if dice[0] == dice[1] and players[turn].jail == False:
-        num_rolls +=1
+        
+    # Check for doubles and roll again only if player wasn't in jail at the start of their turn
+    if dice[0] == dice[1] and not was_in_jail:
+        num_rolls += 1
         request_roll()
     return "player_choice" + ss.set_cursor_str(0, 38) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
 
