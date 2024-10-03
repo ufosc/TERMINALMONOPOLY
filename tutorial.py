@@ -35,6 +35,7 @@ players represented by a colored tile with circle   '
 - info section on different screens, enter to continue to next section screen
 """
 
+
 import screenspace as ss
 from style import COLORS
 import style
@@ -43,55 +44,63 @@ cols = ss.WIDTH
 rows = ss.HEIGHT
 graphics = style.get_graphics()
 
-def print_tutorial_screen(cols, rows, title, obj_list) -> None:
+def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict]) -> None:
     """
     Parameters:
     cols (int): number of columns in the terminal
     rows (int): number of rows in the terminal
     title (str): text to go inline with the screen border
     obj_list (list[dict]): a list of dictionary objects with all text to render to the screen
-        "x" (int): x position of the object
-        "y" (int): y position of the object
+        "col" (int): x position of the object
+        "row" (int): y position of the object
         "num_lines" (int): the number of rows that the object takes up
         "text" (str): the text to render to the screen 
+
+    Renders a tutorial screen to the terminal with a title and a list of objects to render to the screen.
+        Currently, can only be the light gray color. (support for custom coloring may be added later)
 
     Returns:
     None
     """
+    screen_content = []
+
+    title_padding = cols//2 - len(title)//2 - 1
+
     if (len(obj_list) > 0):
         pass
+    
+    screen_content.append(COLORS.LIGHTGRAY+'╔' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╗' + "   ")
 
-    print("\033[1A" * (rows + 4), end='\r') #reset cursor to top left
-    print(COLORS.LIGHTGRAY+'╔' + ('═' * (cols//2 - (len(title)//2) - 1)) + " " + title + " " + ('═' * (cols//2 - (len(title)//2) - 1 - (len(title)%2 == 1) * 1)) + '╗' + "   ")#super ugly ik
+    #split all text objects into a list of lines
+    for obj in obj_list:
+        temp = obj["text"].split("\n")
+        obj["text"] = temp
 
-    screen_content = []
-    for y in range(rows):
+    for y in range(1, rows):
         screen_content.insert(y, "") #initializes index
-        screen_content[y] = screen_content[y] + COLORS.LIGHTGRAY + '║'
+        screen_content[y] = screen_content[y] + COLORS.LIGHTGRAY + "║ "
 
         for obj in obj_list:
-            if obj["y"] == y:
-                data = obj["text"].split("\n")
+            if obj["row"] <= y and y <= obj["row"] + obj["num_lines"]:
+                screen_content[y] = screen_content[y] + (" " * (obj["col"] + len(COLORS.LIGHTGRAY) - len(screen_content[y])))
+                screen_content[y] = screen_content[y] + obj["text"][y - obj["row"]]
 
-                screen_content[y] = screen_content[y] + (" " * (obj["x"] - len(screen_content[y])))
-                screen_content[y] = screen_content[y] + data[obj["y"] - y]
+        #fill in remaining empty space
+        screen_content[y] = screen_content[y] + (" " * (cols + len(COLORS.LIGHTGRAY) - len(screen_content[y]))) + " ║"
 
-        screen_content[y] = screen_content[y] + (" " * (cols - len(screen_content[y])))
+    #print bottom border with title
+    screen_content.append(COLORS.LIGHTGRAY+'╚' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╝' + "   ")
 
-        screen_content[y] = screen_content[y] + '║'
-
-
-    for y in range(rows):
-        print(screen_content[y])
-
-    print(COLORS.LIGHTGRAY+'╚' + ('═' * (cols//2 - (len(title)//2) - 1)) + " " + title + " " + ('═' * (cols//2 - (len(title)//2) - 1 - (len(title)%2 == 1) * 1)) + '╝' + "   ")
+    print("\033[1A" * (rows + 4), end='\r') #reset cursor to top left
+    for row in screen_content:
+        print(row)
 
     input("Press Enter to continue...")
 
 
-print_tutorial_screen(cols, rows, "Tutorial", [
-    {"x": 10, "y": 1, "num_lines": 1, "text":"Welcome to:"},
-    {"x": 1, "y": 2, "num_lines": 17, "text":graphics["logo"]}
+print_tutorial_screen(cols, rows, "Terminal Monopoly 1", [
+    {"col": 3, "row": 2, "num_lines": 0, "text":"Welcome to:"},
+    {"col": 10, "row": 5, "num_lines": 17, "text":graphics["logo"]}
 ])
 
 # Fills the rest of the terminal
