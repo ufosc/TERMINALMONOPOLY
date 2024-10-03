@@ -2,8 +2,9 @@ import random
 import time
 import sys
 from datetime import datetime, timedelta
-from os import system, name
+import os
 from xml.etree.ElementTree import tostring
+import threading
 
 
 
@@ -36,10 +37,16 @@ class portfolio:
             self.owned_stocks[stock_ticker] -= num_shares
 
     def display_portfolio(self):
-        print(f"{self.player_name}'s Portfolio:")
+        portfolio_lines = [f"{self.player_name}'s Portfolio:"]
+        has_stocks = False
         for stock_ticker, num_shares in self.owned_stocks.items():
-            stock_price = self.stock_market.get_stock_price(stock_ticker)  # Fetch the latest price
-            print(f"{stock_ticker}: {num_shares} shares, Current Price: ${stock_price:.2f}")
+            if num_shares > 0:
+                stock_price = self.stock_market.get_stock_price(stock_ticker)  # Fetch the latest price
+                portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Price: ${stock_price:.2f}")
+                has_stocks = True
+        if not has_stocks:
+            portfolio_lines.append("No stocks owned.")
+        return portfolio_lines
 
 
 
@@ -120,8 +127,12 @@ class stock_market:
 
 
    def display_stock_prices(self):
-       for each_stock in self.stocks.values():
-           each_stock.display_price()
+       stock_lines = []
+       for ticker, stock_obj in self.stocks.items():
+           price_change = stock_obj.percentage_change
+           price_color = "\033[32m" if price_change >= 0 else "\033[31m"
+           stock_lines.append(f"{ticker}: {price_color}${stock_obj.get_price():.2f} ({price_change:+.2f}%)\033[0m")
+       return stock_lines
 
 
 
@@ -134,111 +145,112 @@ class stock_market:
 
    def display_time(self):
        # Display current time in "Day HH:MM AM/PM" format
-       print("Current market time:", self.current_time.strftime("%A %I:%M %p"))
+       return f"Current market time: {self.current_time.strftime('%A %I:%M %p')}"
 
 
+
+# Function to clear the console
+def clear_console():
+    if os.name == 'nt':
+        _ = os.system('cls')  # For Windows
+    else:
+        _ = os.system('clear')  # For macOS/Linux
+
+def display_stock_prices(market):
+    while True:
+        # Stock prices on the left
+        stock_lines = market.display_stock_prices()
+        current_time = market.display_time()
+
+        # Portfolio and user input on the right
+        portfolio_lines = player1_portfolio.display_portfolio()
+        user_input_prompt = "Please select one of the following: BUY or SELL"
+
+        # Display the content
+        print(f"\033[32m{current_time:<40}{user_input_prompt:>40}\033[0m")
+
+        max_lines = max(len(stock_lines), len(portfolio_lines))
+        for i in range(max_lines):
+            left_side = stock_lines[i] if i < len(stock_lines) else ""
+            right_side = portfolio_lines[i] if i < len(portfolio_lines) else ""
+            print(f"{left_side:<40}{right_side:>40}")
+
+        market.update_stock_prices()
+        time.sleep(1)
+
+
+# Function to handle user input for buying or selling stocks in a separate thread
+def handle_user_input(player_portfolio):
+    while True:
+        print("\n" + " " * 40 + "Please select one of the following: BUY or SELL \n")
+        user_input = input(" " * 40 + "> ")  # Input appears on the right side
+        if user_input.upper() == "BUY":
+            ticker_name = input(" " * 40 + "Enter ticker to buy: \n")
+            if ticker_name in player_portfolio.stock_market.stocks:
+                amount = int(input(" " * 40 + "Enter number of shares: \n"))
+                player_portfolio.buy_stock(ticker_name, amount)
+                print(f"\n{' ' * 40}You have bought {amount} shares of {ticker_name}!\n")
+            else:
+                print("Invalid ticker!")
+
+        elif user_input.upper() == "SELL":
+            ticker_name = input(" " * 40 + "Enter ticker to sell: \n")
+            if ticker_name in player_portfolio.stock_market.stocks:
+                amount = int(input(" " * 40 + "Enter number of shares: \n"))
+                player_portfolio.sell_stock(ticker_name, amount)
+                print(f"\n{' ' * 40}You have sold {amount} shares of {ticker_name}!\n")
+            else:
+                print("Invalid ticker!")
 
 
 
 
 
 if __name__ == '__main__':
+    # Initialize market and portfolios
+    market = stock_market()
+    market.add_stock("PLZA", 20.00, -5, 5)
+    market.add_stock("BLVD", 5.00, -10, 10)
+    market.add_stock("DRVE", 0.01, -15, 15)
 
-   market = stock_market()
-   num_players = 4
+    player_name = "Name"
+    player1_portfolio = portfolio("Player1", market)
+    player2_portfolio = portfolio(player_name, market)
+    player3_portfolio = portfolio(player_name, market)
+    player4_portfolio = portfolio(player_name, market)
 
-   #find out where we are getting name from
-   player_name = "Name"
+    # Create threads
+    stock_display_thread = threading.Thread(target=display_stock_prices, args=(market,))
+    user_input_thread = threading.Thread(target=handle_user_input, args=(player1_portfolio,))
 
-   #implement check to create either 2, 3, or 4 portfolios tbd
-   player1_portfolio = portfolio(player_name, market)
-   player2_portfolio = portfolio(player_name, market)
-   player3_portfolio = portfolio(player_name, market)
-   player4_portfolio = portfolio(player_name, market)
+    # Start threads
+    stock_display_thread.start()
+    user_input_thread.start()
 
-   market.add_stock("PLZA", 20.00, -5, 5)
-   market.add_stock("BLVD", 5.00, -10, 10)
-   market.add_stock("DRVE", 0.01, -15, 15)
-    #put an escape code in front of this \033
-   user_input = input("Please select one of the following: BUY or SELL \n")
-
-
-   #implement check for which of the players is making the request
-   if (user_input == "BUY"):
-       # print("buy executed")
-       ticker_name = input("Please enter name of ticker you want to buy: \n")
-       for each_stock in market.stocks:
-           if (each_stock == ticker_name):
-               amount = (int)(input("Enter number of stocks: \n"))
-               choice = input("LIMIT or BUY NOW \n")
-               if (choice == "LIMIT"):
-                   limit = input("Enter amount:\n")
-                   break
-               if (choice == "BUY NOW"):
-                   print("You have bought " + ticker_name + "!\n")
-                   player1_portfolio.buy_stock(ticker_name, amount)
-                   break
-       else:
-           print("Invalid ticker!")
+    # Join threads to keep the program running
+    stock_display_thread.join()
+    user_input_thread.join()
 
 
 
-   if (user_input == "SELL"):
-       # print("sell executed")
-       ticker_name = input("Please enter name of ticker you want to sell: \n")
-       for each_stock in market.stocks:
-           if (each_stock == ticker_name):
-               amount = (int)(input("Enter number of stocks: \n"))
-               choice = input("STOPLOSS or SELL NOW \n")
-               if (choice == "STOPLOSS"):
-                   stop_loss = input("Enter amount: \n")
-                   break
-               if (choice == "SELL NOW"):
-                   print("You have sold " + ticker_name + "! \n")
-                   player1_portfolio.buy_stock(ticker_name, amount)
-                   break
-       else:
-        print("Invalid ticker!")
-
-   # print (sys.argv)
-
-   condition = True
-   counter = 0
-   last_time = time.time()
-
-   player1_portfolio.display_portfolio()
-
-   while not condition:
-
-
-       current_time = time.time()
-       seconds_passed = current_time - last_time
-       last_time = current_time
-
-
-       market.display_time()
-       market.display_stock_prices()
-
-
-       market.update_time(seconds_passed)
-       market.update_stock_prices()
-
-
-
-       time.sleep(1)
-
-
-
-
-
-
-       #just temporary so the loop doesn't go forever
-       if(counter == 10):
-           condition = False
-       counter += 1
-
-
-       print(f"\a")
+   # while not condition:
+   #     current_time = time.time()
+   #     seconds_passed = current_time - last_time
+   #     last_time = current_time
+   #
+   #
+   #     market.display_time()
+   #     market.display_stock_prices()
+   #
+   #
+   #     market.update_time(seconds_passed)
+   #     market.update_stock_prices()
+   #     time.sleep(1)
+   #     #just temporary so the loop doesn't go forever
+   #     if(counter == 10):
+   #         condition = False
+   #     counter += 1
+   #     print(f"\a")
 
 
 

@@ -9,3 +9,78 @@ Display:
 Terminal:
     need to work out terminal commands/what commands we want
     (ex: buy, sell, stop loss, etc...)
+
+    Need to work on using the set cursor to have the stock/portfolio update on the same lines in the terminal
+
+
+
+
+
+
+
+
+       # market = stock_market()
+   # num_players = 4
+   #
+   # #find out where we are getting name from
+   # player_name = "Name"
+   # #implement check to create either 2, 3, or 4 portfolios tbd
+   # player1_portfolio = portfolio(player_name, market)
+   # player2_portfolio = portfolio(player_name, market)
+   # player3_portfolio = portfolio(player_name, market)
+   # player4_portfolio = portfolio(player_name, market)
+   #
+   # market.add_stock("PLZA", 20.00, -5, 5)
+   # market.add_stock("BLVD", 5.00, -10, 10)
+   # market.add_stock("DRVE", 0.01, -15, 15)
+   #  #put an escape code in front of this \033
+   #
+   # while
+   # user_input = input("Please select one of the following: BUY or SELL \n")
+   #
+   #
+   # #implement check for which of the players is making the request
+   # if (user_input == "BUY"):
+   #     # print("buy executed")
+   #     ticker_name = input("Please enter name of ticker you want to buy: \n")
+   #     for each_stock in market.stocks:
+   #         if (each_stock == ticker_name):
+   #             amount = (int)(input("Enter number of stocks: \n"))
+   #             choice = input("LIMIT or BUY NOW \n")
+   #             if (choice == "LIMIT"):
+   #                 limit = input("Enter amount:\n")
+   #                 break
+   #             if (choice == "BUY NOW"):
+   #                 print("You have bought " + ticker_name + "!\n")
+   #                 player1_portfolio.buy_stock(ticker_name, amount)
+   #                 break
+   #     else:
+   #         print("Invalid ticker!")
+   #
+   #
+   #
+   # if (user_input == "SELL"):
+   #     # print("sell executed")
+   #     ticker_name = input("Please enter name of ticker you want to sell: \n")
+   #     for each_stock in market.stocks:
+   #         if (each_stock == ticker_name):
+   #             amount = (int)(input("Enter number of stocks: \n"))
+   #             choice = input("STOPLOSS or SELL NOW \n")
+   #             if (choice == "STOPLOSS"):
+   #                 stop_loss = input("Enter amount: \n")
+   #                 break
+   #             if (choice == "SELL NOW"):
+   #                 print("You have sold " + ticker_name + "! \n")
+   #                 player1_portfolio.sell_stock(ticker_name, amount)
+   #                 break
+   #     else:
+   #      print("Invalid ticker!")
+   #
+   # # print (sys.argv)
+   #
+   # condition = True
+   # counter = 0
+   # last_time = time.time()
+   #
+   # player1_portfolio.display_portfolio()
+   #
