@@ -422,6 +422,7 @@ def update_history(message: str):
     if len(history) > 31:
         while(len(history) > 31):
             history.pop(0)
+
     refresh_h_and_s()
 
 status = []
@@ -487,9 +488,14 @@ def refresh_h_and_s():
     for i in range(len(history)):
         print(f"\033[{i+4};81H" + history[i] if i < len(history) else "", end=COLORS.RESET)
     
+    #if (len(status)==0):
+    for i in range(10):
+        print(f"\033[{i+4};122H" + "                               ")
+
     # Refresh status
     for i in range(len(status)):
-        print(f"\033[{i+4};122H" + status[i] if i < len(status) else "")
+        print(f"\033[{i+4};122H" + status[i] if i < len(status) else "                              ")
+
     print(COLORS.RESET, end="")
 
     # Refresh leaderboard
