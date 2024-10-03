@@ -44,7 +44,7 @@ cols = ss.WIDTH
 rows = ss.HEIGHT
 graphics = style.get_graphics()
 
-def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict]) -> None:
+def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], border_color=COLORS.LIGHTGRAY) -> None:
     """
     Parameters:
     cols (int): number of columns in the terminal
@@ -55,9 +55,10 @@ def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict]) ->
         "row" (int): y position of the object
         "num_lines" (int): the number of rows that the object takes up
         "text" (str): the text to render to the screen 
+    border_color (str): sets the color of the outer border of the screen. default is LightGray
 
     Renders a tutorial screen to the terminal with a title and a list of objects to render to the screen.
-        Currently, can only be the light gray color. (support for custom coloring may be added later)
+        Currently, custom coloring works only on the borders, support for the rest of e
 
     Returns:
     None
@@ -69,49 +70,58 @@ def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict]) ->
     if (len(obj_list) > 0):
         pass
     
-    screen_content.append(COLORS.LIGHTGRAY+'╔' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╗' + "   ")
+    screen_content.append(border_color +'╔' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╗' + "   ")
 
-    #split all text objects into a list of lines
+    # split all text objects into a list of lines
     for obj in obj_list:
         temp = obj["text"].split("\n")
         obj["text"] = temp
 
     for y in range(1, rows):
-        screen_content.insert(y, "") #initializes index
-        screen_content[y] = screen_content[y] + COLORS.LIGHTGRAY + "║ "
+        screen_content.append(border_color + "║ ")
+
+        invisible_space = len(border_color)
 
         for obj in obj_list:
             if obj["row"] <= y and y <= obj["row"] + obj["num_lines"]:
-                screen_content[y] = screen_content[y] + (" " * (obj["col"] + len(COLORS.LIGHTGRAY) - len(screen_content[y])))
-                screen_content[y] = screen_content[y] + obj["text"][y - obj["row"]]
+                screen_content[y] += (" " * (obj["col"] + len(border_color) - len(screen_content[y])))
+                screen_content[y] += COLORS.RESET + obj["text"][y - obj["row"]]
+                invisible_space += len(COLORS.RESET)
+                
 
-        #fill in remaining empty space
-        screen_content[y] = screen_content[y] + (" " * (cols + len(COLORS.LIGHTGRAY) - len(screen_content[y]))) + " ║"
+        # fill in remaining empty space
+        screen_content[y] += (" " * (cols + invisible_space - len(screen_content[y]))) + border_color + " ║"
 
     #print bottom border with title
-    screen_content.append(COLORS.LIGHTGRAY+'╚' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╝' + "   ")
+    screen_content.append(border_color + '╚' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╝' + "   ")
 
     print("\033[1A" * (rows + 4), end='\r') #reset cursor to top left
     for row in screen_content:
         print(row)
 
-    input("Press Enter to continue...")
+    input(COLORS.LIGHTGRAY + "Press Enter to continue...")
+
+    # Fills the rest of the terminal
+    print(' ' * ss.WIDTH, end='\r')
 
 
-print_tutorial_screen(cols, rows, "Terminal Monopoly 1", [
-    {"col": 3, "row": 2, "num_lines": 0, "text":"Welcome to:"},
-    {"col": 10, "row": 5, "num_lines": 17, "text":graphics["logo"]}
-])
+print_tutorial_screen(cols, rows, "Terminal Monopoly", [
+    {"col": 7, "row": 3, "num_lines": 0, "text":"Welcome to:"},
+    {"col": 10, "row": 6, "num_lines": 17, "text":graphics["logo"]},
+    {"col": 15, "row": 27, "num_lines": 0, "text":"The Last Game You'll Ever Play..."}
+], COLORS.CYAN)
 
-print_tutorial_screen(cols, rows, "Terminal Monopoly 2", [
+print_tutorial_screen(cols, rows, "Monopoly 1", [
     #all of the text is currently copilot nonsense to show that it works
-    {"col": 3, "row": 2, "num_lines": 0, "text":"What is Terminal Monopoly?"},
+    {"col": 3, "row": 2, "num_lines": 0, "text":"Firstly, what the hell is a Monopoly?"},
     {"col": 5, "row": 5, "num_lines": 0, "text":"Terminal Monopoly is a text-based version of the classic board game Monopoly."},
     {"col": 5, "row": 7, "num_lines": 0, "text":"The goal of the game is to make money from other players while avoiding bankruptcy."},
     {"col": 5, "row": 9, "num_lines": 0, "text":"Each turn, players roll two dice and move around the board."},
     {"col": 5, "row": 11, "num_lines": 0, "text":"Players start on the 'Go' tile and collect $200 for passing."},
 ])
 
-# Fills the rest of the terminal
-print(' ' * ss.WIDTH, end='\r')
+print_tutorial_screen(cols, rows, "Monopoly 2", [
+
+])
+
 
