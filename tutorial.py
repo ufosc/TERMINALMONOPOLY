@@ -103,6 +103,15 @@ print_tutorial_screen(cols, rows, "Terminal Monopoly 1", [
     {"col": 10, "row": 5, "num_lines": 17, "text":graphics["logo"]}
 ])
 
+print_tutorial_screen(cols, rows, "Terminal Monopoly 2", [
+    #all of the text is currently copilot nonsense to show that it works
+    {"col": 3, "row": 2, "num_lines": 0, "text":"What is Terminal Monopoly?"},
+    {"col": 5, "row": 5, "num_lines": 0, "text":"Terminal Monopoly is a text-based version of the classic board game Monopoly."},
+    {"col": 5, "row": 7, "num_lines": 0, "text":"The goal of the game is to make money from other players while avoiding bankruptcy."},
+    {"col": 5, "row": 9, "num_lines": 0, "text":"Each turn, players roll two dice and move around the board."},
+    {"col": 5, "row": 11, "num_lines": 0, "text":"Players start on the 'Go' tile and collect $200 for passing."},
+])
+
 # Fills the rest of the terminal
 print(' ' * ss.WIDTH, end='\r')
 
