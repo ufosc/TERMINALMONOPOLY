@@ -20,7 +20,7 @@ class Board:
             7: Property(0, "Chance", -4, (32,23), COLORS.CHANCE, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             8: Property(0, "Vermont Avenue", -1, (32,16), COLORS.LIGHTBLUE, 100, 50, 6, 30, 90, 270, 400, 550, 50),
             9: Property(0, "Connecticut Avenue", -1, (32,9), COLORS.LIGHTBLUE, 120, 50, 8, 40, 100, 300, 450, 600, 60),
-            10: Property(0, "Jail", -7, (32,23), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+            10: Property(0, "Jail", -7, (32,2), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             11: Property(0, "St. Charles Place", -1, (29,2), COLORS.ROUGE, 140, 100, 10, 50, 150, 450, 625, 750, 70),
             12: Property(0, "Electric Company", -1, (26,2), COLORS.YELLOW, 150, 0, 0, 4, 10, 0, 0, 0, 75),
             13: Property(0, "States Avenue", -1, (23, 2), COLORS.ROUGE, 140, 100, 10, 50, 150, 450, 625, 750, 70),

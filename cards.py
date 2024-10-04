@@ -13,7 +13,7 @@ class Cards:
         self.community_chest = s.get_graphics().get('community chest text').split("\n")
         random.shuffle(self.chance)
         random.shuffle(self.community_chest)
-    def draw_chance(self, p: Player, board: Board, players) -> str:
+    def draw_chance(self, p: Player, board: Board, players, update_history) -> str:
         """
         Draw chance card\n
         """
@@ -22,45 +22,45 @@ class Cards:
         card_number = int(self.chance[-1].split(".")[0])
         match card_number:
             case 1: 
-                board.update_location(p, p.location, 39)
+                board.update_location(p, p.location, update_history, 39)
             case 2: 
-                board.update_location(p, p.location, 0)
+                board.update_location(p, p.location, update_history, 0)
             case 3:
-                board.update_location(p, p.location, 24)
+                board.update_location(p, p.location, update_history, 24)
             case 4: 
-                board.update_location(p, p.location, 11)
+                board.update_location(p, p.location, update_history, 11)
             case 5:
                 if p.location < 5 or p.location > 35:
-                    board.update_location(p, p.location, 5)
+                    board.update_location(p, p.location, update_history, 5)
                 elif p.location < 15:
-                    board.update_location(p, p.location, 15)
+                    board.update_location(p, p.location, update_history, 15)
                 elif p.location < 25:
-                    board.update_location(p, p.location, 25)
+                    board.update_location(p, p.location, update_history, 25)
                 else:
-                    board.update_location(p, p.location, 35)
+                    board.update_location(p, p.location, update_history, 35)
             case 6: 
                 if p.location < 5 or p.location > 35:
-                    board.update_location(p, p.location, 5)
+                    board.update_location(p, p.location, update_history, 5)
                 elif p.location < 15:
-                    board.update_location(p, p.location, 15)
+                    board.update_location(p, p.location, update_history, 15)
                 elif p.location < 25:
-                    board.update_location(p, p.location, 25)
+                    board.update_location(p, p.location, update_history, 25)
                 else:
-                    board.update_location(p, p.location, 35)
+                    board.update_location(p, p.location, update_history, 35)
             case 7: 
                 if p.location < 12 or p.location > 28:
-                    board.update_location(p, p.location, 12)
+                    board.update_location(p, p.location, update_history, 12)
                 else:
-                    board.update_location(p, p.location, 28)
+                    board.update_location(p, p.location, update_history, 28)
             case 8: 
                 p.receive(50)
             case 9: 
                 p.jailcards += 1
             case 10: 
-                board.update_location(p, p.location, p.location - 3)
+                board.update_location(p, p.location, update_history, p.location - 3)
             case 11: 
                 p.jail = True
-                board.update_location(p, p.location, 10)
+                board.update_location(p, p.location, update_history, 10)
             case 12: 
                 for property in p.properties:
                     if(board.locations[property].houses == 5):
@@ -70,7 +70,7 @@ class Cards:
             case 13:
                 p.pay(15)
             case 14:
-                board.update_location(p, p.location, 5)
+                board.update_location(p, p.location, update_history, 5)
             case 15:
                 for receiver in players:
                     p.pay(50)
@@ -78,7 +78,7 @@ class Cards:
             case 16: 
                 p.receive(150)
         return self.chance[-1]
-    def draw_community_chest(self, p: Player, board: Board, players) -> str:
+    def draw_community_chest(self, p: Player, board: Board, players, update_history) -> str:
         """
         Draw community chest card\n
         """
@@ -87,7 +87,7 @@ class Cards:
         card_number = int(self.community_chest[-1].split(".")[0])
         match card_number:
             case 1:
-                board.update_location(p, p.location, 0)
+                board.update_location(p, p.location, update_history, 0)
             case 2:
                 p.receive(200)
             case 3:
@@ -97,7 +97,7 @@ class Cards:
             case 5:
                 p.jailcards += 1
             case 6:
-                board.update_location(p, p.location, 10)
+                board.update_location(p, p.location, update_history, 10)
                 p.jail = True
             case 7:
                 p.receive(100)
