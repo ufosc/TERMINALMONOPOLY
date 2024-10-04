@@ -373,10 +373,6 @@ def bottom_screen_wipe():
 def roll():
     die1 = random.randint(1, 6)
     die2 = random.randint(1, 6)
-
-    die1 = 1
-    die2 = 3
-
     return(die1,die2)
 #The function that handles the players
 #second and third correspond to if its the players second or third consecutive turn, they are bools
