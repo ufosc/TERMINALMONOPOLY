@@ -86,8 +86,8 @@ def update_history(message: str):
                 history.append(message[:40] + " " * (40 - len(message)))
                 message = message[40:]
         history.append(message + " " * (40 - len(message)))
-        if len(history) > 31:
-            while(len(history) > 31):
+        if len(history) > 30:
+            while(len(history) > 30):
                 history.pop(0)
     refresh_h_and_s()
 
@@ -161,7 +161,7 @@ def refresh_h_and_s():
     for i in range(len(sorted_players)):
         if(sorted_players[i].order != -1):
             color = COLORS.playerColors[sorted_players[i].order]
-            print(color + f"\033[{31+i};122H{sorted_players[i].order} - ${sorted_players[i].cash}", end=COLORS.RESET)
+            print(color + f"\033[{31+i};122H{sorted_players[i].name} - ${sorted_players[i].cash}", end=COLORS.RESET)
 
 def buy_logic():
     CL = players[turn].location
@@ -374,6 +374,7 @@ def roll():
     die1 = random.randint(1, 6)
     die2 = random.randint(1, 6)
     return(die1,die2)
+    
 #The function that handles the players 
 #second and third correspond to if its the players second or third consecutive turn, they are bools
 def player_roll(num_rolls):
@@ -382,8 +383,9 @@ def player_roll(num_rolls):
     if(players[turn].order != -1): # If player is not bankrupt
         player_color = COLORS.playerColors[turn]
         update_history(player_color + f"{players[turn].name}'s turn")
+        refresh_h_and_s()
         print_commands()
-        
+
         was_in_jail = players[turn].jail  # Flag to check if player was in jail before rolling
         
         if players[turn].jail:
@@ -392,9 +394,8 @@ def player_roll(num_rolls):
                     choice = input("\033[36;0HYou're in jail. Pay $50 fine (f) or attempt to roll doubles (r)?").lower().strip()
                     if choice == 'f':
                         players[turn].pay_jail_fine()
-                        update_history(f"{players[turn].name} paid $50 to leave jail.")
-                        update_history(f"{players[turn].name} cannot roll after paying the fine.")
-                        return  # End the turn after paying the fine
+                        update_history(f"{players[turn].name} paid $50 to post bail.")
+                        break
                     elif choice == 'r':
                         update_history(f"{players[turn].name} will attempt to roll doubles.")
                         break
@@ -406,7 +407,7 @@ def player_roll(num_rolls):
         input("\033[36;0HRoll dice?")
         dice = roll()
         bottom_screen_wipe()
-        update_history(f"Player {turn} rolled {dice[0]} and {dice[1]}")
+        update_history(f"{players[turn].name} rolled {dice[0]} and {dice[1]}")
 
         if players[turn].jail:
             left_jail, reason = players[turn].attempt_jail_roll(dice)
@@ -414,31 +415,37 @@ def player_roll(num_rolls):
                 if reason == "doubles":
                     update_history(f"{players[turn].name} rolled doubles and got out of jail!")
                 elif reason == "third_turn":
-                    update_history(f"{players[turn].name} didn't roll doubles on their third turn. They paid $50 and left jail.")
+                    update_history(f"{players[turn].name} didn't roll doubles on their third turn. They paid $50 to post bail.")
                     players[turn].pay_jail_fine()
-                    update_history(f"{players[turn].name} cannot roll after paying the fine.")
-                    return  # End the turn after paying the fine on third turn
             else:
                 update_history(f"{players[turn].name} didn't roll doubles and is still in jail. Turns in jail: {players[turn].jail_turns}")
                 return
 
         refresh_board()
-        board.update_location(players[turn], dice[0] + dice[1], update_history)
-        update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
-        refresh_board()
         
         # Only check for doubles if the player wasn't in jail at the start of their turn
         if dice[0] == dice[1] and not was_in_jail:
             if num_rolls == 1:
-                update_history(f"{players[turn]} rolled doubles! Roll again.")
+                update_history(f"{players[turn].name} rolled doubles! Roll again.")
             elif num_rolls == 2:
-                update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
             elif num_rolls == 3:
-                update_history(f"Player {turn} rolled doubles three times in a row!")
-                update_history(f"Player {turn} is going to jail!")
+                update_history(f"{players[turn].name} rolled doubles three times in a row!")
+                update_history(f"{players[turn].name} is going to jail!")
                 players[turn].go_to_jail()
+                # board.locations[players[turn].location].players.remove(turn)
+                board.locations[10].players.append(turn)
+                refresh_board()
                 return
 
+        prev_loc = players[turn].location
+        board.update_location(players[turn], dice[0] + dice[1])
+        if prev_loc > players[turn].location:
+            players[turn].pay(200)
+            update_history(f"{players[turn].name} passed Go and collected $200!")
+        update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
+        refresh_board()
+       
         if board.locations[players[turn].location].owner < 0:
             match board.locations[players[turn].location].owner:
                 case -1: #unowned
@@ -460,10 +467,10 @@ def player_roll(num_rolls):
                     players[turn].pay(200)
                     update_history(f"{players[turn].name} paid income tax ($200)")
                 case -6: #jail
-                    pass
+                    update_history("Just visiting!")
                 case -7: #go to jail
                     players[turn].jail = True
-                    board.update_location(players[turn], -1, update_history)
+                    board.update_location(players[turn], -1)
                 case -8: #free parking
                     pass
                 case -9: #luxury tax
@@ -488,7 +495,7 @@ def player_roll(num_rolls):
             player_roll(num_rolls)
 
 while(True):
-    # First time the player who's turn it is rolls their dice
+    # First time the player whose turn it is rolls their dice
     #if they roll a double the function calls itself and updates its their number of consecutive rolls
     player_roll(num_rolls=1)
     if(players[turn].cash > 0):
@@ -503,12 +510,12 @@ while(True):
             else:
                 print("Invalid option!")
             choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
-        update_history(f"{players[turn]} ended their turn.")
+        update_history(f"{players[turn].name} ended their turn.")
     else:
-        update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
+        update_history(f"{players[turn].name} is in debt. Resolve debts before ending turn.")
         option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
         if(option == "b"): # Declare bankruptcy
-            update_history(f"Player {turn} declared bankruptcy.")
+            update_history(f"{players[turn].name} declared bankruptcy.")
             players[turn].order = -1
         elif(option == "m"): # Mortgage properties
             pass
