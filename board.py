@@ -8,6 +8,9 @@ class Board:
     Contains location data.\n
     """
     def __init__(self, num_players) -> None:
+        # owner var indicates who owns, but also is used for special codes below:
+        # Special codes: -1 is not owned, -2 is mortaged, -3 is community chest, -4 is chance, -5 is tax
+        # -6 is jail, -7 is go to jail, -8 is free parking, -9 is luxury, -10 is go 
         property = Property(num_players, "Go", -10, (32,72), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         self.locations = {
             0: Property(num_players, "Go", -10, (32,72), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -20,7 +23,7 @@ class Board:
             7: Property(0, "Chance", -4, (32,23), COLORS.CHANCE, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             8: Property(0, "Vermont Avenue", -1, (32,16), COLORS.LIGHTBLUE, 100, 50, 6, 30, 90, 270, 400, 550, 50),
             9: Property(0, "Connecticut Avenue", -1, (32,9), COLORS.LIGHTBLUE, 120, 50, 8, 40, 100, 300, 450, 600, 60),
-            10: Property(0, "Jail", -7, (32,2), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+            10: Property(0, "Jail", -6, (32,2), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             11: Property(0, "St. Charles Place", -1, (29,2), COLORS.ROUGE, 140, 100, 10, 50, 150, 450, 625, 750, 70),
             12: Property(0, "Electric Company", -1, (26,2), COLORS.YELLOW, 150, 0, 0, 4, 10, 0, 0, 0, 75),
             13: Property(0, "States Avenue", -1, (23, 2), COLORS.ROUGE, 140, 100, 10, 50, 150, 450, 625, 750, 70),
@@ -30,7 +33,7 @@ class Board:
             17: Property(0, "Community Chest", -3, (11,2), COLORS.COMMUNITY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             18: Property(0, "Tennessee Avenue", -1, (8,2), COLORS.ORANGE, 180, 100, 14, 70, 200, 550, 750, 950, 90),
             19: Property(0, "New York Avenue", -1, (5,2), COLORS.ORANGE, 200, 100, 16, 80, 220, 600, 800, 1000, 100),
-            20: Property(0, "Free Parking", -1, (2,2), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+            20: Property(0, "Free Parking", -8, (2,2), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             21: Property(0, "Kentucky Avenue", -1, (2,9), COLORS.RED, 220, 150, 18, 90, 250, 700, 875, 1050, 110),
             22: Property(0, "Chance", -4, (2,16), COLORS.CHANCE, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             23: Property(0, "Indiana Avenue", -1, (2,23), COLORS.RED, 220, 150, 18, 90, 250, 700, 875, 1050, 110),
