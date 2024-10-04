@@ -80,6 +80,10 @@ def start_server() -> socket.socket:
     # Choose a port that is free
     port = int(input("Choose a port, such as 3131: "))
 
+    # Ask for the names of the players
+    for player in players:
+        player.name = input(f"\033[36;0HWhat is {player.name}'s name? ")     
+
     # Bind to the port
     # server_socket.bind(('localhost', port))
     server_socket.bind((host, port))

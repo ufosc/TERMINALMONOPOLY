@@ -5,6 +5,9 @@ import style as s
 from style import COLORS
 from screenspace import Player as ss
 from modules import PlayerModules as m
+import platform
+import ctypes
+import shutil
 
 game_running = False
 text_dict = {}
@@ -14,7 +17,8 @@ ADDRESS = ""
 PORT = 0
 balance = 0
 properties = 0
-
+calculator_history_queue = []
+calculator_history_current_capacity = 15
 
 def get_graphics():
     """Grab text from ascii.txt and split into dictionary"""
@@ -96,13 +100,61 @@ def calculate() -> None:
     Helper method for calling calculator() in modules.py. Updates screen accordingly. 
     Parameters: None
     Returns: None
+    
+    Four parts of response
+    Terminal header (i.e CALCULATOR TERMINAL)
+    Calculator history
+    Letting the user know they are able to input
+    Prompt that lets the user know to press "e" to exit
     """
+    calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
+    calculator_footer1 = "Awaiting an equation...\nPress \'e\' to exit the calculator terminal"
+    calculator_footer2 = "Type \'calc\' to begin the calculator!"
+    calculator_footer3 = "Equation either malformed or undefined! Try again!\nPress \'e\' to exit the calculator terminal"
+    
+    # Helper function that contructs terminal printing.
+    def calculator_terminal_response(footer_option: int) -> str:
+        response = calculator_header
+        for i in range(len(calculator_history_queue)-1, -1, -1):
+            response += calculator_history_queue[i][0]
+        if footer_option == 1:
+            response += calculator_footer1
+        elif footer_option == 2:
+            response += calculator_footer2
+        elif footer_option == 3:
+            response += calculator_footer3
+        
+        return response
+    
+    #Helper function to update calculator history
+    def update_history(equation: str) -> None:
+        global calculator_history_current_capacity
+
+        numLines = (len(equation)//75) + 1
+        while(numLines > calculator_history_current_capacity):
+            calculator_history_current_capacity += calculator_history_queue[0][1]
+            calculator_history_queue.pop(0)
+        
+        calculator_history_current_capacity -= numLines
+        calculator_history_queue.append((equation, numLines))
+
     # Initial comment in active terminal
-    ss.update_quadrant(active_terminal, "Enter a single operation equation:")
+    ss.update_quadrant(active_terminal, calculator_terminal_response(1))
     ss.print_screen()
     # All other work is done on the work line (bottom of the screen)
-    ss.update_quadrant(active_terminal, m.calculator())
-    ss.print_screen()
+    while True:
+        player_equation = m.calculator()
+        if(player_equation == "e"):
+            ss.update_quadrant(active_terminal, calculator_terminal_response(2))
+            ss.print_screen()
+            break
+        elif(player_equation == "error"):
+            ss.update_quadrant(active_terminal, calculator_terminal_response(3))
+            ss.print_screen()
+        else:
+            update_history(player_equation)
+            ss.update_quadrant(active_terminal, calculator_terminal_response(1))
+            ss.print_screen()
 
 def balance() -> None:
     """
@@ -249,12 +301,82 @@ def get_input():
         ss.overwrite(COLORS.RED + "You are still in a game!")
         get_input()
 
+def make_fullscreen():
+    current_os = platform.system()
+
+    if current_os == "Windows":
+        # Maximize terminal on Windows
+        user32 = ctypes.WinDLL("user32")
+        SW_MAXIMIZE = 3
+        hWnd = user32.GetForegroundWindow()
+        user32.ShowWindow(hWnd, SW_MAXIMIZE)
+
+    elif current_os == "Linux" or current_os == "Darwin":
+        # Maximize terminal on Linux/macOS
+        os.system("printf '\033[9;1t'")
+    else:
+        print(f"Fullscreen not supported for OS: {current_os}")
+    
+def print_with_wrap(char, start_row, start_col):
+    # Get the terminal size
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
+    
+    # If the position exceeds the terminal width, handle wrapping
+    if start_col >= width:
+        # Calculate new row and column if it exceeds width
+        new_row = start_row + (start_col // width)
+        new_col = start_col % width
+        print(f"\033[{new_row};{new_col}H" + char, end="")
+    else:
+        # Default print
+        print(f"\033[{start_row};{start_col}H" + char, end="")
+
+def scaling_print():
+    os.system('cls' if os.name == 'nt' else 'clear')
+    current_os = platform.system()
+    if current_os == "Darwin":
+        # Print out instructions for macOS users
+        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
+    else:
+        # Print out instructions for Linux/Windows users
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
+    print("Proper scaling should only displays 4 cross that marks the corners of the board.")
+    print("If you are having trouble with scaling, try entering r to reset the display.")
+    print("After finishing scaling, please press enter to continue.")
+    scaling_test = input()
+
+    os.system('cls' if os.name == 'nt' else 'clear')
+    ss.print_screen()
+
+    print_with_wrap("X", 0, 0)
+    print_with_wrap("X", 0, 153)
+    print_with_wrap("X", 43, 153)
+    print_with_wrap("X", 43, 0)
+    print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
+    scaling_test = input()
+    while scaling_test != "":
+        os.system('cls' if os.name == 'nt' else 'clear')
+        ss.print_screen()
+        print_with_wrap("X", 0, 0)
+        print_with_wrap("X", 0, 153)
+        print_with_wrap("X", 43, 153)
+        print_with_wrap("X", 43, 0)
+        print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
+        scaling_test = input()
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 if __name__ == "__main__":
+    make_fullscreen()
     """
     Main driver function for player.
     """
     get_graphics()
-    # initialize() # temporarily commented out for testing because player and banker do not interact at this moment
+
+    initialize()
+
+    scaling_print()
+
     # Prints help in quadrant 2 to orient player.
     ss.update_quadrant(2, text_dict.get('help'))
     # ss.update_quadrant(1, text_dict.get('gameboard'))
