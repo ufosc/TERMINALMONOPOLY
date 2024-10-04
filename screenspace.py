@@ -10,10 +10,10 @@ INPUTLINE = 45
 import os
 from style import COLORS
 from style import set_cursor, set_cursor_str
-
+from player import gat
 
 # Each quadrant is half the width and height of the screen 
-global rows, cols, quadrants, active_terminal
+global rows, cols, quadrants
 rows = HEIGHT//2
 cols = WIDTH//2
 
@@ -21,7 +21,6 @@ quadrants = [['1' * cols] * rows,
                 ['2' * cols] * rows, 
                 ['3' * cols] * rows, 
                 ['4' * cols] * rows]
-active_terminal = 1
 
 def print_board(gameboard: list[str]) -> None:
     """
@@ -82,7 +81,6 @@ def update_quadrant_2(n: int, data: str, padding: bool = False):
     @TODO This function should be used in place of update_quadrant() in all cases.
     @TODO Also need to implement usage corrections to print_screen().
     """
-    line_list = data.split('\n')
     match n:
         case 1:
             x,y = 2,2
@@ -92,19 +90,24 @@ def update_quadrant_2(n: int, data: str, padding: bool = False):
             x,y = 2, rows+3
         case 4:
             x,y = cols+3, rows+3
-    
-    for i in range(rows):
-        set_cursor(x,y+i)
-        if padding:
-            line_list[i] = line_list[i] + " " * (cols - len(line_list[i]))
 
-        if len(line_list) > i:
-            print(line_list[i])
-        else:
-            print(" " * cols)
-    print(COLORS.RESET, end='')
-    set_cursor(0,INPUTLINE)
+    if data: # if any data is passed
+        line_list = data.split('\n')
+        for i in range(rows):
+            set_cursor(x,y+i)
+            if padding:
+                line_list[i] = line_list[i] + " " * (cols - len(line_list[i]))
 
+            if len(line_list) > i:
+                print(line_list[i])
+            else:
+                print(" " * cols)
+        print(COLORS.RESET, end='')
+        set_cursor(0,INPUTLINE)
+    else:
+        for i in range(rows):
+            set_cursor(x,y+i)
+            print(f'{n}' * cols)
 
 def update_terminal(n: int, x: int, y: int, active: bool = False):
     """
@@ -141,9 +144,7 @@ def update_active_terminal(n: int):
     
     Returns: None
     """
-    global active_terminal
-
-    old_terminal = active_terminal
+    old_terminal = gat()
     active_terminal = n 
     x,y = -1,-1
 
@@ -168,7 +169,6 @@ def update_active_terminal(n: int):
         case 4:
             x,y = cols+2, rows+2
     update_terminal(active_terminal, x, y, True)
-    print(active_terminal)
     
 
 def overwrite(text: str = ""):
@@ -195,61 +195,61 @@ def clear_screen():
     print(COLORS['RESET'],end='')
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def print_screen() -> None:
-    """
-    This function overwrites the previous terminal's display. 
+# def print_screen() -> None:
+#     """
+#     This function overwrites the previous terminal's display. 
     
-    Because Terminal Monopoly is not supposed to 
-    repeatedly print lines after lines (there should be no scrollbar in the terminal), this function overwrites 
-    all needed information. 
+#     Because Terminal Monopoly is not supposed to 
+#     repeatedly print lines after lines (there should be no scrollbar in the terminal), this function overwrites 
+#     all needed information. 
     
-    The class variables quadrants[0], quadrants[1], etc. are iterated through to print each character. Because
-    splitting the terminal is entirely artificial to this program, it stops at a hardcoded width value and 
-    begins printing the next quadrant.  
+#     The class variables quadrants[0], quadrants[1], etc. are iterated through to print each character. Because
+#     splitting the terminal is entirely artificial to this program, it stops at a hardcoded width value and 
+#     begins printing the next quadrant.  
     
-    Parameters: None
-    Returns: None
-    """
+#     Parameters: None
+#     Returns: None
+#     """
 
-    # Resets cursor position to top left
-    print("\033[1A" * (HEIGHT + 4), end='\r')
-    # Prints the top border, with ternary conditions if terminal 1 or 2 are active
-    print(COLORS.backBLACK + COLORS.LIGHTGRAY+(COLORS.GREEN+'╔' if active_terminal == 1 else '╔')+('═' * (cols))+
-        (COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY) +'╦'
-        +(COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+('═' * (cols))+'╗' + COLORS.LIGHTGRAY + "   ") # Additional spaces to fill remaining 3 columns
+#     # Resets cursor position to top left
+#     print("\033[1A" * (HEIGHT + 4), end='\r')
+#     # Prints the top border, with ternary conditions if terminal 1 or 2 are active
+#     print(COLORS.backBLACK + COLORS.LIGHTGRAY+(COLORS.GREEN+'╔' if active_terminal == 1 else '╔')+('═' * (cols))+
+#         (COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY) +'╦'
+#         +(COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+('═' * (cols))+'╗' + COLORS.LIGHTGRAY + "   ") # Additional spaces to fill remaining 3 columns
     
-    # Prints the middle rows
-    for y in range(rows):
-        print((COLORS.GREEN if active_terminal == 1 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
-        for x in range(2*cols):
-            if x < cols:
-                print(quadrants[0][y][x], end='')
-            elif x == cols:
-                print((COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrants[1][y][x - cols], end='')
-            else:
-                print(quadrants[1][y][x-cols], end='') 
-        print((COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
+#     # Prints the middle rows
+#     for y in range(rows):
+#         print((COLORS.GREEN if active_terminal == 1 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
+#         for x in range(2*cols):
+#             if x < cols:
+#                 print(quadrants[0][y][x], end='')
+#             elif x == cols:
+#                 print((COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrants[1][y][x - cols], end='')
+#             else:
+#                 print(quadrants[1][y][x-cols], end='') 
+#         print((COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
     
-    # Middle divider
-    print((COLORS.GREEN if active_terminal == 1 or active_terminal == 3 else COLORS.LIGHTGRAY)+'╠' + '═' * (cols)
-        +COLORS.GREEN + '╬' + (COLORS.GREEN if active_terminal == 2 or active_terminal == 4 else COLORS.LIGHTGRAY)+ '═' * (cols) + '╣' + COLORS.RESET + "   ")
+#     # Middle divider
+#     print((COLORS.GREEN if active_terminal == 1 or active_terminal == 3 else COLORS.LIGHTGRAY)+'╠' + '═' * (cols)
+#         +COLORS.GREEN + '╬' + (COLORS.GREEN if active_terminal == 2 or active_terminal == 4 else COLORS.LIGHTGRAY)+ '═' * (cols) + '╣' + COLORS.RESET + "   ")
     
-    # Prints the bottom rows
-    for y in range(rows):
-        print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
-        for x in range(2 * cols):
-            if x < cols:
-                print(quadrants[2][y][x], end='')
-            elif x == cols:
-                print((COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrants[3][y][x - cols], end='')
-            else:
-                print(quadrants[3][y][x - cols], end='')
-        print((COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
+#     # Prints the bottom rows
+#     for y in range(rows):
+#         print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
+#         for x in range(2 * cols):
+#             if x < cols:
+#                 print(quadrants[2][y][x], end='')
+#             elif x == cols:
+#                 print((COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrants[3][y][x - cols], end='')
+#             else:
+#                 print(quadrants[3][y][x - cols], end='')
+#         print((COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
     
-    # Print final row
-    print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'╚' + '═' * (cols) + 
-        (COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY) +'╩'
-            + (COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY) + '═' * (cols) + '╝'+ COLORS.RESET + "   ")
-    # Fills the rest of the terminal
-    print(' ' * WIDTH, end='\r')
-    set_cursor(0,INPUTLINE)
+#     # Print final row
+#     print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'╚' + '═' * (cols) + 
+#         (COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY) +'╩'
+#             + (COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY) + '═' * (cols) + '╝'+ COLORS.RESET + "   ")
+#     # Fills the rest of the terminal
+#     print(' ' * WIDTH, end='\r')
+#     set_cursor(0,INPUTLINE)

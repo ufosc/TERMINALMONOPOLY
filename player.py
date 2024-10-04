@@ -175,22 +175,6 @@ def list_properties() -> None:
     Returns: None
     """
     ss.update_quadrant(active_terminal, text_dict.get('properties'))
-    ss.print_screen()
-
-def set_terminal(n: int) -> None:
-    """
-    Updates global "active_terminal" variable for all terminal updating needs. Also updates the active terminal
-    in screenspace module, and prints the new screen.
-    
-    Parameters: 
-    n (int) number [1-4] of which terminal to set as active. 
-    
-    Returns: None
-    """
-    global active_terminal
-    active_terminal = n
-    ss.update_active_terminal(n)
-    ss.print_screen()
 
 def game_input() -> None:
     """
@@ -222,7 +206,7 @@ def game_input() -> None:
         print(COLORS.GREEN+"Monopoly Screen: Type 'back' to return to the main menu.")
         stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
         if stdIn == "back":
-            ss.print_screen()
+            print('backed out of game...')
             # Breaks the loop, returns to get_input() 
             return
         elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
@@ -233,7 +217,6 @@ def game_input() -> None:
             ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
     # sockets[1].close()
-    # ss.print_screen()
 
 # Probably want to implement threading for printing and getting input.
 def get_input():
@@ -253,7 +236,6 @@ def get_input():
             else: 
                 ss.update_quadrant_2(active_terminal, text_dict.get('help'), padding=True)
                 ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
-            # ss.print_screen()
         elif stdIn == "game":
             game_input()
             stdIn = ""
@@ -267,6 +249,7 @@ def get_input():
         elif stdIn.startswith("term "):
             if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                 n = int(stdIn.strip().split(" ")[1])
+                active_terminal = n
                 ss.update_active_terminal(n)
                 ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
             else:
@@ -274,13 +257,10 @@ def get_input():
         elif stdIn.startswith("deed"):
             if(len(stdIn) > 4):
                 ss.update_quadrant_2(active_terminal, m.deed(stdIn[5:]), padding=True)
-                ss.print_screen()
         elif stdIn == "disable":
             ss.update_quadrant_strictly(active_terminal, m.disable())
-            ss.print_screen()
         elif stdIn == "kill":
             ss.update_quadrant_strictly(active_terminal, m.kill())
-            ss.print_screen()
         elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
             # On empty input make sure to jump up one console line
             ss.overwrite("\r")
@@ -296,6 +276,16 @@ def get_input():
         ss.overwrite('\n' + ' ' * ss.WIDTH)
         ss.overwrite(COLORS.RED + "You are still in a game!")
         get_input()
+
+def gat() -> int:
+    """
+    Getter method for the active terminal. 
+
+    Parameters: None
+    Returns: 
+    int representing the active terminal.
+    """
+    return active_terminal
 
 def make_fullscreen():
     current_os = platform.system()
@@ -376,8 +366,11 @@ if __name__ == "__main__":
     # Prints help in quadrant 2 to orient player.
     os.system("cls")
     ss.update_quadrant(2, text_dict.get('help'))
-    ss.print_screen()
-
+    ss.update_quadrant_2(1, data=None)
+    ss.update_quadrant_2(2, data=None)
+    ss.update_quadrant_2(3, data=None)
+    ss.update_quadrant_2(4, data=None)
+    ss.update_active_terminal(1)
     get_input()
 
     # ss.print_board(text_dict.get('gameboard'))
