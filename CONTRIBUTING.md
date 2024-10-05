@@ -56,8 +56,7 @@ Commit messages should be **descriptive** and **tell the history of the changes*
 See [here](https://www.freecodecamp.org/news/how-to-write-better-git-commit-messages/) for additional reading
 - [ ] In vscode, you may also use the box in the top left to create a commit message, and you may commit with the checkmark.
 
-
-
+![image](https://github.com/user-attachments/assets/554ba487-d194-4601-af8f-207d0af0ce1e)
 ### Step 3: sync fork and rebase
 - [ ] Go to your remote github repository and press the "sync fork" button found here. This is *crucial* to ensure your code doesn't break code upstream. This updates your remote repository with any changes that may have occurred on the official ufosc repository. This might cause your code to change too, so you may need to carefully review the changes.
   It is *your* responsibility to ensure your new code doesn't conflict with code from upstream. 
