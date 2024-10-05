@@ -56,6 +56,18 @@ Commit messages should be **descriptive** and **tell the history of the changes*
 See here for additional reading: [https://www.freecodecamp.org/news/how-to-write-better-git-commit-messages/]
 - [ ] In vscode, you may also use the box in the top left to create a commit message, and you may commit with the checkmark.
 
+
+
+### Step 3: sync fork and rebase
+- [ ] Go to your remote github repository and press the "sync fork" button found here. This is *crucial* to ensure your code doesn't break code upstream. This updates your remote repository with any changes that may have occurred on the official ufosc repository. This might cause your code to change too, so you may need to carefully review the changes.
+  It is *your* responsibility to ensure your new code doesn't conflict with code from upstream. 
+- [ ] Once you sync your fork, return to your code editor and run **git checkout main** followed by **git pull**. I recommend checking out and pulling on your **main** branch, *not your development branch*. This updates your local files with the new stuff you just synced from the official repository.
+- [ ] Then, especially if you're many commits behind the main branch, run **git checkout <branchname>** followed by run **git rebase main**.
+- [ ] For a thorough explanation of why we're doing this, along with a demonstration, watch [this video](https://www.youtube.com/watch?v=f1wnYdLEpgI).
+- [ ] Resolve any merge conflicts with the built-in merge editor or some other method.
+- [ ] Then, run **git checkout main** followed by **git rebase <branchname>**.
+  This whole process allows you to submit your changes in your main branch, instead of necessarily needing to publish your development branch. It makes the history more linear and readable. 
+
 ![vscode6](https://github.com/user-attachments/assets/b7043a88-39ce-4677-a570-d760a29c1cb9)
 ### Step 3: publish branch
 - [ ] If this is a new branch, publish it using the button
