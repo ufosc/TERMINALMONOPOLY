@@ -57,10 +57,12 @@ See [here](https://www.freecodecamp.org/news/how-to-write-better-git-commit-mess
 - [ ] In vscode, you may also use the box in the top left to create a commit message, and you may commit with the checkmark.
 
 ![image](https://github.com/user-attachments/assets/554ba487-d194-4601-af8f-207d0af0ce1e)
-### Step 3: sync fork and rebase
+### Step 3: sync fork
 - [ ] Go to your remote github repository and press the "sync fork" button found here. This is *crucial* to ensure your code doesn't break code upstream. This updates your remote repository with any changes that may have occurred on the official ufosc repository. This might cause your code to change too, so you may need to carefully review the changes.
   It is *your* responsibility to ensure your new code doesn't conflict with code from upstream. 
 - [ ] Once you sync your fork, return to your code editor and run **git checkout main** followed by **git pull**. I recommend checking out and pulling on your **main** branch, *not your development branch*. This updates your local files with the new stuff you just synced from the official repository.
+![image](https://github.com/user-attachments/assets/426daaee-ea72-46b1-985f-949f2997ee2a)
+### Step 4: rebase
 - [ ] Then, especially if you're many commits behind the main branch, run **git checkout "branchname"** followed by run **git rebase main**.
 - [ ] For a thorough explanation of why we're doing this, along with a demonstration, watch [this video](https://www.youtube.com/watch?v=f1wnYdLEpgI).
 - [ ] Resolve any merge conflicts with the built-in merge editor or some other method.
@@ -68,17 +70,17 @@ See [here](https://www.freecodecamp.org/news/how-to-write-better-git-commit-mess
   This whole process allows you to submit your changes in your main branch, instead of necessarily needing to publish your development branch. It makes the history more linear and readable. 
 
 ![vscode6](https://github.com/user-attachments/assets/b7043a88-39ce-4677-a570-d760a29c1cb9)
-### Step 3: publish branch
+### Step 5: publish branch
 - [ ] If this is a new branch, publish it using the button
 - [ ] Publishing should automatically push, but if not move to step 4.
 
 ![vscode7](https://github.com/user-attachments/assets/d09c2c58-d502-4650-b869-db5f4e445011)
-### Step 4: push
+### Step 6: push
 - [ ] In the command line, **git push** 
 Pushing sends your local changes to the remote (your fork, on github.com). In the image, everything is up-to-date because of step 3. 
 
 ![fork3](https://github.com/user-attachments/assets/7a28c408-ea67-4d44-b2c0-1ba8d789bc01)
-### Step 5: contribute
+### Step 7: contribute
 - [ ] On your own fork, you may see "compare and pull request" green button: you will do mini-pull request where you compare the previous code you have to your new code and save the new changes.
 - [ ] Once you've updated your fork, you can press the contribute button to create a pull request for the main branch.
 - [ ] Write a **thorough** and accurate description of your changes.
