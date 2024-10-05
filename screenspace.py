@@ -10,7 +10,11 @@ INPUTLINE = 45
 import os
 from style import COLORS
 from style import set_cursor, set_cursor_str
+from style import get_graphics
 from player import gat
+import platform
+import ctypes
+import shutil
 
 # Each quadrant is half the width and height of the screen 
 global rows, cols, quadrants
@@ -253,3 +257,116 @@ def clear_screen():
 #     # Fills the rest of the terminal
 #     print(' ' * WIDTH, end='\r')
 #     set_cursor(0,INPUTLINE)
+
+def initialize_terminals():
+    update_quadrant_2(1, data=None)
+    update_quadrant_2(2, data=None)
+    update_quadrant_2(3, data=None)
+    update_quadrant_2(4, data=None)
+    update_active_terminal(1)
+
+def make_fullscreen():
+    current_os = platform.system()
+
+    if current_os == "Windows":
+        # Maximize terminal on Windows
+        user32 = ctypes.WinDLL("user32")
+        SW_MAXIMIZE = 3
+        hWnd = user32.GetForegroundWindow()
+        user32.ShowWindow(hWnd, SW_MAXIMIZE)
+
+    elif current_os == "Linux" or current_os == "Darwin":
+        # Maximize terminal on Linux/macOS
+        os.system("printf '\033[9;1t'")
+    else:
+        print(f"Fullscreen not supported for OS: {current_os}")
+
+def print_with_wrap(char, start_row, start_col):
+    # Get the terminal size
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
+    
+    # If the position exceeds the terminal width, handle wrapping
+    if start_col >= width:
+        # Calculate new row and column if it exceeds width
+        new_row = start_row + (start_col // width)
+        new_col = start_col % width
+        print(f"\033[{new_row};{new_col}H" + char, end="")
+    else:
+        # Default print
+        print(f"\033[{start_row};{start_col}H" + char, end="")
+
+
+def calibrate_screen(type: str) -> None:
+    terminal_size = shutil.get_terminal_size()
+    from monopoly import print_commands
+    width = terminal_size.columns
+    os.system('cls' if os.name == 'nt' else 'clear')
+    current_os = platform.system()
+
+    ## add color calibration here too
+
+    if current_os == "Darwin":
+        # Print out instructions for macOS users
+        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
+    else:
+        # Print out instructions for Linux/Windows users
+        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
+    print("Proper scaling should only displays 4 cross that marks the corners of the board.")
+    print("If you are having trouble with scaling, try entering r to reset the display.")
+    print("After finishing scaling, please press enter to continue.")
+    scaling_test = input()
+    os.system('cls' if os.name == 'nt' else 'clear')
+    if type == "gameboard":
+        gameboard = get_graphics().get('gameboard')
+        border = get_graphics().get('history and status').split('\n')
+        history = []
+        print(f"\033[0;0H" + gameboard, end="")
+        for i in range(len(border)):
+            print(f"\033[{i};79H", end="")
+            if(len(history) - i<= 0):
+                for j in range(len(border[i])):
+                    print(border[i][j], end="")
+        print_commands()
+        print_with_wrap("X", 0, 0)
+        print_with_wrap("X", 0, 156)
+        print_with_wrap("X", 50, 156)
+        print_with_wrap("X", 50, 0)
+        print(f"\033[36;0H" + "Press enter to play or enter r to reset the display.", end="")
+        scaling_test = input()
+        while scaling_test != "":
+            if scaling_test == "r":
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print(f"\033[0;0H" + gameboard, end="")
+                for i in range(len(border)):
+                    print(f"\033[{i};79H", end="")
+                    if(len(history) - i<= 0):
+                        for j in range(len(border[i])):
+                            print(border[i][j], end="")
+                print_commands()
+                print_with_wrap("X", 0, 0)
+                print_with_wrap("X", 0, 156)
+                print_with_wrap("X", 50, 156)
+                print_with_wrap("X", 50, 0)
+                print(f"\033[36;0H" + "Press enter to play or enter r to reset the display.", end="")
+            scaling_test = input()
+    elif type == "player":
+        os.system('cls' if os.name == 'nt' else 'clear')
+        initialize_terminals()
+
+        print_with_wrap("X", 0, 0)
+        print_with_wrap("X", 0, 153)
+        print_with_wrap("X", 43, 153)
+        print_with_wrap("X", 43, 0)
+        print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
+        scaling_test = input()
+        while scaling_test != "":
+            os.system('cls' if os.name == 'nt' else 'clear')
+            initialize_terminals()
+            print_with_wrap("X", 0, 0)
+            print_with_wrap("X", 0, 153)
+            print_with_wrap("X", 43, 153)
+            print_with_wrap("X", 43, 0)
+            print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
+            scaling_test = input()
+        os.system('cls' if os.name == 'nt' else 'clear')
