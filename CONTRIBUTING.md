@@ -27,16 +27,16 @@
 
 ![vscode2](https://github.com/user-attachments/assets/e61e57cd-3af2-4fca-9c17-57abb14d8ded)
 
-- [ ] Navigate to a directory in your file system where you want to save everything. **cd <directory name>** to switch directories
-- [ ] Clone git repository using code editor feature or in the command line: **git clone <URL to your newly created fork>**
+- [ ] Navigate to a directory in your file system where you want to save everything. **cd "directory name"** to switch directories
+- [ ] Clone git repository using code editor feature or in the command line: **git clone "URL to your newly created fork"** (no quotes)
 - [ ] Once cloned, git pull using code editor or in the command line: **git pull** (no parameters). This ensures you are up to date.
 
 ![vscode3](https://github.com/user-attachments/assets/d79c9126-23a2-4e6d-85a6-5a941637157d)
 ### Step 3: working on a branch  
 Create a new branch with a descriptive (but short) title regarding what you're working on
-- [ ] Use code editor feature or command line: **git branch <name>**
+- [ ] Use code editor feature or command line: **git branch "name"** (no quotes)
 - [ ] Additionally, you can always use **git branch** to view all your local branches
-- [ ] To switch to your newly made branch, use **git checkout <name>**
+- [ ] To switch to your newly made branch, use **git checkout "name"**
 Once you're working in the new branch, you can make new changes locally without messing up your main branch
 
 ## You're all set! Happy coding!
@@ -51,9 +51,9 @@ Once you're working in the new branch, you can make new changes locally without 
 ![image](https://github.com/user-attachments/assets/2af3b513-2763-4f34-89e7-818bcfb30f14)
 ### Step 2: commit
 There are multiple ways to use the commit command. 
-- [ ] In the command line, use **git commit -m <message>** where the message parameter is less than 50 characters, and briefly describes the commit
+- [ ] In the command line, use **git commit -m "message"** where the message parameter is less than 50 characters, and briefly describes the commit
 Commit messages should be **descriptive** and **tell the history of the changes**. What is depicted here is NOT a good commit name.
-See here for additional reading: [https://www.freecodecamp.org/news/how-to-write-better-git-commit-messages/]
+See [here](https://www.freecodecamp.org/news/how-to-write-better-git-commit-messages/) for additional reading
 - [ ] In vscode, you may also use the box in the top left to create a commit message, and you may commit with the checkmark.
 
 
@@ -62,10 +62,10 @@ See here for additional reading: [https://www.freecodecamp.org/news/how-to-write
 - [ ] Go to your remote github repository and press the "sync fork" button found here. This is *crucial* to ensure your code doesn't break code upstream. This updates your remote repository with any changes that may have occurred on the official ufosc repository. This might cause your code to change too, so you may need to carefully review the changes.
   It is *your* responsibility to ensure your new code doesn't conflict with code from upstream. 
 - [ ] Once you sync your fork, return to your code editor and run **git checkout main** followed by **git pull**. I recommend checking out and pulling on your **main** branch, *not your development branch*. This updates your local files with the new stuff you just synced from the official repository.
-- [ ] Then, especially if you're many commits behind the main branch, run **git checkout <branchname>** followed by run **git rebase main**.
+- [ ] Then, especially if you're many commits behind the main branch, run **git checkout "branchname"** followed by run **git rebase main**.
 - [ ] For a thorough explanation of why we're doing this, along with a demonstration, watch [this video](https://www.youtube.com/watch?v=f1wnYdLEpgI).
 - [ ] Resolve any merge conflicts with the built-in merge editor or some other method.
-- [ ] Then, run **git checkout main** followed by **git rebase <branchname>**.
+- [ ] Then, run **git checkout main** followed by **git rebase "branchname"**.
   This whole process allows you to submit your changes in your main branch, instead of necessarily needing to publish your development branch. It makes the history more linear and readable. 
 
 ![vscode6](https://github.com/user-attachments/assets/b7043a88-39ce-4677-a570-d760a29c1cb9)
