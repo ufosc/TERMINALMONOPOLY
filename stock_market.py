@@ -6,17 +6,13 @@ import os
 from xml.etree.ElementTree import tostring
 import threading
 
-
+from setuptools.package_index import PyPIConfig
 
 
 #hello
 
 
 # hi
-
-
-#first commit
-
 
 #portfolio class will be owned by players
 class portfolio:
@@ -25,12 +21,9 @@ class portfolio:
         self.stock_market = stock_market
         self.owned_stocks = {"BLVD": 0, "PLZA": 0, "DRVE": 0}
 
-
     def buy_stock(self, stock_ticker, num_shares):
         if stock_ticker in self.stock_market.stocks:
             self.owned_stocks[stock_ticker] += num_shares
-
-
 
     def sell_stock(self, stock_ticker, num_shares):
         if stock_ticker in self.owned_stocks and self.owned_stocks[stock_ticker] >= num_shares:
@@ -42,14 +35,11 @@ class portfolio:
         for stock_ticker, num_shares in self.owned_stocks.items():
             if num_shares > 0:
                 stock_price = self.stock_market.get_stock_price(stock_ticker)  # Fetch the latest price
-                portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Price: ${stock_price:.2f}")
+                portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Price: ${stock_price:.5f}")
                 has_stocks = True
         if not has_stocks:
             portfolio_lines.append("No stocks owned.")
         return portfolio_lines
-
-
-
 
 #stock class will contain attributes for an individual stock including
 #individual methods for updating the stock price that can be adjusted if
@@ -64,10 +54,8 @@ class stock:
        self.max_percent_change = max_percent_change
        self.is_owned = False
 
-
    def update_price(self):
        self.price = self.fluctuate_stock_price(self.price)
-
 
    def fluctuate_stock_price(self, current_stock_price):
        rand_num = random.uniform(self.min_percent_change, self.max_percent_change)
@@ -75,24 +63,14 @@ class stock:
        new_price = current_stock_price + current_stock_price * (rand_num / 100)
        return new_price
 
-
    def get_price(self):
        return self.price
-
 
    def shares_owned(self):
        return self.num_shares_owned
 
-
    def display_price(self):
-           print(f"{self.ticker}: ${self.price:.2f}")
-
-
-
-
-
-
-
+           print(f"{self.ticker}: ${self.price:.5f}")
 
 #stock market class that will centralize the broader stock market
 #and allow for broader changes across stocks when certain in-game
@@ -105,13 +83,9 @@ class stock_market:
        self.players = []
        self.current_time = datetime(2024, 9, 16, 9, 0, 0)
 
-
-
-
    def add_stock(self, stock_ticker, stock_price, min_percent_change, max_percent_change):
        #stock is an instance of the stock class
        self.stocks[stock_ticker] = stock(stock_ticker, stock_price, min_percent_change, max_percent_change)
-
 
    def update_stock_prices(self):
        for each_stock in self.stocks.values():
@@ -121,33 +95,29 @@ class stock_market:
            #large-cap will have less volatility vs small-cap)
            each_stock.update_price()
 
-
    def get_stock_price(self, ticker):
        return self.stocks[ticker].get_price()
-
 
    def display_stock_prices(self):
        stock_lines = []
        for ticker, stock_obj in self.stocks.items():
            price_change = stock_obj.percentage_change
            price_color = "\033[32m" if price_change >= 0 else "\033[31m"
-           stock_lines.append(f"{ticker}: {price_color}${stock_obj.get_price():.2f} ({price_change:+.2f}%)\033[0m")
+           stock_lines.append(f"{ticker}: {price_color}${stock_obj.get_price():.5f} ({price_change:+.5f}%)\033[0m")
        return stock_lines
-
-
-
 
    def update_time(self, seconds_passed):
        # Increment time by minutes. 5 real-world seconds = 1 hour (60 minutes in-game)
        minutes_to_add = (60 / 5) * seconds_passed  # Calculate how many minutes to add for each second passed
        self.current_time += timedelta(minutes=minutes_to_add)
 
-
    def display_time(self):
        # Display current time in "Day HH:MM AM/PM" format
        return f"Current market time: {self.current_time.strftime('%A %I:%M %p')}"
 
 
+
+#general functions outside of classes
 
 # Function to clear the console
 def clear_console():
@@ -164,49 +134,106 @@ def display_stock_prices(market):
 
         # Portfolio and user input on the right
         portfolio_lines = player1_portfolio.display_portfolio()
-        user_input_prompt = "Please select one of the following: BUY or SELL"
 
-        # Display the content
-        print(f"\033[32m{current_time:<40}{user_input_prompt:>40}\033[0m")
+        # Move the cursor to row 0, column 0 and print the current time
+        print(f"\033[0;0H\033[32m{current_time}\033[0m")
 
+        # Determine maximum number of rows to print
         max_lines = max(len(stock_lines), len(portfolio_lines))
-        for i in range(max_lines):
-            left_side = stock_lines[i] if i < len(stock_lines) else ""
-            right_side = portfolio_lines[i] if i < len(portfolio_lines) else ""
-            print(f"{left_side:<40}{right_side:>40}")
 
+        # Start printing from row 1 (row 0 is used for time)
+        for i in range(max_lines):
+            # Print stock prices on the left starting at row (i+1), column 0
+            if i < len(stock_lines):
+                left_side = stock_lines[i]
+                # Move cursor to row i+1, column 0 and print stock price
+                print(f"\033[{i+2};0H{left_side}")
+            else:
+                # Clear line if there's no stock data for this row
+                print(f"\033[{i+2};0H{' ' * 40}")
+
+            # Print portfolio on the right starting at row (i+1), column 40
+            if i < len(portfolio_lines):
+                right_side = portfolio_lines[i]
+                # Move cursor to row i+1, column 40 and print portfolio data
+                print(f"\033[{i+2};40H{right_side}")
+            else:
+                # Clear line if there's no portfolio data for this row
+                print(f"\033[{i+2};40H{' ' * 40}")
+
+        # Update stock prices
         market.update_stock_prices()
-        time.sleep(1)
+
+
+        # Sleep to control the update rate
+        time.sleep(20)
 
 
 # Function to handle user input for buying or selling stocks in a separate thread
 def handle_user_input(player_portfolio):
     while True:
-        print("\n" + " " * 40 + "Please select one of the following: BUY or SELL \n")
-        user_input = input(" " * 40 + "> ")  # Input appears on the right side
+        stock_lines = market.display_stock_prices()
+        line_to_print = len(stock_lines) + 3
+        #clear_console()
+        #\033[ < line >; < col > H
+        #\033[0;0H" to print row 0 column 0
+        print(f"\033[{line_to_print};0H" + ' ' * 80)
+        print(f"\033[{line_to_print};0H" + "Please select one of the following: BUY or SELL")
+        print(f"\033[{line_to_print + 1};0H" + ' ' * 80)
+        user_input = input(f"\033[{line_to_print + 1};0H" + "> ")
         if user_input.upper() == "BUY":
-            ticker_name = input(" " * 40 + "Enter ticker to buy: \n")
+            print(f"\033[{line_to_print};0H" + ' ' * 80)
+            print(f"\033[{line_to_print};0H" + "Enter ticker to buy")
+            print(f"\033[{line_to_print + 1};0H" + ' ' * 80)
+            ticker_name = input(f"\033[{line_to_print + 1};0H" + "> ")
             if ticker_name in player_portfolio.stock_market.stocks:
-                amount = int(input(" " * 40 + "Enter number of shares: \n"))
-                player_portfolio.buy_stock(ticker_name, amount)
-                print(f"\n{' ' * 40}You have bought {amount} shares of {ticker_name}!\n")
+                print(f"\033[{line_to_print};0H" + ' ' * 80)
+                print(f"\033[{line_to_print};0H" + "Enter number of shares")
+                print(f"\033[{line_to_print + 1};0H" + ' ' * 80)
+                amount = input(f"\033[{line_to_print + 1};0H" + "> ")
+                if amount.isdigit():
+                    player_portfolio.buy_stock(ticker_name, int(amount))
+                    #print(f"\033[{line_to_print + 4};0H" + f"You have bought {amount} shares of {ticker_name}!")
+                else:
+                    print(f"\033[{line_to_print};0H" + ' ' * 80)
+                    user_redo = input(f"\033[{line_to_print};0H" + "Input was not a number!" + "\nPress any key to continue")
             else:
-                print("Invalid ticker!")
-
+                print(f"\033[{line_to_print};0H" + ' ' * 80)
+                user_invalid_ticker = input(f"\033[{line_to_print};0H" + "Invalid ticker!" + "\nPress any key to continue")
         elif user_input.upper() == "SELL":
-            ticker_name = input(" " * 40 + "Enter ticker to sell: \n")
+            print(f"\033[{line_to_print};0H" + ' ' * 80)
+            print(f"\033[{line_to_print};0HEnter ticker to sell")
+            print(f"\033[{line_to_print + 1};0H" + ' ' * 80)
+            ticker_name = input(f"\033[{line_to_print + 1};0H" + "> ")
             if ticker_name in player_portfolio.stock_market.stocks:
-                amount = int(input(" " * 40 + "Enter number of shares: \n"))
-                player_portfolio.sell_stock(ticker_name, amount)
-                print(f"\n{' ' * 40}You have sold {amount} shares of {ticker_name}!\n")
+                print(f"\033[{line_to_print};0H" + ' ' * 80)
+                print(f"\033[{line_to_print};0H" + "Enter number of shares")
+                print(f"\033[{line_to_print + 1};0H" + ' ' * 80)
+                amount = input(f"\033[{line_to_print + 1};0H" + "> ")
+                if amount.isdigit():
+                    player_portfolio.sell_stock(ticker_name, int(amount))
+                else:
+                    print(f"\033[{line_to_print};0H" + ' ' * 80)
+                    input(f"\033[{line_to_print};0H" + "Input was not a number!" + "\nPress any key to continue")
             else:
-                print("Invalid ticker!")
+                print(f"\033[{line_to_print};0H" + ' ' * 80)
+                input(f"\033[{line_to_print};0HInvalid ticker!" + "\nPress any key to continue")
 
-
-
-
+        #
+        # elif user_input.upper() == "SELL":
+        #     ticker_name = input("Enter ticker to sell: \n")
+        #     if ticker_name in player_portfolio.stock_market.stocks:
+        #         amount = int(input("Enter number of shares: \n"))
+        #         player_portfolio.sell_stock(ticker_name, amount)
+        #         print(f"You have sold {amount} shares of {ticker_name}!\n")
+        #     else:
+        #         print("Invalid ticker!")
 
 if __name__ == '__main__':
+    clear_console()
+    #columns, rows = os.get_terminal_size()
+    #print(f"Terminal size: {columns} columns and {rows} rows")
+
     # Initialize market and portfolios
     market = stock_market()
     market.add_stock("PLZA", 20.00, -5, 5)
