@@ -70,6 +70,7 @@ def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], bo
     if (len(obj_list) > 0):
         pass
     
+    #print top border with title
     screen_content.append(border_color +'╔' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╗' + "   ")
 
     # split all text objects into a list of lines
