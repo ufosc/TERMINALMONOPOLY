@@ -52,7 +52,7 @@ class Board:
             39: Property(0, "Boardwalk", -1, (29,72), COLORS.BLUE, 400, 200, 50, 200, 600, 1400, 1700, 2000, 200),
         }
 
-    def update_location(self, player:Player, roll: int, update_history, new = None) -> None:
+    def update_location(self, player:Player, roll: int, new = None) -> None:
         """
         Update location with player\n
         @location: int\n
@@ -63,7 +63,6 @@ class Board:
             if new_location > 39:
                 new_location -= 40
                 player.receive(200)
-                update_history(f"Player {player.order} passed Go and received $200")
             self.locations[player.location].players.remove(player.order)
             self.locations[new_location].players.append(player.order)
             player.location = new_location

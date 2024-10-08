@@ -399,11 +399,13 @@ def player_roll(num_rolls):
                 update_history(f"Player {turn} rolled doubles three times\n in a row!")
                 update_history(f"Player {turn} is going to jail!")
                 players[turn].jail = True
-                board.update_location(players[turn], -1, update_history)
+                board.update_location(players[turn], -1)
         refresh_board()
         #if player rolled their third double they will be in jail and their location doesn't update
         if players[turn].jail == False:
-            board.update_location(players[turn], dice[0] + dice[1], update_history)
+            if (players[turn].location + dice[0] + dice[1]) > 39:  # checks if player passed go
+                update_history(f"Player {players[turn].order} passed Go and received $200")
+            board.update_location(players[turn], dice[0] + dice[1])
             update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
             refresh_board()
         done_moving_around = False
@@ -417,11 +419,19 @@ def player_roll(num_rolls):
                     case -2: #mortgaged
                         pass
                     case -3: #community chest
-                        card = decks.draw_community_chest(players[turn], board, players, update_history)
+                        old_loc = players[turn].location
+                        card = decks.draw_community_chest(players[turn], board, players)
+                        new_loc = players[turn].location
                         update_history(f"{players[turn].name} drew a Community Chest card! {card}")
+                        if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
+                            update_history(f"Player {players[turn].order} passed Go and received $200")
                     case -4: #chance
-                        card = decks.draw_chance(players[turn], board, players, update_history)
+                        old_loc = players[turn].location
+                        card = decks.draw_chance(players[turn], board, players)
+                        new_loc = players[turn].location
                         update_history(f"{players[turn].name} drew a Chance card! {card}")
+                        if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
+                            update_history(f"Player {players[turn].order} passed Go and received $200")
                         if (board.locations[players[turn].location].owner != -4):
                             done_moving_around = False  # only case where loop is needed
                     case -5: #income tax
@@ -431,7 +441,7 @@ def player_roll(num_rolls):
                         pass
                     case -7:  # go to jail
                         players[turn].jail = True
-                        board.update_location(players[turn], -1, update_history)
+                        board.update_location(players[turn], -1)
                     case -8:  # free parking
                         pass
                     case -9:  # luxury tax
