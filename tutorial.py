@@ -44,6 +44,8 @@ cols = ss.WIDTH
 rows = ss.HEIGHT
 graphics = style.get_graphics()
 
+skipped = False # set/used by print_tutorial_screen to determine whether to continue printing past 1st page
+
 def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], border_color=COLORS.LIGHTGRAY) -> None:
     """
     Parameters:
@@ -61,8 +63,10 @@ def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], bo
         Currently, custom coloring works only on the borders, support for the rest of e
 
     Returns:
-    None
+    skipped (boolean) <- value used to determined whether to display following tutorial screens
     """
+    option = ""
+    
     screen_content = []
 
     title_padding = cols//2 - len(title)//2 - 1
@@ -100,29 +104,41 @@ def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], bo
     for row in screen_content:
         print(row)
 
-    input(COLORS.LIGHTGRAY + "Press Enter to continue...")
-
+    # Checks if the current print is the first page, to determine whether to skip
+    if title == "Terminal Monopoly":
+        option = input(COLORS.LIGHTGRAY + "Would you like to skip the tutorial? (y/n)...")
+    else:
+        input(COLORS.LIGHTGRAY + "Press Enter to continue...")
+    
     # Fills the rest of the terminal
     print(' ' * ss.WIDTH, end='\r')
 
+    # Returns boolean to determine whether to skip (print rest of tutorial)
+    if option == "y":
+            return True
+    else:
+        return False
 
-print_tutorial_screen(cols, rows, "Terminal Monopoly", [
+
+#prints all the tutorial screens, if the player hasnt skipped it
+skipped = print_tutorial_screen(cols, rows, "Terminal Monopoly", [
     {"col": 7, "row": 3, "num_lines": 0, "text":"Welcome to:"},
     {"col": 10, "row": 6, "num_lines": 17, "text":graphics["logo"]},
     {"col": 15, "row": 27, "num_lines": 0, "text":"The Last Game You'll Ever Play..."}
 ], COLORS.CYAN)
 
-print_tutorial_screen(cols, rows, "Monopoly 1", [
-    #all of the text is currently copilot nonsense to show that it works
-    {"col": 3, "row": 2, "num_lines": 0, "text":"Firstly, what the hell is a Monopoly?"},
-    {"col": 5, "row": 5, "num_lines": 0, "text":"Terminal Monopoly is a text-based version of the classic board game Monopoly."},
-    {"col": 5, "row": 7, "num_lines": 0, "text":"The goal of the game is to make money from other players while avoiding bankruptcy."},
-    {"col": 5, "row": 9, "num_lines": 0, "text":"Each turn, players roll two dice and move around the board."},
-    {"col": 5, "row": 11, "num_lines": 0, "text":"Players start on the 'Go' tile and collect $200 for passing."},
-])
+if not skipped:
+    print_tutorial_screen(cols, rows, "Page 1", [
+        #all of the text is currently copilot nonsense to show that it works
+        {"col": 3, "row": 2, "num_lines": 0, "text":"Firstly, what the hell is a Monopoly?"},
+        {"col": 5, "row": 5, "num_lines": 0, "text":"Terminal Monopoly is a text-based version of the classic board game Monopoly."},
+        {"col": 5, "row": 7, "num_lines": 0, "text":"The goal of the game is to make money from other players while avoiding bankruptcy."},
+        {"col": 5, "row": 9, "num_lines": 0, "text":"Each turn, players roll two dice and move around the board."},
+        {"col": 5, "row": 11, "num_lines": 0, "text":"Players start on the 'Go' tile and collect $200 for passing."},
+    ])
 
-print_tutorial_screen(cols, rows, "Monopoly 2", [
+    print_tutorial_screen(cols, rows, "Page 2", [
 
-])
+    ])
 
 
