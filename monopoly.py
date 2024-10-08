@@ -242,7 +242,6 @@ def log_error(error_message: str) -> None:
         formatted_datetime = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
-
 ss.make_fullscreen()
 
 ss.calibrate_screen('gameboard')

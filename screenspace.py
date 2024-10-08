@@ -296,10 +296,17 @@ def print_with_wrap(char, start_row, start_col):
         # Default print
         print(f"\033[{start_row};{start_col}H" + char, end="")
 
+def calibrate_print_commands():
+    """
+    Print commands, used in calibration screen.\n
+    """
+    commandsinfo = get_graphics().get('commands').split("\n")
+    for i in range(len(commandsinfo)):
+        for j in range(len(commandsinfo[i])):
+            print(f"\033[{34+i};79H" + commandsinfo[i][:j], end="")
 
 def calibrate_screen(type: str) -> None:
     terminal_size = shutil.get_terminal_size()
-    from monopoly import print_commands
     width = terminal_size.columns
     os.system('cls' if os.name == 'nt' else 'clear')
     current_os = platform.system()
@@ -327,7 +334,7 @@ def calibrate_screen(type: str) -> None:
             if(len(history) - i<= 0):
                 for j in range(len(border[i])):
                     print(border[i][j], end="")
-        print_commands()
+        calibrate_print_commands()
         print_with_wrap("X", 0, 0)
         print_with_wrap("X", 0, 156)
         print_with_wrap("X", 50, 156)
@@ -343,7 +350,7 @@ def calibrate_screen(type: str) -> None:
                     if(len(history) - i<= 0):
                         for j in range(len(border[i])):
                             print(border[i][j], end="")
-                print_commands()
+                calibrate_print_commands()
                 print_with_wrap("X", 0, 0)
                 print_with_wrap("X", 0, 156)
                 print_with_wrap("X", 50, 156)
