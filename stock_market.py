@@ -241,7 +241,7 @@ def build_graph():
     data = [random.randint(0, 100) for _ in range(50)]
     # creates array data with random values
     while True:  # infinite loop that:
-        clear_console()  # clears
+        #clear_console()  # clears
         draw_graph(data, width, height)  # draws graph
         data.append(random.randint(0, 100))  # adds value
         data.pop(0)  # deletes oldest value
@@ -252,14 +252,17 @@ def build_graph():
 def draw_graph(data, width, height):
     max_value = max(data)
     min_value = min(data)
+    start_of_graph_row = 15
 
-    print("\n" * 10)
+    #print("\n" * 10)
 
     # draw the top axis
-    print("     +" + "-" * width + "+")  # width is the total number of columns available for graph
+    print(f"\033[{start_of_graph_row};0H" + "     +" + "-" * width + "+")  # width is the total number of columns available for graph
 
     # iterates from height to 0 to print each line of the graph
+    counter = 0
     for y in range(height, -1, -1):
+        counter += 1
         label = f"{y:.1f}"
         line = f"{label:>4} |"  # formats y-axis labels with width of 2 char
         for x in range(width): # iterates over each column of the graph from 0 to width - 1
@@ -276,10 +279,10 @@ def draw_graph(data, width, height):
             else:
                 line += ' '
         line += '|'  # adds the vertical axis
-        print(line)  # prints the whole line of the graph
+        print(f"\033[{start_of_graph_row + counter};0H{line}")  # prints the whole line of the graph
 
     # draw the bottom axis
-    print("     +" + "-" * width + "+")
+    print(f"\033[{start_of_graph_row + counter + 1};0H" + "     +" + "-" * width + "+")
 
     # draw the x-axis labels
     x_labels = "     "
@@ -292,11 +295,6 @@ def draw_graph(data, width, height):
 
     # print("\nX-axis: Time")
     # print("Y-axis: Price")
-
-
-
-
-
 
 
 
