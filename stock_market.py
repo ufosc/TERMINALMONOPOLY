@@ -127,8 +127,6 @@ def clear_console():
         _ = os.system('clear')  # For macOS/Linux
 
 
-
-
 def display_stock_prices(market):
     while True:
         # Stock prices on the left
@@ -164,12 +162,17 @@ def display_stock_prices(market):
                 # Clear line if there's no portfolio data for this row
                 print(f"\033[{i+2};40H{' ' * 40}")
 
+
+       # print(f"\033[{len(stock_lines) + 4};0H")
         # Update stock prices
+
+        #THIS IS THE LINE THAT GETS THE CURSOR BACK TO THE INPUT LINE
+        print(f"\033[{len(stock_lines) + 4};0H")
         market.update_stock_prices()
 
 
         # Sleep to control the update rate
-        time.sleep(20)
+        time.sleep(0.5)
 
 
 # Function to handle user input for buying or selling stocks in a separate thread
@@ -221,7 +224,8 @@ def handle_user_input(player_portfolio):
             else:
                 print(f"\033[{line_to_print};0H" + ' ' * 80)
                 input(f"\033[{line_to_print};0HInvalid ticker!" + "\nPress any key to continue")
-        print("\033[2B")  # Move cursor down two rows
+        #print("\033[2B")  # Move cursor down two rows
+
 
 
         #
@@ -237,6 +241,7 @@ def handle_user_input(player_portfolio):
 
 
 def build_graph():
+
     width, height = 50, 7  # adjusted for terminal size
     data = [random.randint(0, 100) for _ in range(50)]
     # creates array data with random values
@@ -293,8 +298,19 @@ def draw_graph(data, width, height):
             x_labels += " "
     print(x_labels)
 
+
+
+
+    #THIS IS THE LINE THAT GETS THE CURSOR BACK TO INPUT LINE
+    print(f"\033[7;0H")
+
     # print("\nX-axis: Time")
     # print("Y-axis: Price")
+    #sys.stdout.write("\033[7;0H" + "> " + "\033[0m")
+
+    #print(f"\033[6;0H> ")
+
+
 
 
 
