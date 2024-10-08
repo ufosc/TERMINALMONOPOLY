@@ -126,6 +126,9 @@ def clear_console():
     else:
         _ = os.system('clear')  # For macOS/Linux
 
+
+
+
 def display_stock_prices(market):
     while True:
         # Stock prices on the left
@@ -218,6 +221,8 @@ def handle_user_input(player_portfolio):
             else:
                 print(f"\033[{line_to_print};0H" + ' ' * 80)
                 input(f"\033[{line_to_print};0HInvalid ticker!" + "\nPress any key to continue")
+        print("\033[2B")  # Move cursor down two rows
+
 
         #
         # elif user_input.upper() == "SELL":
@@ -228,6 +233,73 @@ def handle_user_input(player_portfolio):
         #         print(f"You have sold {amount} shares of {ticker_name}!\n")
         #     else:
         #         print("Invalid ticker!")
+
+
+
+def build_graph():
+    width, height = 50, 7  # adjusted for terminal size
+    data = [random.randint(0, 100) for _ in range(50)]
+    # creates array data with random values
+    while True:  # infinite loop that:
+        clear_console()  # clears
+        draw_graph(data, width, height)  # draws graph
+        data.append(random.randint(0, 100))  # adds value
+        data.pop(0)  # deletes oldest value
+        time.sleep(0.5)  # pauses for 0.5 seconds
+
+
+
+def draw_graph(data, width, height):
+    max_value = max(data)
+    min_value = min(data)
+
+    print("\n" * 10)
+
+    # draw the top axis
+    print("     +" + "-" * width + "+")  # width is the total number of columns available for graph
+
+    # iterates from height to 0 to print each line of the graph
+    for y in range(height, -1, -1):
+        label = f"{y:.1f}"
+        line = f"{label:>4} |"  # formats y-axis labels with width of 2 char
+        for x in range(width): # iterates over each column of the graph from 0 to width - 1
+            value_index = int(x * len(data) / width)
+            # scales column index to range of data list and converts to int
+            value = data[value_index]  # index in data list that corresponds to current column x
+            graph_y = height - int((value - min_value) / (max_value - min_value) * height)
+            # converts the data value to a y-coordinate in the graph
+            # normalizes the data to range between 0 and 1 and then normalizes it to the graph height
+            # inverts y-coord because the terminal's origin is at the top-left
+            # graph_y is the row in the graph where the data point should be plotted
+            if y == graph_y:
+                line += '*'
+            else:
+                line += ' '
+        line += '|'  # adds the vertical axis
+        print(line)  # prints the whole line of the graph
+
+    # draw the bottom axis
+    print("     +" + "-" * width + "+")
+
+    # draw the x-axis labels
+    x_labels = "     "
+    for i in range(width):
+        if i % 10 == 0:
+            x_labels += f"{i // 10:>2}"  # labels added every 10 units
+        else:
+            x_labels += " "
+    print(x_labels)
+
+    # print("\nX-axis: Time")
+    # print("Y-axis: Price")
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     clear_console()
@@ -247,14 +319,18 @@ if __name__ == '__main__':
     player4_portfolio = portfolio(player_name, market)
 
     # Create threads
+    graph_chart_thread = threading.Thread(target=build_graph, args=())
     stock_display_thread = threading.Thread(target=display_stock_prices, args=(market,))
     user_input_thread = threading.Thread(target=handle_user_input, args=(player1_portfolio,))
 
+
     # Start threads
+    graph_chart_thread.start()
     stock_display_thread.start()
     user_input_thread.start()
 
     # Join threads to keep the program running
+    graph_chart_thread.join()
     stock_display_thread.join()
     user_input_thread.join()
 
