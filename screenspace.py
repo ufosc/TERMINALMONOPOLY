@@ -1,9 +1,6 @@
 # This file contains the logic for the terminal screen
 
-#TODO rewrite into classes: player & banker
 # Terminal total width and height: 150x40
-# This matches the default Windows terminal size nicely.
-# os.get_terminal_size() should be looked into. 
 WIDTH = 150
 HEIGHT = 40
 INPUTLINE = 45
@@ -21,10 +18,11 @@ global rows, cols, quadrants
 rows = HEIGHT//2
 cols = WIDTH//2
 
-quadrants = [['1' * cols] * rows, 
-                ['2' * cols] * rows, 
-                ['3' * cols] * rows, 
-                ['4' * cols] * rows]
+quadrants = [
+    ['1' * cols] * rows, 
+    ['2' * cols] * rows, 
+    ['3' * cols] * rows, 
+    ['4' * cols] * rows]
 
 def print_board(gameboard: list[str]) -> None:
     """
@@ -52,7 +50,6 @@ def update_quadrant(n: int, data: str) -> None:
     data (str): String data to update quadrant. Separate lines must be indicated by \\n. 
 
     Returns: None
-
     """
     line_list = data.split('\n')
     for i in range(len(line_list)):
@@ -81,7 +78,7 @@ def update_quadrant_2(n: int, data: str, padding: bool = False):
     Better quadrant update function.
     This exceeds others because it immediately updates a single quadrant with the new data.
     Previously, the screen would not update until print_screen() was called.
-    Furthermore, print_screen() would overwrite the entire screen, which is not ideal / slower. 
+    Furthermore, print_screen() would overwrite the entire screen, which is not ideal and slower. 
     @TODO This function should be used in place of update_quadrant() in all cases.
     @TODO Also need to implement usage corrections to print_screen().
     """
@@ -174,7 +171,6 @@ def update_active_terminal(n: int):
             x,y = cols+2, rows+2
     update_terminal(active_terminal, x, y, True)
     
-
 def overwrite(text: str = ""):
     """
     Writes text over 2nd to last line of the terminal (input line).
@@ -199,71 +195,30 @@ def clear_screen():
     print(COLORS['RESET'],end='')
     os.system('cls' if os.name == 'nt' else 'clear')
 
-# def print_screen() -> None:
-#     """
-#     This function overwrites the previous terminal's display. 
-    
-#     Because Terminal Monopoly is not supposed to 
-#     repeatedly print lines after lines (there should be no scrollbar in the terminal), this function overwrites 
-#     all needed information. 
-    
-#     The class variables quadrants[0], quadrants[1], etc. are iterated through to print each character. Because
-#     splitting the terminal is entirely artificial to this program, it stops at a hardcoded width value and 
-#     begins printing the next quadrant.  
-    
-#     Parameters: None
-#     Returns: None
-#     """
+def refresh_screen():
+    """
+    Refreshes the screen to display the current game state. 
 
-#     # Resets cursor position to top left
-#     print("\033[1A" * (HEIGHT + 4), end='\r')
-#     # Prints the top border, with ternary conditions if terminal 1 or 2 are active
-#     print(COLORS.backBLACK + COLORS.LIGHTGRAY+(COLORS.GREEN+'╔' if active_terminal == 1 else '╔')+('═' * (cols))+
-#         (COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY) +'╦'
-#         +(COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+('═' * (cols))+'╗' + COLORS.LIGHTGRAY + "   ") # Additional spaces to fill remaining 3 columns
-    
-#     # Prints the middle rows
-#     for y in range(rows):
-#         print((COLORS.GREEN if active_terminal == 1 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
-#         for x in range(2*cols):
-#             if x < cols:
-#                 print(quadrants[0][y][x], end='')
-#             elif x == cols:
-#                 print((COLORS.GREEN if active_terminal == 1 or active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrants[1][y][x - cols], end='')
-#             else:
-#                 print(quadrants[1][y][x-cols], end='') 
-#         print((COLORS.GREEN if active_terminal == 2 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
-    
-#     # Middle divider
-#     print((COLORS.GREEN if active_terminal == 1 or active_terminal == 3 else COLORS.LIGHTGRAY)+'╠' + '═' * (cols)
-#         +COLORS.GREEN + '╬' + (COLORS.GREEN if active_terminal == 2 or active_terminal == 4 else COLORS.LIGHTGRAY)+ '═' * (cols) + '╣' + COLORS.RESET + "   ")
-    
-#     # Prints the bottom rows
-#     for y in range(rows):
-#         print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'║', end=COLORS.RESET) 
-#         for x in range(2 * cols):
-#             if x < cols:
-#                 print(quadrants[2][y][x], end='')
-#             elif x == cols:
-#                 print((COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + quadrants[3][y][x - cols], end='')
-#             else:
-#                 print(quadrants[3][y][x - cols], end='')
-#         print((COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY)+'║'+COLORS.RESET + "   ")
-    
-#     # Print final row
-#     print((COLORS.GREEN if active_terminal == 3 else COLORS.LIGHTGRAY)+'╚' + '═' * (cols) + 
-#         (COLORS.GREEN if active_terminal == 3 or active_terminal == 4 else COLORS.LIGHTGRAY) +'╩'
-#             + (COLORS.GREEN if active_terminal == 4 else COLORS.LIGHTGRAY) + '═' * (cols) + '╝'+ COLORS.RESET + "   ")
-#     # Fills the rest of the terminal
-#     print(' ' * WIDTH, end='\r')
-#     set_cursor(0,INPUTLINE)
+    Parameters: None
+    Returns: None
+    """
+    for i in range(4):
+        update_quadrant_2(i+1, None)
+    update_active_terminal(gat())
+    set_cursor(0,INPUTLINE)
+    print(COLORS.RESET, end='')
 
 def initialize_terminals():
     update_quadrant_2(1, data=None)
     update_quadrant_2(2, data=None)
     update_quadrant_2(3, data=None)
     update_quadrant_2(4, data=None)
+    update_active_terminal(2)
+    update_active_terminal(3)
+    update_active_terminal(4)
     update_active_terminal(1)
+    update_terminal(1, 0, 1, True)
+    set_cursor(0,INPUTLINE)
 
 def make_fullscreen():
     current_os = platform.system()

@@ -296,13 +296,11 @@ if __name__ == "__main__":
     ss.make_fullscreen()
     ss.calibrate_screen('player')
 
-    # Prints help in quadrant 2 to orient player.
     os.system("cls")
-    ss.update_quadrant(2, text_dict.get('help'))
-    ss.update_quadrant_2(1, data=None)
-    ss.update_quadrant_2(2, data=None)
-    ss.update_quadrant_2(3, data=None)
-    ss.update_quadrant_2(4, data=None)
+    ss.initialize_terminals()
+    
+    # Prints help in quadrant 2 to orient player.
+    ss.update_quadrant_2(2, text_dict.get('help'), padding=True)
     get_input()
 
     # ss.print_board(text_dict.get('gameboard'))
