@@ -8,7 +8,6 @@ import os
 from style import COLORS
 from style import set_cursor, set_cursor_str
 from style import get_graphics
-from player import gat
 import platform
 import ctypes
 import shutil
@@ -39,41 +38,8 @@ def print_board(gameboard: list[str]) -> None:
     
     for y in range(len(gameboard)):
         print(gameboard[y])
-    
 
-def update_quadrant(n: int, data: str) -> None:
-    """
-    Creates a list of lines from the data string, and pads each line with spaces to match the width of the screen. 
-
-    Parameters: 
-    n (int): Quadrant number (1-4)
-    data (str): String data to update quadrant. Separate lines must be indicated by \\n. 
-
-    Returns: None
-    """
-    line_list = data.split('\n')
-    for i in range(len(line_list)):
-            line_list[i] = line_list[i] + ' ' * (cols - len(line_list[i]))
-    for i in range(len(line_list), rows):
-        line_list.append(' ' * cols)
-    quadrants[n-1] = line_list
-
-def update_quadrant_strictly(n: int, data: str):
-    """ 
-    Same as update_quadrant, but does not pad the lines with spaces.
-    
-    Could be useful for color formatting where update_quadrant fails.
-
-    Parameters:
-    n (int): Quadrant number (1-4)
-    data (str): Data to update quadrant. String must be exactly the right length. (i.e. 75*20)
-
-    Returns: None
-    """
-    line_list = data.split('\n')
-    quadrants[n-1] = line_list
-
-def update_quadrant_2(n: int, data: str, padding: bool = False):
+def update_quadrant(n: int, data: str, padding: bool = False):
     """
     Better quadrant update function.
     This exceeds others because it immediately updates a single quadrant with the new data.
@@ -82,6 +48,8 @@ def update_quadrant_2(n: int, data: str, padding: bool = False):
     @TODO This function should be used in place of update_quadrant() in all cases.
     @TODO Also need to implement usage corrections to print_screen().
     """
+
+    # Sets the x and y coordinates based on the quadrant number corresponding to the top left corner of the quadrant plus border padding.
     match n:
         case 1:
             x,y = 2,2
@@ -92,17 +60,20 @@ def update_quadrant_2(n: int, data: str, padding: bool = False):
         case 4:
             x,y = cols+3, rows+3
 
-    if data: # if any data is passed
+    if data:
         line_list = data.split('\n')
-        for i in range(rows):
+        if len(line_list) > rows:
+            line_list = line_list[:rows] # Truncate if necessary bc someone might send a long string
+        for i in range(len(line_list)):
             set_cursor(x,y+i)
             if padding:
                 line_list[i] = line_list[i] + " " * (cols - len(line_list[i]))
 
-            if len(line_list) > i:
-                print(line_list[i])
-            else:
-                print(" " * cols)
+            print(line_list[i] if len(line_list[i]) <= cols else line_list[i][:cols]) # Truncate if necessary bc someone might send a long string
+        for i in range(len(line_list), rows):
+            set_cursor(x,y+i)
+            print(" " * cols)
+
         print(COLORS.RESET, end='')
         set_cursor(0,INPUTLINE)
     else:
@@ -110,17 +81,49 @@ def update_quadrant_2(n: int, data: str, padding: bool = False):
             set_cursor(x,y+i)
             print(f'{n}' * cols)
 
-def update_terminal(n: int, x: int, y: int, active: bool = False):
+def update_terminal(n: int, o: int):
     """
-
+    Updates the terminal border to indicate the active terminal. Turns off the border for the inactive terminal.
     """
-    n = n - 1 # 0-indexed
-    c = COLORS.GREEN if active else COLORS.LIGHTGRAY
-
+    x,y = -1,-1
     border_chars = [('╔','╦','╠','╬'),
                     ('╦','╗','╬','╣'),
                     ('╠','╬','╚','╩'),
                     ('╬','╣','╩','╝')]
+    
+    match o: 
+        case 1:
+            x,y = 0,1
+        case 2:
+            x,y = cols+2, 1
+        case 3:
+            x,y = 0, rows+2
+        case 4:
+            x,y = cols+2, rows+2
+    o = o - 1 # 0-indexed
+    c = COLORS.LIGHTGRAY
+    set_cursor(x,y)
+    print(c, end='')
+    print(border_chars[o][0] + '═' * cols + border_chars[o][1], end='')
+    set_cursor(x,y+rows+1)
+    print(border_chars[o][2] + '═' * cols + border_chars[o][3], end='')
+    for i in range(y, y + rows):
+        set_cursor(x, i+1)
+        print('║')
+        set_cursor(x+cols + (1 if (o + 1) % 2 == 0 else 2), i+1)
+        print('║')
+
+    match n:
+        case 1:
+            x,y = 0,1
+        case 2:
+            x,y = cols+2, 1
+        case 3:
+            x,y = 0, rows+2
+        case 4:
+            x,y = cols+2, rows+2
+    n = n - 1 # 0-indexed
+    c = COLORS.GREEN
 
     set_cursor(x,y)
     print(c, end='')
@@ -135,41 +138,6 @@ def update_terminal(n: int, x: int, y: int, active: bool = False):
     
     set_cursor(0,INPUTLINE)
     print(COLORS.RESET, end='')
-
-def update_active_terminal(n: int):
-    """
-    Updates the active terminal to the given number.
-
-    Parameters:
-    n (int): The terminal number to set as active.
-    
-    Returns: None
-    """
-    old_terminal = gat()
-    active_terminal = n 
-    x,y = -1,-1
-
-    match old_terminal:
-        case 1:
-            x,y = 0,1
-        case 2:
-            x,y = cols+2, 1
-        case 3:
-            x,y = 0, rows+2
-        case 4:
-            x,y = cols+2, rows+2
-    update_terminal(old_terminal, x, y, False)
-
-    match active_terminal:
-        case 1:
-            x,y = 0,1
-        case 2:
-            x,y = cols+2, 1
-        case 3:
-            x,y = 0, rows+2
-        case 4:
-            x,y = cols+2, rows+2
-    update_terminal(active_terminal, x, y, True)
     
 def overwrite(text: str = ""):
     """
@@ -183,7 +151,7 @@ def overwrite(text: str = ""):
     Returns: None
     """
     set_cursor(0, INPUTLINE)
-    print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text)) + '\n' + ' ' * WIDTH + '\r')
+    print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r')
 
 def clear_screen():
     """
@@ -192,32 +160,16 @@ def clear_screen():
     Parameters: None
     Returns: None
     """
-    print(COLORS['RESET'],end='')
+    print(COLORS.RESET,end='')
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def refresh_screen():
-    """
-    Refreshes the screen to display the current game state. 
-
-    Parameters: None
-    Returns: None
-    """
-    for i in range(4):
-        update_quadrant_2(i+1, None)
-    update_active_terminal(gat())
-    set_cursor(0,INPUTLINE)
-    print(COLORS.RESET, end='')
-
 def initialize_terminals():
-    update_quadrant_2(1, data=None)
-    update_quadrant_2(2, data=None)
-    update_quadrant_2(3, data=None)
-    update_quadrant_2(4, data=None)
-    update_active_terminal(2)
-    update_active_terminal(3)
-    update_active_terminal(4)
-    update_active_terminal(1)
-    update_terminal(1, 0, 1, True)
+    """
+    Initializes the terminal screen with the default number displays and terminal borders.
+    """
+    print(get_graphics()['terminals'])
+    for i in range(4):
+        update_quadrant(i+1, data=None)
     set_cursor(0,INPUTLINE)
 
 def make_fullscreen():

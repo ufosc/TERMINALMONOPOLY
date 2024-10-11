@@ -137,22 +137,18 @@ def calculate() -> None:
         calculator_history_queue.append((equation, numLines))
 
     # Initial comment in active terminal
-    ss.update_quadrant(active_terminal, calculator_terminal_response(1))
-    ss.print_screen()
+    ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
     # All other work is done on the work line (bottom of the screen)
     while True:
         player_equation = m.calculator()
         if(player_equation == "e"):
-            ss.update_quadrant(active_terminal, calculator_terminal_response(2))
-            ss.print_screen()
+            ss.update_quadrant(active_terminal, calculator_terminal_response(2), padding=True)
             break
         elif(player_equation == "error"):
-            ss.update_quadrant(active_terminal, calculator_terminal_response(3))
-            ss.print_screen()
+            ss.update_quadrant(active_terminal, calculator_terminal_response(3), padding=True)
         else:
             update_history(player_equation)
-            ss.update_quadrant(active_terminal, calculator_terminal_response(1))
-            ss.print_screen()
+            ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
 
 def balance() -> None:
     """
@@ -216,7 +212,7 @@ def game_input() -> None:
     # sockets[1].close()
 
 # Probably want to implement threading for printing and getting input.
-def get_input():
+def get_input() -> None:
     """
     Main loop for input handling while in the terminal screen. Essentially just takes input from user, 
     and if it is valid input, will run command on currently active terminal. 
@@ -224,14 +220,15 @@ def get_input():
     Parameters: None
     Returns: None
     """
+    global active_terminal
     stdIn = ""
     while(stdIn != "exit"):
         stdIn = input(COLORS.WHITE+'\r').lower().strip()
         if stdIn.startswith("help"):
             if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
-                ss.update_quadrant_2(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
+                ss.update_quadrant(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
             else: 
-                ss.update_quadrant_2(active_terminal, text_dict.get('help'), padding=True)
+                ss.update_quadrant(active_terminal, text_dict.get('help'), padding=True)
                 ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
         elif stdIn == "game":
             game_input()
@@ -246,18 +243,18 @@ def get_input():
         elif stdIn.startswith("term "):
             if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                 n = int(stdIn.strip().split(" ")[1])
+                ss.update_terminal(n = n, o = active_terminal)
                 active_terminal = n
-                ss.update_active_terminal(n)
                 ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
             else:
                 ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
         elif stdIn.startswith("deed"):
             if(len(stdIn) > 4):
-                ss.update_quadrant_2(active_terminal, m.deed(stdIn[5:]), padding=True)
+                ss.update_quadrant(active_terminal, m.deed(stdIn[5:]), padding=True)
         elif stdIn == "disable":
-            ss.update_quadrant_strictly(active_terminal, m.disable())
+            ss.update_quadrant(active_terminal, m.disable())
         elif stdIn == "kill":
-            ss.update_quadrant_strictly(active_terminal, m.kill())
+            ss.update_quadrant(active_terminal, m.kill())
         elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
             # On empty input make sure to jump up one console line
             ss.overwrite("\r")
@@ -265,7 +262,12 @@ def get_input():
             sockets[1].send('ships'.encode())
             sleep(0.1)
             board_data = n.receive_message(sockets[1])
-            ss.update_quadrant_2(active_terminal, board_data)
+            ss.update_quadrant(active_terminal, board_data)
+        elif stdIn.startswith('reset'):
+            ss.calibrate_screen('player')
+            ss.clear_screen()
+            ss.initialize_terminals()
+            ss.overwrite(COLORS.GREEN + "Screen calibrated.")
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
             ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
@@ -273,16 +275,6 @@ def get_input():
         ss.overwrite('\n' + ' ' * ss.WIDTH)
         ss.overwrite(COLORS.RED + "You are still in a game!")
         get_input()
-
-def gat() -> int:
-    """
-    Getter method for the active terminal. 
-
-    Parameters: None
-    Returns: 
-    int representing the active terminal.
-    """
-    return active_terminal
 
 
 if __name__ == "__main__":
@@ -296,14 +288,13 @@ if __name__ == "__main__":
     ss.make_fullscreen()
     ss.calibrate_screen('player')
 
-    os.system("cls")
+    ss.clear_screen()
     ss.initialize_terminals()
+    ss.update_terminal(active_terminal, active_terminal)
     
     # Prints help in quadrant 2 to orient player.
-    ss.update_quadrant_2(2, text_dict.get('help'), padding=True)
+    ss.update_quadrant(2, text_dict.get('help'), padding=True)
     get_input()
-
-    # ss.print_board(text_dict.get('gameboard'))
 
     # s.print_w_dots("Goodbye!")
 
