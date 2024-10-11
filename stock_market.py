@@ -12,7 +12,7 @@ import keyboard
 # portfolio class will be owned by players
 
 
-stocks = ["BLVD", "PLZA", "DRVE"]
+stocks = ["PLZA", "BLVD", "DRVE"]
 current_index = 0
 selected_stock = None
 
@@ -179,21 +179,39 @@ def display_stock_prices(market):
 def build_graph():
     width, height = 50, 7  # adjusted for terminal size
     data = [random.randint(0, 100) for _ in range(50)]
+    selected_stock_prices = []
     # creates array data with random values
     while True:  # infinite loop that:
         # clear_console()  # clears
-        draw_graph(data, width, height)  # draws graph
-        data.append(random.randint(0, 100))  # adds value
-        data.pop(0)  # deletes oldest value
-        time.sleep(0.5)  # pauses for 0.5 seconds
+        if selected_stock != None:
+            stock_obj = market.stocks[selected_stock]
+            selected_stock_prices.append(stock_obj.get_price())
+            # add current price
+
+            if len(selected_stock_prices) > width:  # maintain size
+                selected_stock_prices.pop(0)  # deletes old value
+
+            draw_graph(selected_stock_prices, width, height)  # draws graph
+            time.sleep(0.5)  # pauses for 0.5 seconds
+        else:
+            draw_graph(data, width, height)  # draws graph
+            data.append(random.randint(0, 100))  # adds value
+            data.pop(0)  # deletes oldest value
+            time.sleep(0.5)
 
 
 def draw_graph(data, width, height):
     max_value = max(data)
     min_value = min(data)
     start_of_graph_row = 15
+    scaled_data = []
 
     # print("\n" * 10)
+    if selected_stock != None:
+        scale_factor = 10000
+        scaled_data = [(value * scale_factor) for value in data]
+        max_value = max(scaled_data)
+        min_value = min(scaled_data)
 
     # draw the top axis
     print(
@@ -207,10 +225,19 @@ def draw_graph(data, width, height):
         label = f"{y:.1f}"
         line = f"{label:>4} |"  # formats y-axis labels with width of 2 char
         for x in range(width):  # iterates over each column of the graph from 0 to width - 1
-            value_index = int(x * len(data) / width)
-            # scales column index to range of data list and converts to int
-            value = data[value_index]  # index in data list that corresponds to current column x
-            graph_y = height - int((value - min_value) / (max_value - min_value) * height)
+
+            if selected_stock == None:
+                value_index = int(x * len(data) / width)
+                # scales column index to range of data list and converts to int
+                value = data[value_index]  # index in data list that corresponds to current column x
+            else:
+                value_index = int(x * len(scaled_data) / width)
+                value = scaled_data[value_index]
+
+            if max_value == min_value:
+                graph_y = height
+            else:
+                graph_y = height - int((value - min_value) / (max_value - min_value) * height)
             # converts the data value to a y-coordinate in the graph
             # normalizes the data to range between 0 and 1 and then normalizes it to the graph height
             # inverts y-coord because the terminal's origin is at the top-left
@@ -269,7 +296,8 @@ def display_graph():
     selected_stock = stocks[current_index]
     print_menu()
     print(f"\nDisplaying graph for: {selected_stock}")
-    # add our graph display logic here
+    build_graph()
+
 
 
 def print_menu():
@@ -284,12 +312,13 @@ def print_menu():
         print(f"\nYou selected: {selected_stock}")
 
 
-def listen_for_keys(market):
+def listen_for_keys():
     print_menu()
     keyboard.add_hotkey('w', move_up)
     keyboard.add_hotkey('s', move_down)
     keyboard.add_hotkey('enter', select_stock)
     keyboard.add_hotkey('g', display_graph)
+    # need to add buy sell and by how much functionality
     keyboard.wait('esc')
 
 
@@ -313,7 +342,7 @@ if __name__ == '__main__':
     # create threads
     graph_chart_thread = threading.Thread(target=build_graph, args=())
     stock_display_thread = threading.Thread(target=display_stock_prices, args=(market,))
-    keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=(market, ))
+    keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=( ))
 
     # start threads
     graph_chart_thread.start()
