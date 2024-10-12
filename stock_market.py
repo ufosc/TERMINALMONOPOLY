@@ -9,13 +9,16 @@ import keyboard
 # hello
 # hi
 
-# portfolio class will be owned by players
-
 
 stocks = ["PLZA", "BLVD", "DRVE"]
 current_index = 0
 selected_stock = None
+graph_display_mode = False
+mode = None
+transaction_amount = 0
 
+
+# portfolio class will be owned by players
 class portfolio:
     def __init__(self, player_name, stock_market):
         self.player_name = player_name
@@ -63,6 +66,8 @@ class stock:
         rand_num = random.uniform(self.min_percent_change, self.max_percent_change)
         self.percentage_change = rand_num
         new_price = current_stock_price + current_stock_price * (rand_num / 100)
+        if new_price <= 0.00001:
+            new_price = 0.01
         return new_price
 
     def get_price(self):
@@ -107,6 +112,8 @@ class stock_market:
             price_change = stock_obj.percentage_change
             price_color = "\033[32m" if price_change >= 0 else "\033[31m"
             stock_lines.append(f"{ticker}: {price_color}${stock_obj.get_price():.5f} ({price_change:+.5f}%)\033[0m")
+
+
         return stock_lines
 
     def update_time(self, seconds_passed):
@@ -152,6 +159,7 @@ def display_stock_prices(market):
             if i < len(stock_lines):
                 left_side = stock_lines[i]
                 # move cursor to row i+1, column 0 and print stock price
+                print(f"\033[{i + 2};0H{' ' * 40}")
                 print(f"\033[{i + 2};0H{left_side}")
             else:
                 # clear line if there's no stock data for this row
@@ -161,6 +169,7 @@ def display_stock_prices(market):
             if i < len(portfolio_lines):
                 right_side = portfolio_lines[i]
                 # move cursor to row i+1, column 40 and print portfolio data
+                print(f"\033[{i + 2};40H{' ' * 40}")
                 print(f"\033[{i + 2};40H{right_side}")
             else:
                 # clear line if there's no portfolio data for this row
@@ -183,7 +192,7 @@ def build_graph():
     # creates array data with random values
     while True:  # infinite loop that:
         # clear_console()  # clears
-        if selected_stock != None:
+        if selected_stock != None and graph_display_mode == True:
             stock_obj = market.stocks[selected_stock]
             selected_stock_prices.append(stock_obj.get_price())
             # add current price
@@ -203,7 +212,7 @@ def build_graph():
 def draw_graph(data, width, height):
     max_value = max(data)
     min_value = min(data)
-    start_of_graph_row = 15
+    start_of_graph_row = 16
     scaled_data = []
 
     # print("\n" * 10)
@@ -259,7 +268,7 @@ def draw_graph(data, width, height):
             x_labels += f"{i // 10:>2}"  # labels added every 10 units
         else:
             x_labels += " "
-    print(x_labels)
+    print(f"\033[{start_of_graph_row + counter + 2};0H{x_labels}")
 
     # THIS IS THE LINE THAT GETS THE CURSOR BACK TO INPUT LINE
     print(f"\033[7;0H")
@@ -274,43 +283,81 @@ def draw_graph(data, width, height):
 # keyboard functionality
 
 def move_up():
-    global current_index
-    if current_index > 0:
-        current_index -= 1
+    global current_index, transaction_amount
+    if mode:
+        transaction_amount += 1
+    else:
+        if current_index > 0:
+            current_index -= 1
     print_menu()
 
+
 def move_down():
-    global current_index
-    if current_index < len(stocks) - 1:
-        current_index += 1
+    global current_index, transaction_amount
+    if mode:
+        if transaction_amount > 0:
+            transaction_amount -= 1
+    else:
+        if current_index < len(stocks) - 1:
+            current_index += 1
     print_menu()
 
 def select_stock():
-    global selected_stock
-    selected_stock = stocks[current_index]
-    print_menu()
-    # Add your buy/sell logic here
+    global selected_stock, transaction_amount, mode, graph_display_mode
+    if mode:
+        print(f"\n{mode.capitalize()}ing {transaction_amount} shares of {selected_stock}.")
+        # Here you can add the logic to actually perform the transaction
+        if mode == "buy":
+            player1_portfolio.buy_stock(selected_stock, transaction_amount)
+        if mode == "sell":
+            player1_portfolio.sell_stock(selected_stock, transaction_amount)
+        selected_stock = None
+        transaction_amount = 0
+        mode = None
+        print_menu()
+    else:
+        selected_stock = stocks[current_index]
+        graph_display_mode = False
+        print_menu()
 
 def display_graph():
-    global selected_stock
-    selected_stock = stocks[current_index]
-    print_menu()
-    print(f"\nDisplaying graph for: {selected_stock}")
-    build_graph()
+    global selected_stock, graph_display_mode
+    if selected_stock:
+        graph_display_mode = True
+        print(f"\033[15;0HDisplaying graph for: {selected_stock}")
+        build_graph()
 
 
 
 def print_menu():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("Select a stock to buy, sell, or view graph:")
+    #os.system('cls' if os.name == 'nt' else 'clear')
+
+    for i in range(8, 15):
+        print(f"\033[{i};0H{' ' * 80}")
+
+    print("\033[8;0HSelect a stock to buy, sell, or view graph:")
     for i, stock in enumerate(stocks):
+        print(f"\033[{9 + i}; 0H", end="")
         if i == current_index:
             print(f"> {stock}")
         else:
             print(f"  {stock}")
     if selected_stock:
-        print(f"\nYou selected: {selected_stock}")
+        print(f"\033[{9 + len(stocks)};0HYou selected: {selected_stock}")
+        if mode == "buy" or mode == "sell":
+            print(f"\033[{10 + len(stocks)};0HTransaction amount: {transaction_amount}")
 
+def buy_mode():
+    global mode
+    if selected_stock:
+        mode = "buy"
+        print_menu()
+
+def sell_mode():
+    global mode
+    if selected_stock:
+        mode = "sell"
+        print_menu()
 
 def listen_for_keys():
     print_menu()
@@ -318,7 +365,8 @@ def listen_for_keys():
     keyboard.add_hotkey('s', move_down)
     keyboard.add_hotkey('enter', select_stock)
     keyboard.add_hotkey('g', display_graph)
-    # need to add buy sell and by how much functionality
+    keyboard.add_hotkey('ctrl+b', buy_mode)
+    keyboard.add_hotkey('ctrl+s', sell_mode)
     keyboard.wait('esc')
 
 
@@ -342,7 +390,7 @@ if __name__ == '__main__':
     # create threads
     graph_chart_thread = threading.Thread(target=build_graph, args=())
     stock_display_thread = threading.Thread(target=display_stock_prices, args=(market,))
-    keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=( ))
+    keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=())
 
     # start threads
     graph_chart_thread.start()
