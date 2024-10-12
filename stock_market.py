@@ -38,7 +38,7 @@ class portfolio:
         has_stocks = False
         for stock_ticker, num_shares in self.owned_stocks.items():
             if num_shares > 0:
-                stock_price = self.stock_market.get_stock_price(stock_ticker)  # Fetch the latest price
+                stock_price = self.stock_market.get_stock_price(stock_ticker)  # fetch the latest price
                 portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Price: ${stock_price:.5f}")
                 has_stocks = True
         if not has_stocks:
@@ -306,7 +306,6 @@ def select_stock():
     global selected_stock, transaction_amount, mode, graph_display_mode
     if mode:
         print(f"\n{mode.capitalize()}ing {transaction_amount} shares of {selected_stock}.")
-        # Here you can add the logic to actually perform the transaction
         if mode == "buy":
             player1_portfolio.buy_stock(selected_stock, transaction_amount)
         if mode == "sell":
@@ -330,7 +329,6 @@ def display_graph():
 
 
 def print_menu():
-    #os.system('cls' if os.name == 'nt' else 'clear')
 
     for i in range(8, 15):
         print(f"\033[{i};0H{' ' * 80}")

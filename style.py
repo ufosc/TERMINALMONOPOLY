@@ -104,5 +104,6 @@ def get_graphics() -> dict:
                  'commands': text[8],
                  'chance cards text': text[9].strip(),
                  'community chest text': text[10].strip(),
+                 'help stocks': text[11].strip()
                  } 
     return text_dict
