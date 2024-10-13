@@ -1,5 +1,7 @@
 import screenspace as ss
 import style as s
+import random
+from player_class import Player
 
 class PlayerModules():
     # Color literals for printing board
@@ -137,3 +139,46 @@ class PlayerModules():
     
 class BankerModules():
     pass
+
+class CasinoModule():
+    """ Casino Module with various gambling games"""
+    def game_select():
+        pass
+    def black_jack():
+        pass
+    def coin_flip(player: Player):
+        """
+        Parameters : player (Player class)
+        returns : null
+
+        Description: Allows a player to make a 50/50 wager, if it hits they double their wager
+        """
+        def get_wager():
+            try:
+                wagerT = int(input("\033Enter Wager amount"))
+                return wagerT
+            except:
+                print("\033Must enter an integer.")
+                return get_wager()
+        def get_choice():
+            try:
+                choiceT = input("\033Heads or Tails? (H/T)")
+                if(choiceT == "H"):
+                    return 1
+                elif(choiceT == "T"):
+                    return 0
+                else:
+                    raise ValueError("\033Invalid choice. Please enter 'H' for Heads or 'T' for Tails.")
+            except ValueError as e:
+                return get_choice()
+
+        wager = get_wager()
+        choice = get_choice()
+        flip = random.choice([0, 1])
+        if(flip == choice):
+            player.cash += wager
+        else:
+            player -= wager
+
+    def texas_holdem():
+        pass
