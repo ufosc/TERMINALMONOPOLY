@@ -75,8 +75,10 @@ class BattleshipGame():
     def __init__(self) -> None:
         self.board = self.generate_water_and_coords()
         self.players = 1
+        self.player_names = []
         self.ships = [[] * self.players]
         self.changed_coords = []
+        self.gamestate = 'placing ships' # other gamestates are 'p1 turn', 'p2 turn', 'p3 turn', 'p4 turn' 
 
     def generate_water_and_coords(self) -> str:
         texture = ""
@@ -106,29 +108,22 @@ class BattleshipGame():
 
     def print_explosion(self, x: int, y: int) -> str:
         text = ""
-        # for i in range(3):
-        #     for j in range(3):
-        #         text += s.set_cursor_str(x+i,y+j)
-        #         text += random.choice([s.COLORS.ORANGE, s.COLORS.RED])
-        #         text += random.choice(["░", "▒", "▓"])
         text += s.set_cursor_str(x,y) + random.choice([s.COLORS.ORANGE, s.COLORS.RED]) + random.choice(["░", "▒", "▓"])
         return text
 
     def print_miss(self, x: int, y: int) -> str:
         text = s.COLORS.LIGHTGRAY
-        # for i in range(3):
-        #     for j in range(3):
-        #         text += s.set_cursor_str(x+i,y+j)
-        #         text += random.choice(["░", "▒", "▓"])
         text += s.set_cursor_str(x,y) + random.choice(["░", "▒", "▓"])
 
         return text
 
-    def popup(self, message: str, writeto: str, color: str = s.COLORS.WHITE) -> str: 
+    def popup(self, message: str, color: str = s.COLORS.WHITE) -> str: 
+        """
+        ...fill in comment
+        x and y params should be top left corner of terminal.
+        """
         message = message + " " * max(0, (78 - len(message)))
         # Max 78 character popup for messaging the player.
-
-        # @TODO Adjust for other active terminals. Currently only works in terminal 1 (top left)
 
         p = color + s.set_cursor_str(25, 5)
         outline = s.get_graphics()["popup 1"].split("\n")
@@ -137,13 +132,12 @@ class BattleshipGame():
             if 0 < i < 4:
                 # Custom text wrapping
                 p += s.set_cursor_str(27, 5+i) + message[(i-1)*26:(i-1)*26+26]
-        writeto += p
-        return writeto
-
+        return p 
 
     def get_valid_int(self, prompt):
         while True:
             try:
+                s.set_cursor(0, ss.INPUTLINE)
                 value = int(input(prompt))
                 return value
             except ValueError:
@@ -175,9 +169,9 @@ class BattleshipGame():
                         ship.y = y
                         self.ships[player_num].append(ship)
                     else:
-                        return self.popup(f"Error! This ship is on    another ship. Recall this ship size is {ship.size}", return_board, s.COLORS.RED)
+                        return self.popup(f"Error! This ship is on    another ship. Recall this ship size is {ship.size}", s.COLORS.RED)
                 else:
-                    return self.popup(f"Error! Out of bounds. Max x is {ss.cols-ship.size[0]}. Max y is {ss.rows-ship.size[1]}", return_board, s.COLORS.RED)
+                    return self.popup(f"Error! Out of bounds. Max x is {ss.cols-ship.size[0]}. Max y is {ss.rows-ship.size[1]}", s.COLORS.RED)
 
             return_board = self.get_ship_board(player_num)   
             s.set_cursor(0, ss.INPUTLINE)
@@ -202,9 +196,9 @@ class BattleshipGame():
                                 new_ship.y = y
                                 self.ships[player_num].insert(move, new_ship)
                             else:
-                                return self.popup(f"Error! This ship is on    another ship. Recall this ship size is {new_ship.size}", return_board, s.COLORS.RED)
+                                return self.popup(f"Error! This ship is on    another ship. Recall this ship size is {new_ship.size}", s.COLORS.RED)
                         else:
-                            return self.popup(f"Error! Out of bounds. Max x is {ss.cols-new_ship.size[0]}. Max y is {ss.rows-new_ship.size[1]}", return_board, s.COLORS.RED)
+                            return self.popup(f"Error! Out of bounds. Max x is {ss.cols-new_ship.size[0]}. Max y is {ss.rows-new_ship.size[1]}", s.COLORS.RED)
                     return_board = self.get_ship_board(player_num)   
                     done = input("Does this look good? y for yes, anything else for no.")
 
@@ -218,7 +212,7 @@ class BattleshipGame():
         return current_board
 
     def attack(self):
-        while(len(self.p1ships) > 0):
+        while(len(self.ships) > 0): # not correct final logic, temporary
             s.set_cursor(0, ss.INPUTLINE)
             x = self.get_valid_int("Enter x-coordinate for your attack: ")
             if x < 2 or x > 74:
@@ -233,40 +227,39 @@ class BattleshipGame():
                 continue
             else:   
                 self.changed_coords.append((x,y))
-                for ship in self.p1ships: # @TODO change for more players
-                    if self.is_overlapping(x, y, (1,1)) == ship:
-                        self.popup(f"Hit! You hit the {ship.name}!", s.COLORS.dispBLUE)
-                        self.board += self.print_explosion(x+1, y+1)
-                        ship.health -= 1
-                        if ship.health == 0:
-                            self.p1ships.remove(ship)
-                            for i in range(ship.size[0]):
-                                for j in range(ship.size[1]):
-                                    self.board += self.print_explosion(ship.x+i+1, ship.y+j+1)
-                            self.popup(f"You sunk the {ship.name}!", s.COLORS.dispBLUE)
-                        break
-                    else:
-                        self.popup("Miss!.", s.COLORS.RED)
-                        self.board += self.print_miss(x+1, y+1)
+                for player_ship_list in self.ships:
+                    for ship in player_ship_list:
+                        if self.is_overlapping(x, y, (1,1)) == ship:
+                            self.popup(f"Hit! You hit the {ship.name}!", s.COLORS.dispBLUE)
+                            self.board += self.print_explosion(x+1, y+1)
+                            ship.health -= 1
+                            if ship.health == 0:
+                                player_ship_list.remove(ship)
+                                for i in range(ship.size[0]):
+                                    for j in range(ship.size[1]):
+                                        self.board += self.print_explosion(ship.x+i+1, ship.y+j+1)
+                                self.popup(f"You sunk the {ship.name}!", s.COLORS.dispBLUE)
+                            break
+                        else:
+                            self.popup("Miss!.", s.COLORS.RED)
+                            self.board += self.print_miss(x+1, y+1)
             s.set_cursor(0, ss.INPUTLINE)
             input("Press enter to continue.")
             print(self.get_board())
         
 def start_game() -> BattleshipGame:
     ships = BattleshipGame()
-    # print(ships.board)
     return ships
 
 if __name__ == "__main__":
     os.system("cls")
 
     ships = BattleshipGame()
-    ships.board = ships.generate_water_and_coords()
     print(ships.board)
-    ships.place_ships(ships.board, 0)
-    s.set_cursor(0,0)
-    print(ships.board)
-    # print(ships.get_ship_board(0, ships.board))
+    # ships.place_ships(ships.board, 0)
+    # s.set_cursor(0,0)
+    # print(ships.board)
+    # print(ships.get_ship_board(0))
 
     # def unittest1():
     #     ships.p1ships = [Ship(3,10,"patrol"), Ship(12,2,"submarine"), Ship(33,5,"destroyer"), Ship(50,7,"battleship"), Ship(15,9,"carrier")]

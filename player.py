@@ -5,7 +5,7 @@ import style as s
 from style import COLORS
 import screenspace as ss
 import modules as m
-import networking as n
+import networking as net
 
 game_running = False
 text_dict = {}
@@ -13,6 +13,7 @@ active_terminal = 1
 sockets = (socket.socket, socket.socket)
 ADDRESS = ""
 PORT = 0
+name = ""
 balance = 0
 properties = 0
 calculator_history_queue = []
@@ -45,6 +46,11 @@ def initialize():
     sockets = (client_receiver, client_sender)
     ADDRESS = input("Enter Host IP: ")
     PORT = input("Enter Host Port: ")
+
+    # temp vbls for local testing
+    ADDRESS = '192.168.56.1'
+    PORT = '3131'
+
     s.print_w_dots("Press enter to connect to the server...", end='')
     input()
     try:
@@ -167,7 +173,7 @@ def list_properties() -> None:
     Parameters: None
     Returns: None
     """
-    ss.update_quadrant(active_terminal, text_dict.get('properties'))
+    ss.update_quadrant(active_terminal, text_dict.get('properties'), padding=True)
 
 def game_input() -> None:
     """
@@ -259,10 +265,19 @@ def get_input() -> None:
             # On empty input make sure to jump up one console line
             ss.overwrite("\r")
         elif stdIn == "ships":
+            # Access game from banker
             sockets[1].send('ships'.encode())
             sleep(0.1)
-            board_data = n.receive_message(sockets[1])
-            ss.update_quadrant(active_terminal, board_data)
+            board_data = net.receive_message(sockets[1])
+            ss.update_quadrant(active_terminal, board_data, padding=False)
+
+            # Get current gamestate and respond accordingly
+            gamestate = net.receive_message(sockets[1])
+
+            if gamestate == f'{name}\'s turn to place ships!':
+                pass
+            
+
         elif stdIn.startswith('reset'):
             ss.calibrate_screen('player')
             ss.clear_screen()
@@ -283,7 +298,7 @@ if __name__ == "__main__":
     """
     get_graphics()
 
-    # initialize()
+    initialize()
 
     ss.make_fullscreen()
     ss.calibrate_screen('player')

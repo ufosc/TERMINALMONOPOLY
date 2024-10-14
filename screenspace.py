@@ -11,17 +11,12 @@ from style import get_graphics
 import platform
 import ctypes
 import shutil
+import re
 
 # Each quadrant is half the width and height of the screen 
-global rows, cols, quadrants
+global rows, cols
 rows = HEIGHT//2
 cols = WIDTH//2
-
-quadrants = [
-    ['1' * cols] * rows, 
-    ['2' * cols] * rows, 
-    ['3' * cols] * rows, 
-    ['4' * cols] * rows]
 
 def print_board(gameboard: list[str]) -> None:
     """
@@ -39,14 +34,51 @@ def print_board(gameboard: list[str]) -> None:
     for y in range(len(gameboard)):
         print(gameboard[y])
 
-def update_quadrant(n: int, data: str, padding: bool = False):
+def notification(msg: str, n: int, color: str) -> str:
+    message = message + " " * max(0, (78 - len(message)))
+        # Max 78 character popup for messaging the player.
+    match n:
+        case 1:
+            x,y = 2+10,2+5
+        case 2:
+            x,y = cols+3+10, 2+5
+        case 3:
+            x,y = 2+10, rows+3+5
+        case 4:
+            x,y = cols+3+10, rows+3+5
+        case -1:
+            x,y = cols - 20, rows - 5
+
+    p = color + set_cursor_str(x, y)
+    outline = get_graphics()["popup 1"].split("\n")
+    for i in range(len(outline)):
+        p += set_cursor_str(x, y+i) + outline[i]
+        if 0 < i < 4:
+            # Custom text wrapping
+            p += set_cursor_str(x+2, y+i) + message[(i-1)*26:(i-1)*26+26]
+    writeto += p
+    return writeto
+
+
+def replace_sequence(match, x, y):
+    # Extract the number N from the matched string
+    nx = int(match.group(2))
+    ny = int(match.group(1))
+
+    # Calculate the new x and y coordinates
+    new_x = nx + x
+    new_y = ny + y
+    # Return the new sequence
+    return f"\033[{new_y};{new_x}H"
+
+def update_quadrant(n: int, data: str, padding: bool = True):
     """
     Better quadrant update function.
     This exceeds others because it immediately updates a single quadrant with the new data.
     Previously, the screen would not update until print_screen() was called.
     Furthermore, print_screen() would overwrite the entire screen, which is not ideal and slower. 
-    @TODO This function should be used in place of update_quadrant() in all cases.
-    @TODO Also need to implement usage corrections to print_screen().
+
+    Set padding = True if you're not sure whether your module needs padding. 
     """
 
     # Sets the x and y coordinates based on the quadrant number corresponding to the top left corner of the quadrant plus border padding.
@@ -61,15 +93,22 @@ def update_quadrant(n: int, data: str, padding: bool = False):
             x,y = cols+3, rows+3
 
     if data:
+
+        # These lines are taking any additional string fragments that use "set_cursor_string()" from 
+        # style.py and update the x,y coordinates to 
+
+        pattern = r'\033\[(\d+);(\d+)H'
+        data = re.sub(pattern, lambda m: replace_sequence(m, x, y), data)
+        
         line_list = data.split('\n')
-        if len(line_list) > rows:
+        if len(line_list) > rows and padding:
             line_list = line_list[:rows] # Truncate if necessary bc someone might send a long string
         for i in range(len(line_list)):
             set_cursor(x,y+i)
             if padding:
                 line_list[i] = line_list[i] + " " * (cols - len(line_list[i]))
 
-            print(line_list[i] if len(line_list[i]) <= cols else line_list[i][:cols]) # Truncate if necessary bc someone might send a long string
+            print(line_list[i][:cols] if len(line_list[i]) > cols and padding else line_list[i]) # Truncate if necessary bc someone might send a long string
         for i in range(len(line_list), rows):
             set_cursor(x,y+i)
             print(" " * cols)

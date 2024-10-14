@@ -11,7 +11,7 @@ from time import sleep
 
 bank_cash = 100000
 starting_cash = 1500
-players = 0
+players = []
 port = 3131
 board = ""
 active_games = []
@@ -64,11 +64,8 @@ def start_server() -> socket.socket:
     ip_address = socket.gethostbyname(host)
 
     # Choose a port that is free
-    port = int(input("Choose a port, such as 3131: "))
-
-    # Ask for the names of the players
-    for player in players:
-        player.name = input(f"\033[36;0HWhat is {player.name}'s name? ")     
+    # port = int(input("Choose a port, such as 3131: "))
+    port = 3131
 
     # Bind to the port
     # server_socket.bind(('localhost', port))
@@ -88,7 +85,7 @@ def start_server() -> socket.socket:
     while not game_full:
         # Accepts connections while there are less than <num_players> players
         sleep(1)
-        if players != num_players:
+        if len(players) != num_players:
             client_socket, addr = server_socket.accept()
             print("Got a connection from %s" % str(addr))
             client_handler = threading.Thread(target=handshake, args=(client_socket,handshakes))
@@ -126,7 +123,7 @@ def start_receiver():
         server.listen()
         s.print_w_dots('[RECEIVER] Receiver accepting connections at {}'.format(port+1))
         to_read = [server]  # add server to list of readable sockets.
-        players = {}
+        clients = {}
         while True:
             # check for a connection to the server or data ready from clients.
             # readers will be empty on timeout.
@@ -136,7 +133,7 @@ def start_receiver():
                     player,address = reader.accept()
                     # Client(player, 'Player', starting_cash, [])
                     s.print_w_dots('Player connected from: ' + address[0])
-                    players[player] = address # store address of client in dict
+                    clients[player] = address # store address of client in dict
                     to_read.append(player) # add client to list of readable sockets
                 else:
                     data = reader.recv(1024)
@@ -146,8 +143,8 @@ def start_receiver():
                     if not data: # No data indicates disconnect
                         s.print_w_dots(f'Player at {address[0]} disconnected.')
                         to_read.remove(reader) # remove from monitoring
-                        del players[reader] # remove from dict as well
-                        if(len(players) == 0):
+                        del clients[reader] # remove from dict as well
+                        if(len(clients) == 0):
                             s.print_w_dots('[RECEIVER] All connections dropped. Receiver stopped.')
                             return
             print(f'Time passed since last command: {timer}. ',flush=True,end='\r')
@@ -176,26 +173,35 @@ def handle_data(data: bytes, client: socket.socket = None) -> str:
     elif data.decode() == 'ships':
         if len(active_games) == 0:
             s.print_w_dots('No active games to join.')
-            number_of_players = 2
-            s.print_w_dots('Creating new game with 2 players.')
+            number_of_players = 1
+            s.print_w_dots(f'Creating new game with {number_of_players} players.')
             battleship_game = battleship.start_game()
-            active_games.append(Game('Battleship', [None * number_of_players], battleship_game.get_board(), battleship_game))
+            active_games.append(Game('Battleship', [None] * number_of_players, battleship_game.board, battleship_game))
             s.print_w_dots('Game created.')
+            # @TODO adjust for additional games. battleship is not necessarily in 0th spot
+            # likewise, player 0 is not always the client communication.. use find or in fxn
             active_games[0].players[0] = client
+            active_games[0].other_data.player_names.append(players[0].name)
             s.print_w_dots(f'Player {client} joined game.')
-            battleship_board = battleship_game.board
-
+            battleship_board = battleship_game.board + battleship_game.popup("Test")
+            print(battleship_board)
             print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
             networking.send_message(client, battleship_board)
-            
             s.print_w_dots(f'Gameboard sent to player {client}')
         else:
-            battleship_board = active_games[0].other_data.board
+            battleship_board = active_games[0].other_data.board + active_games[0].other_data.popup("Test")
             
             print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
             networking.send_message(client, battleship_board)
             
             s.print_w_dots(f'Gameboard sent to player {client}')
+        
+        if active_games[0].other_data.gamestate == 'placing ships':
+            # assuming player 0 in battleship
+                if len(active_games[0].other_data.ships[0]) != 5: 
+                    networking.send_message(client, f'{players[0].name}\'s turn to place ships!')
+
+
 
 def handshake(client_socket: socket.socket, handshakes: list):
     """
@@ -207,16 +213,16 @@ def handshake(client_socket: socket.socket, handshakes: list):
         initialization. 
     handshakes (list) Boolean list of successful handshakes. By default, all values are false.  
     """
-    global players, player_data
+    global players
     # Attempt handshake
     client_socket.send("Welcome to the game!".encode('utf-8'))
     message = client_socket.recv(1024).decode('utf-8')
     if message == "Connected!":
-        handshakes[players] = True
-        players += 1
-        # player_data[players][socket.socket] = client_socket
+        handshakes[len(players)] = True
+        players.append(Client(client_socket, 'Player 1', 2000, []))
+        players[len(players)-1].name = input(f"\033[36;0HWhat is this player's name? ")     
     else: 
-        handshakes[players] = False
+        handshakes[len(players)] = False
 
 def set_gamerules() -> None:
     """
