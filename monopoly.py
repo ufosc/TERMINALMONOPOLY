@@ -165,10 +165,10 @@ def refresh_h_and_s():
 
 def buy_logic():
     CL = players[turn].location
-    input("\033[37;0HBuy?") # Add buy logic
+    choice = input("\033[37;0Hb to buy, enter to continue?")
     if(board.locations[CL].purchasePrice != 0):
         price = board.locations[CL].purchasePrice
-        if(players[turn].cash > price):
+        if(players[turn].cash > price and choice == 'b'):
             players[turn].buy(CL, board)
             board.locations[CL].owner = turn
             update_history(f"{players[turn].name} bought {board.locations[CL].name} for ${price}")
