@@ -106,8 +106,8 @@ def get_graphics() -> dict:
                  'community chest text': text[10].strip(),
                  'popup 1': text[11].strip(),
                  'terminals': text[12].strip(),
-                 'fishing 1 idle': text[13],
-                 'fishing 1 win': text[14],
+                 'fishing 1 idle': text[13].lstrip(),
+                 'fishing 1 win': text[14].lstrip(),
                  'fishing 1 carp': text[15].replace('\n', ''),
                  'fishing 1 bass': text[16].replace('\n', ''),
                  'fishing 1 salmon': text[17].replace('\n', '')

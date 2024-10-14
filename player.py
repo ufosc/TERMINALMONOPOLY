@@ -48,8 +48,8 @@ def initialize():
     PORT = input("Enter Host Port: ")
 
     # temp vbls for local testing
-    ADDRESS = '192.168.56.1'
-    PORT = '3131'
+    # ADDRESS = '192.168.56.1'
+    # PORT = '3131'
 
     s.print_w_dots("Press enter to connect to the server...", end='')
     input()
@@ -228,6 +228,9 @@ def get_input() -> None:
     """
     global active_terminal
     stdIn = ""
+
+    fishing_gamestate = 'start'
+
     while(stdIn != "exit"):
         stdIn = input(COLORS.WHITE+'\r').lower().strip()
         if stdIn.startswith("help"):
@@ -277,7 +280,14 @@ def get_input() -> None:
             if gamestate == f'{name}\'s turn to place ships!':
                 pass
             
+        elif stdIn == "fish":
+            fishing_gamestate = 'start'
+            while(fishing_gamestate != 'e'):
+                game_data, fishing_gamestate = m.fishing(fishing_gamestate)
+                ss.update_quadrant(active_terminal, game_data, padding=False)
 
+            ss.set_cursor(0, ss.INPUTLINE)
+ 
         elif stdIn.startswith('reset'):
             ss.calibrate_screen('player')
             ss.clear_screen()
