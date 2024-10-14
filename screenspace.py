@@ -119,6 +119,15 @@ def update_quadrant(n: int, data: str, padding: bool = True):
         for i in range(rows):
             set_cursor(x,y+i)
             print(f'{n}' * cols)
+        set_cursor(x=x-12 + cols//2, y= y-2+rows//2)
+        print('╔══════════════════════╗')
+        
+        set_cursor(x=x-12 + cols//2, y= y-1+rows//2)
+        print('║ Awaiting commands... ║')
+
+        set_cursor(x=x-12 + cols//2, y= y-0+rows//2)
+        print('╚══════════════════════╝')
+
 
 def update_terminal(n: int, o: int):
     """
