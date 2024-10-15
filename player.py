@@ -313,6 +313,9 @@ def get_input() -> None:
             ss.clear_screen()
             ss.initialize_terminals()
             ss.overwrite(COLORS.GREEN + "Screen calibrated.")
+        elif stdIn == "casino":
+            import casino
+            casino.module(active_terminal)
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
             ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
