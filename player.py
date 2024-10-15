@@ -156,7 +156,7 @@ def calculate() -> None:
             ss.update_quadrant(active_terminal, calculator_terminal_response(1))
             ss.print_screen()
 
-def balance() -> None:
+def display_balance() -> None:
     """
     Display player's cash, assets, etc. 
 
@@ -293,6 +293,9 @@ def get_input():
         elif stdIn == "promo":
             import promo
             promo.main()
+        elif stdIn == "casino":
+            import casino
+            casino.module(active_terminal)
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
             ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
