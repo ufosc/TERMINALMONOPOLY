@@ -2,19 +2,6 @@ import screenspace as ss
 import style as s
 from fishing import fishing_game
 
-# Color literals for printing board
-COLORS = {"BROWN": "\033[38;5;94m",
-        "LIGHTBLUE": "\033[38;5;117m",
-        "ROUGE": "\033[38;5;162m",
-        "ORANGE": "\033[38;5;202m",
-        "RED": "\033[38;5;9m",
-        "YELLOW": "\033[38;5;226m",
-        "GREEN": "\033[38;5;2m",
-        "BLUE": "\033[38;5;12m",
-        "WHITE": "\033[38;5;15m",
-        "CYAN": "\033[38;5;14m",
-        "LIGHTGRAY": "\033[38;5;7m"}
-
 def calculator() -> str:
     """A simple calculator module that can perform basic arithmetic operations."""
     #Uses recursion to calculate.
@@ -98,6 +85,26 @@ def calculator() -> str:
 
     print(s.COLORS.RESET, end='')
     return wrappedResponse
+
+def list_properties() -> str:
+    """
+    Temporary function to list all properties on the board by calling the property list stored in ascii.txt.
+    Can be reworked to add color and better formatting.
+    
+    Parameters: None
+    Returns: None
+    """
+    ret_val = ""
+    props = s.get_graphics().get('properties').split('\n')
+    for prop in props:
+        if prop == '': 
+            ret_val += ' '.center(75) + '\n' 
+            continue
+        first_word = prop.split()[0]
+        color = getattr(s.COLORS, first_word.upper(), s.COLORS.RESET)
+        centered_prop = prop.center(75)
+        ret_val +=color+ centered_prop + s.COLORS.RESET + '\n'
+    return ret_val
 
 def trade():
     pass

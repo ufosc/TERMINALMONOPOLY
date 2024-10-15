@@ -36,9 +36,9 @@ class fishing_game():
             
             retval += set_cursor_str(24 - (1 if fish == 'salmon' else 0), 3) + 'Nice job, you caught a ' + fish + '!'
             fish_graphic = self.__fishies['fishing 1 ' + fish]
-            retval += set_cursor_str(36,8) + fish_graphic[0:3]
-            retval += set_cursor_str(36,9) + fish_graphic[3:6]
-            retval += set_cursor_str(36,10) + fish_graphic[6:9]
+            retval += set_cursor_str(36,7) + fish_graphic[0:3]
+            retval += set_cursor_str(36,8) + fish_graphic[3:6]
+            retval += set_cursor_str(36,9) + fish_graphic[6:9]
 
         else:    
             retval += set_cursor_str(33, 3) + 'No luck...'

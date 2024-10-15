@@ -72,6 +72,11 @@ def print_w_dots(text: str, size: int=50, end: str='\n') -> None:
         text += '.'
     print(COLORS.dispGREEN+text, end=COLORS.RESET+end)
 
+def center_lines(text, width):
+        lines = text.split('\n')
+        centered_lines = [line.center(width) for line in lines]
+        return '\n'.join(centered_lines)
+
 def get_graphics() -> dict:
     """
     Reads all graphics from ascii.txt into a dictionary.
@@ -89,16 +94,14 @@ def get_graphics() -> dict:
     - 'logo' The game logo.
     - 'history and status' Information about the game history and status.
     """
-
     with open("ascii.txt", encoding='utf-8') as f:
         text = f.read().split("BREAK_TEXT")
-    text_dict = {'help': text[0].strip(),
+    text_dict = {'help': text[0].rstrip(),
                  'properties': text[1],
-                 # Use .strip() to remove whitespace if necessary
                  'divider': text[2].lstrip(),
                  'skull': text[3].lstrip(),
                  'gameboard': bytes(text[4].lstrip(), 'utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8'),
-                 'help 2': text[5],
+                 'help 2': center_lines(text[5], 75),
                  'logo': text[6],
                  'history and status': text[7],
                  'commands': text[8],

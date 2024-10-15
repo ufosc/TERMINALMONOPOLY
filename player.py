@@ -156,25 +156,6 @@ def calculate() -> None:
             update_history(player_equation)
             ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
 
-def balance() -> None:
-    """
-    Display player's cash, assets, etc. 
-
-    Parameters: None
-    Returns: None
-    """
-    pass
-
-def list_properties() -> None:
-    """
-    Temporary function to list all properties on the board by calling the property list stored in ascii.txt.
-    Can be reworked to add color and better formatting.
-    
-    Parameters: None
-    Returns: None
-    """
-    ss.update_quadrant(active_terminal, text_dict.get('properties'), padding=True)
-
 def game_input() -> None:
     """
     Main loop for ALL client-server interactions. Displays the gameboard. 
@@ -246,9 +227,9 @@ def get_input() -> None:
         elif stdIn == "calc":
             calculate()
         elif stdIn == "bal":
-            balance()
+            ss.update_quadrant(active_terminal, f'Cash on hand: {balance}'.center(ss.cols), padding=True)
         elif stdIn == "list":
-            list_properties()
+            ss.update_quadrant(active_terminal, m.list_properties(), padding=False)
         elif stdIn.startswith("term "):
             if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                 n = int(stdIn.strip().split(" ")[1])
@@ -285,7 +266,6 @@ def get_input() -> None:
             while(fishing_gamestate != 'e'):
                 game_data, fishing_gamestate = m.fishing(fishing_gamestate)
                 ss.update_quadrant(active_terminal, game_data, padding=False)
-
             ss.set_cursor(0, ss.INPUTLINE)
  
         elif stdIn.startswith('reset'):
@@ -308,10 +288,10 @@ if __name__ == "__main__":
     """
     get_graphics()
 
-    initialize()
-
-    ss.make_fullscreen()
-    ss.calibrate_screen('player')
+    # Feel free to comment out the 3 following lines for testing purposes.
+    # initialize()
+    # ss.make_fullscreen()
+    # ss.calibrate_screen('player')
 
     ss.clear_screen()
     ss.initialize_terminals()

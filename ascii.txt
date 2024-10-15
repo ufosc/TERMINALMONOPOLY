@@ -1,4 +1,4 @@
-...___         
+   ___         
  _|\  \__                          === HELP (1) ===
 |\   ____\      Welcome to Terminal Monopoly!                           
 \ \  \___|_         
@@ -19,25 +19,24 @@
                                                                \|___|\__\_|
                                                                     \|__| 
 BREAK_TEXT
-                        === PROPERTY LIST ===
+=== PROPERTY LIST ===
 
-Mediterranean Avenue <> Baltic Avenue
-Reading Railroad
-Oriental Avenue <> Vermont Avenue <> Conneticut Avenue
+BROWN SET: Mediterranean Avenue, Baltic Avenue
+LIGHTBLUE SET: Oriental Avenue, Vermont Avenue, Conneticut Avenue
 
-Electric Company
-St. Charles Place <> States Avenue <> Virginia Avenue
-Pennsylvania Railroad
-St. James Place <> Tennessee Avenue <> New York Avenue
+ROUGE SET: St. Charles Place, States Avenue, Virginia Avenue
+ORANGE SET: St. James Place, Tennessee Avenue, New York Avenue
 
-Kentucky Avenue <> Indiana Avenue <> Illinois Avenue 
-B&O Railroad
-Atlantic Avenue <> Ventnor Avenue <> Marvin Gardens
-Water Works
+RED SET: Kentucky Avenue, Indiana Avenue, Illinois Avenue 
+YELLOW SET: Atlantic Avenue, Ventnor Avenue, Marvin Gardens
 
-Pacific Avenue <> North Carolina Avenue <> Pennsylvania Avenue
-Short Line
-Park Place <> Boardwalk
+GREEN SET: Pacific Avenue, North Carolina Avenue, Pennsylvania Avenue
+BLUE SET: Park Place, Boardwalk
+
+RAILROADS: Reading Railroad, Pennsylvania Railroad, 
+B&O Railroad, Short Line
+
+UTILITIES: Electric Company, Water Works
 BREAK_TEXT
  ______ ______ ______ ______ ______
 |______|______|______|______|______|
@@ -99,24 +98,10 @@ BREAK_TEXT
 │▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ 
 └─────────────────────────────────────────────────────────────────────────────
 BREAK_TEXT
-  
-                                   === HELP (2) ===
-    
-    
-                              Gameboard Command List: 
+=== HELP (2) ===
 
-                    back - returns to terminal screens
-                    roll - ...
-
-
-
-
-
-
-
-
-
-
+back - returns to terminal screens
+fish - opens fish minigame. Press enter to catch a fish!
 
 
 BREAK_TEXT
