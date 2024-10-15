@@ -156,7 +156,7 @@ def calculate() -> None:
             ss.update_quadrant(active_terminal, calculator_terminal_response(1))
             ss.print_screen()
 
-def balance() -> None:
+def display_balance() -> None:
     """
     Display player's cash, assets, etc. 
 
