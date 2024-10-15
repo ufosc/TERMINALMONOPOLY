@@ -51,6 +51,7 @@ def draw(player, dealer, hidden,score):
     card_value, card_type = random.choice(list(cards.items()))
     if(card_value == 11 and not dealer and score[0] + 11 > 21):
         card_value = 1
+        card_type = "1"
     return [card_value, card_type, hidden]
 
 def turn(player, active_terminal, turn):
