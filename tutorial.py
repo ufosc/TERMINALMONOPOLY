@@ -35,7 +35,7 @@ players represented by a colored tile with circle   '
 - info section on different screens, enter to continue to next section screen
 """
 
-
+import os
 import screenspace as ss
 from style import COLORS
 import style
@@ -46,7 +46,7 @@ graphics = style.get_graphics()
 
 skipped = False # set/used by print_tutorial_screen to determine whether to continue printing past 1st page
 
-def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], border_color=COLORS.LIGHTGRAY) -> None:
+def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], border_color=COLORS.LIGHTGRAY) -> bool:
     """
     Parameters:
     cols (int): number of columns in the terminal
@@ -71,8 +71,7 @@ def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], bo
 
     title_padding = cols//2 - len(title)//2 - 1
 
-    if (len(obj_list) > 0):
-        pass
+    os.system('cls' if os.name == 'nt' else 'clear')
     
     #print top border with title
     screen_content.append(border_color +'╔' + ('═' * title_padding) + " " + title + " " + ('═' * (title_padding - (len(title)%2 == 1) * 1)) + '╗' + "   ")
@@ -125,20 +124,22 @@ skipped = print_tutorial_screen(cols, rows, "Terminal Monopoly", [
     {"col": 7, "row": 3, "num_lines": 0, "text":"Welcome to:"},
     {"col": 10, "row": 6, "num_lines": 17, "text":graphics["logo"]},
     {"col": 15, "row": 27, "num_lines": 0, "text":"The Last Game You'll Ever Play..."}
-], COLORS.CYAN)
+])
 
 if not skipped:
     print_tutorial_screen(cols, rows, "Page 1", [
         #all of the text is currently copilot nonsense to show that it works
         {"col": 3, "row": 2, "num_lines": 0, "text":"Firstly, what the hell is a Monopoly?"},
-        {"col": 5, "row": 5, "num_lines": 0, "text":"Terminal Monopoly is a text-based version of the classic board game Monopoly."},
-        {"col": 5, "row": 7, "num_lines": 0, "text":"The goal of the game is to make money from other players while avoiding bankruptcy."},
-        {"col": 5, "row": 9, "num_lines": 0, "text":"Each turn, players roll two dice and move around the board."},
-        {"col": 5, "row": 11, "num_lines": 0, "text":"Players start on the 'Go' tile and collect $200 for passing."},
+        {"col": 5, "row": 5, "num_lines": 0, "text":"• Monopoly is a classic board game where your goal is to make all of your friends go bankrupt!"},
+        {"col": 5, "row": 7, "num_lines": 0, "text":"• Each turn, players roll dice to go around the board, landing on properties as they go."},
+        {"col": 5, "row": 9, "num_lines": 0, "text":"• If you land on a property that is not owned by anybody, you can purchase it for yourself,"},
+        {"col": 9, "row": 10, "num_lines": 0, "text":"otherwise, you pay the person who owns it a fixed amount determined by the property card."},
+        {"col": 5, "row": 12, "num_lines": 0, "text":"• Properties are grouped into color sets. If you own all of the properties in a color set,"},
+        {"col": 9, "row": 13, "num_lines": 0, "text":"you can build houses on the properties, which increases the amount players will need to pay."},
     ])
 
     print_tutorial_screen(cols, rows, "Page 2", [
-
+        {"col": 3, "row": 2, "num_lines": 0, "text":"So, what makes Terminal Monopoly so special?"},
     ])
 
 
