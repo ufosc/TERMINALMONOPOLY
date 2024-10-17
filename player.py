@@ -3,11 +3,9 @@ import socket
 from time import sleep
 import style as s
 from style import COLORS
-from screenspace import Player as ss
-from modules import PlayerModules as m
-import platform
-import ctypes
-import shutil
+import screenspace as ss
+import modules as m
+import networking as net
 
 game_running = False
 text_dict = {}
@@ -15,6 +13,7 @@ active_terminal = 1
 sockets = (socket.socket, socket.socket)
 ADDRESS = ""
 PORT = 0
+name = ""
 balance = 0
 properties = 0
 calculator_history_queue = []
@@ -47,6 +46,11 @@ def initialize():
     sockets = (client_receiver, client_sender)
     ADDRESS = input("Enter Host IP: ")
     PORT = input("Enter Host Port: ")
+
+    # temp vbls for local testing
+    # ADDRESS = '192.168.56.1'
+    # PORT = '3131'
+
     s.print_w_dots("Press enter to connect to the server...", end='')
     input()
     try:
@@ -139,57 +143,18 @@ def calculate() -> None:
         calculator_history_queue.append((equation, numLines))
 
     # Initial comment in active terminal
-    ss.update_quadrant(active_terminal, calculator_terminal_response(1))
-    ss.print_screen()
+    ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
     # All other work is done on the work line (bottom of the screen)
     while True:
         player_equation = m.calculator()
         if(player_equation == "e"):
-            ss.update_quadrant(active_terminal, calculator_terminal_response(2))
-            ss.print_screen()
+            ss.update_quadrant(active_terminal, calculator_terminal_response(2), padding=True)
             break
         elif(player_equation == "error"):
-            ss.update_quadrant(active_terminal, calculator_terminal_response(3))
-            ss.print_screen()
+            ss.update_quadrant(active_terminal, calculator_terminal_response(3), padding=True)
         else:
             update_history(player_equation)
-            ss.update_quadrant(active_terminal, calculator_terminal_response(1))
-            ss.print_screen()
-
-def balance() -> None:
-    """
-    Display player's cash, assets, etc. 
-
-    Parameters: None
-    Returns: None
-    """
-    pass
-
-def list_properties() -> None:
-    """
-    Temporary function to list all properties on the board by calling the property list stored in ascii.txt.
-    Can be reworked to add color and better formatting.
-    
-    Parameters: None
-    Returns: None
-    """
-    ss.update_quadrant(active_terminal, text_dict.get('properties'))
-    ss.print_screen()
-
-def set_terminal(n: int) -> None:
-    """
-    Updates global "active_terminal" variable for all terminal updating needs. Also updates the active terminal
-    in screenspace module, and prints the new screen.
-    
-    Parameters: 
-    n (int) number [1-4] of which terminal to set as active. 
-    
-    Returns: None
-    """
-    global active_terminal
-    active_terminal = n
-    ss.update_active_terminal(n)
-    ss.print_screen()
+            ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
 
 def game_input() -> None:
     """
@@ -219,9 +184,9 @@ def game_input() -> None:
     
     while(stdIn != "back"):
         print(COLORS.GREEN+"Monopoly Screen: Type 'back' to return to the main menu.")
-        stdIn = input(COLORS.backYELLOW+COLORS.backBLACK+'\r').lower().strip()
+        stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
         if stdIn == "back":
-            ss.print_screen()
+            print('backed out of game...')
             # Breaks the loop, returns to get_input() 
             return
         elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
@@ -232,10 +197,9 @@ def game_input() -> None:
             ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
     # sockets[1].close()
-    # ss.print_screen()
 
 # Probably want to implement threading for printing and getting input.
-def get_input():
+def get_input() -> None:
     """
     Main loop for input handling while in the terminal screen. Essentially just takes input from user, 
     and if it is valid input, will run command on currently active terminal. 
@@ -243,14 +207,19 @@ def get_input():
     Parameters: None
     Returns: None
     """
+    global active_terminal
     stdIn = ""
+
+    fishing_gamestate = 'start'
+
     while(stdIn != "exit"):
-        stdIn = input(COLORS.backYELLOW+COLORS.BLACK+'\r').lower().strip()
+        stdIn = input(COLORS.WHITE+'\r').lower().strip()
         if stdIn.startswith("help"):
             if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
-                ss.update_quadrant(active_terminal, text_dict.get(stdIn))
-            else: ss.update_quadrant(active_terminal, text_dict.get('help'))
-            ss.print_screen()
+                ss.update_quadrant(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
+            else: 
+                ss.update_quadrant(active_terminal, text_dict.get('help'), padding=True)
+                ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
         elif stdIn == "game":
             game_input()
             stdIn = ""
@@ -258,134 +227,83 @@ def get_input():
         elif stdIn == "calc":
             calculate()
         elif stdIn == "bal":
-            balance()
+            ss.update_quadrant(active_terminal, f'Cash on hand: {balance}'.center(ss.cols), padding=True)
         elif stdIn == "list":
-            list_properties()
-        elif stdIn.startswith("dance"):
-            try: 
-                for i in range(int(stdIn[6:])):
-                    for j in range(4):
-                        set_terminal(j+1)
-                        sleep(0.05)
-            except:
-                ss.overwrite(COLORS.RESET + COLORS.RED + "Something went wrong.")
+            ss.update_quadrant(active_terminal, m.list_properties(), padding=False)
         elif stdIn.startswith("term "):
             if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
-                set_terminal(int(stdIn.strip().split(" ")[1]))
-                ss.print_screen()
-                ss.overwrite(COLORS.RESET + COLORS.GREEN + "\nActive terminal set to " + str(active_terminal) + ".")
+                n = int(stdIn.strip().split(" ")[1])
+                ss.update_terminal(n = n, o = active_terminal)
+                active_terminal = n
+                ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
             else:
                 ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
-            pass
         elif stdIn.startswith("deed"):
             if(len(stdIn) > 4):
-                ss.update_quadrant(active_terminal, m.deed(stdIn[5:]))
-                ss.print_screen()
+                ss.update_quadrant(active_terminal, m.deed(stdIn[5:]), padding=True)
         elif stdIn == "disable":
-            ss.update_quadrant_strictly(active_terminal, m.disable())
-            ss.print_screen()
+            ss.update_quadrant(active_terminal, m.disable())
         elif stdIn == "kill":
-            ss.update_quadrant_strictly(active_terminal, m.kill())
-            ss.print_screen()
+            ss.update_quadrant(active_terminal, m.kill())
         elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
             # On empty input make sure to jump up one console line
             ss.overwrite("\r")
-        elif stdIn == "promo":
-            import promo
-            promo.main()
+        elif stdIn == "ships":
+            # Access game from banker
+            sockets[1].send('ships'.encode())
+            sleep(0.1)
+            board_data = net.receive_message(sockets[1])
+            ss.update_quadrant(active_terminal, board_data, padding=False)
+
+            # Get current gamestate and respond accordingly
+            # gamestate = net.receive_message(sockets[1])
+
+            # if gamestate == f'{name}\'s turn to place ships!':
+            #     pass
+
+            
+
+
+            
+        elif stdIn == "fish":
+            fishing_gamestate = 'start'
+            while(fishing_gamestate != 'e'):
+                game_data, fishing_gamestate = m.fishing(fishing_gamestate)
+                ss.update_quadrant(active_terminal, game_data, padding=False)
+            ss.set_cursor(0, ss.INPUTLINE)
+ 
+        elif stdIn.startswith('reset'):
+            ss.calibrate_screen('player')
+            ss.clear_screen()
+            ss.initialize_terminals()
+            ss.overwrite(COLORS.GREEN + "Screen calibrated.")
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
-            ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
+            ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
     if stdIn == "exit" and game_running:
         ss.overwrite('\n' + ' ' * ss.WIDTH)
         ss.overwrite(COLORS.RED + "You are still in a game!")
         get_input()
 
-def make_fullscreen():
-    current_os = platform.system()
-
-    if current_os == "Windows":
-        # Maximize terminal on Windows
-        user32 = ctypes.WinDLL("user32")
-        SW_MAXIMIZE = 3
-        hWnd = user32.GetForegroundWindow()
-        user32.ShowWindow(hWnd, SW_MAXIMIZE)
-
-    elif current_os == "Linux" or current_os == "Darwin":
-        # Maximize terminal on Linux/macOS
-        os.system("printf '\033[9;1t'")
-    else:
-        print(f"Fullscreen not supported for OS: {current_os}")
-    
-def print_with_wrap(char, start_row, start_col):
-    # Get the terminal size
-    terminal_size = shutil.get_terminal_size()
-    width = terminal_size.columns
-    
-    # If the position exceeds the terminal width, handle wrapping
-    if start_col >= width:
-        # Calculate new row and column if it exceeds width
-        new_row = start_row + (start_col // width)
-        new_col = start_col % width
-        print(f"\033[{new_row};{new_col}H" + char, end="")
-    else:
-        # Default print
-        print(f"\033[{start_row};{start_col}H" + char, end="")
-
-def scaling_print():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    current_os = platform.system()
-    if current_os == "Darwin":
-        # Print out instructions for macOS users
-        print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling.")
-    else:
-        # Print out instructions for Linux/Windows users
-        print("Please use \"Ctrl\" + \"-\" or \"Ctrl\" + \"+\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
-    print("Proper scaling should only displays 4 cross that marks the corners of the board.")
-    print("If you are having trouble with scaling, try entering r to reset the display.")
-    print("After finishing scaling, please press enter to continue.")
-    scaling_test = input()
-
-    os.system('cls' if os.name == 'nt' else 'clear')
-    ss.print_screen()
-
-    print_with_wrap("X", 0, 0)
-    print_with_wrap("X", 0, 153)
-    print_with_wrap("X", 43, 153)
-    print_with_wrap("X", 43, 0)
-    print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
-    scaling_test = input()
-    while scaling_test != "":
-        os.system('cls' if os.name == 'nt' else 'clear')
-        ss.print_screen()
-        print_with_wrap("X", 0, 0)
-        print_with_wrap("X", 0, 153)
-        print_with_wrap("X", 43, 153)
-        print_with_wrap("X", 43, 0)
-        print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
-        scaling_test = input()
-    os.system('cls' if os.name == 'nt' else 'clear')
 
 if __name__ == "__main__":
-    make_fullscreen()
     """
     Main driver function for player.
     """
     get_graphics()
 
+    # Feel free to comment out the 3 following lines for testing purposes.
     initialize()
+    # ss.make_fullscreen()
+    # ss.calibrate_screen('player')
 
-    scaling_print()
-
+    ss.clear_screen()
+    ss.initialize_terminals()
+    ss.update_terminal(active_terminal, active_terminal)
+    
     # Prints help in quadrant 2 to orient player.
-    ss.update_quadrant(2, text_dict.get('help'))
-    # ss.update_quadrant(1, text_dict.get('gameboard'))
-
-    ss.print_screen()
-
+    ss.update_quadrant(2, text_dict.get('help'), padding=True)
     get_input()
-
-    # ss.print_board(text_dict.get('gameboard'))
 
     # s.print_w_dots("Goodbye!")
 

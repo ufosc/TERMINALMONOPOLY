@@ -6,8 +6,8 @@
   \|____|\  \   available in the TerminalMonopoly interface. 
     ____\_\  \  
    |\___    __\
-   \|___|\__\_|             Command List:                                 
-        \|__|   help <num> - display help messages (num = 1 by default)                
+   \|___|\__\_|             Command List:                          
+        \|__|   help <num> - display help messages (num = 1 by default)
                 game - switches ALL terminals to gameboard view___
                 term <num> - switch active terminal          _|\  \__
                   to num                                    |\   ____\
@@ -15,29 +15,28 @@
                 calc - calculator module for basic           \ \_____  \ 
                   arithmetic                                  \|____|\  \
                 deed <name> - access a property by name         ____\_\  \
-                  (accepts partial names)                      |\___    __\ 
-                                                               \|___|\__\_|  
-                                                                    \|__|                                             
+                  (accepts partial names)                      |\___    __\
+                                                               \|___|\__\_|
+                                                                    \|__| 
 BREAK_TEXT
-                        === PROPERTY LIST ===
+=== PROPERTY LIST ===
 
-Mediterranean Avenue <> Baltic Avenue
-Reading Railroad
-Oriental Avenue <> Vermont Avenue <> Conneticut Avenue
+BROWN SET: Mediterranean Avenue, Baltic Avenue
+LIGHTBLUE SET: Oriental Avenue, Vermont Avenue, Conneticut Avenue
 
-Electric Company
-St. Charles Place <> States Avenue <> Virginia Avenue
-Pennsylvania Railroad
-St. James Place <> Tennessee Avenue <> New York Avenue
+ROUGE SET: St. Charles Place, States Avenue, Virginia Avenue
+ORANGE SET: St. James Place, Tennessee Avenue, New York Avenue
 
-Kentucky Avenue <> Indiana Avenue <> Illinois Avenue 
-B&O Railroad
-Atlantic Avenue <> Ventnor Avenue <> Marvin Gardens
-Water Works
+RED SET: Kentucky Avenue, Indiana Avenue, Illinois Avenue 
+YELLOW SET: Atlantic Avenue, Ventnor Avenue, Marvin Gardens
 
-Pacific Avenue <> North Carolina Avenue <> Pennsylvania Avenue
-Short Line
-Park Place <> Boardwalk
+GREEN SET: Pacific Avenue, North Carolina Avenue, Pennsylvania Avenue
+BLUE SET: Park Place, Boardwalk
+
+RAILROADS: Reading Railroad, Pennsylvania Railroad, 
+B&O Railroad, Short Line
+
+UTILITIES: Electric Company, Water Works
 BREAK_TEXT
  ______ ______ ______ ______ ______
 |______|______|______|______|______|
@@ -99,24 +98,10 @@ BREAK_TEXT
 │▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ 
 └─────────────────────────────────────────────────────────────────────────────
 BREAK_TEXT
-  
-                                   === HELP (2) ===
-    
-    
-                              Gameboard Command List: 
+=== HELP (2) ===
 
-                    back - returns to terminal screens
-                    roll - ...
-
-
-
-
-
-
-
-
-
-
+back - returns to terminal screens
+fish - opens fish minigame. Press enter to catch a fish!
 
 
 BREAK_TEXT
@@ -221,4 +206,117 @@ BREAK_TEXT
 14. You are assessed for street repair. $40 per house. $115 per hotel. 
 15. You have won second prize in beauty contest. Collect $10.
 16. You inherit $100. 
+BREAK_TEXT
+╔════════════════════════════╗
+║                            ║
+║                            ║
+║                            ║
+╚════════════════════════════╝
+BREAK_TEXT
+╔═══════════════════════════════════════════════════════════════════════════╦═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+╠═══════════════════════════════════════════════════════════════════════════╬═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╩═══════════════════════════════════════════════════════════════════════════╝
+BREAK_TEXT
+┌─────────────────────────────────────────────────────────────────────────┐
+│             Press enter when you want to reel in the fish!              │
+│                                                                         │
+│                               e to exit...                              │
+│                                                                         │
+│                                /^`--                                    │
+│                               /    ---                                  │
+│                              /        ---                               │
+│                      _      /            ----                           │
+│                     / \    /                 ----                       │
+│                     \_/___/                      ----                   │
+│                     ||___/                           ---                │
+│                     ||                                  ---             │
+│═════════════════════\╗\                                    --           │
+│                     |_ |_                                    `v         │
+│                      ║^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^O^^^^^^^^^│
+│                      ║  ^^                             vvv        ^^    │
+│                      ║         ^^^                                      │
+│                      ║                           ^^           vv        │
+└─────────────────────────────────────────────────────────────────────────┘
+BREAK_TEXT
+┌─────────────────────────────────────────────────────────────────────────┐
+│                               Game over!                                │
+│                   ____                              .                   │
+│                  /    ----                                              │
+│                 /         ---                                           │
+│                │            ---            .      :                     │
+│                 \               --_                                     │
+│                  \                 v             .   .                  │
+│                  >`<  _                                                 │
+│                  \ \ / \                           .                    │
+│                   \_\\_/                         .         .            │
+│                      ||                            ..  . :  :           │
+│                     ||                .        .        :  ..: .   .    │
+│═════════════════════\╗\             .                  . .::   : .:     │
+│                     |_ |_         ..    .                .   .:  .      │
+│                      ║^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^│
+│                      ║     vv              ^^            vvv            │
+│                      ║                                              ^^^ │
+│                      ║        ^^^                            vv         │
+└─────────────────────────────────────────────────────────────────────────┘
+BREAK_TEXT
+ A 
+|_|
+/ \
+BREAK_TEXT
+ A 
+|Y|
+ A 
+BREAK_TEXT
+ A 
+/V\
+/|\
+BREAK_TEXT
+╔══════════════════════════════════════════════╗
+║                                              ║
+║                                              ║
+║                                              ║
+║                                              ║
+║                                              ║
+║                                              ║
+╚══════════════════════════════════════════════╝
 BREAK_TEXT
