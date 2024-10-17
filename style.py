@@ -113,7 +113,8 @@ def get_graphics() -> dict:
                  'fishing 1 win': text[14].lstrip(),
                  'fishing 1 carp': text[15].replace('\n', ''),
                  'fishing 1 bass': text[16].replace('\n', ''),
-                 'fishing 1 salmon': text[17].replace('\n', '')
+                 'fishing 1 salmon': text[17].replace('\n', ''),
+                 'popup 2': text[18],
                  } 
     return text_dict
 

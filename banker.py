@@ -4,27 +4,20 @@ import os
 import style as s
 import screenspace as ss 
 import battleship
-import networking
+import networking as net
+import gamemanager as gm
 
 import select
 from time import sleep
 
 bank_cash = 100000
 starting_cash = 1500
-players = []
+clients = []
 port = 3131
 board = ""
-active_games = []
+
 global timer
 timer = 0
-
-class Game:
-    def __init__(self, name: str, players: list, board: str, other_data):
-        self.name = name
-        self.players = players
-        self.board = board
-        self.other_data = other_data
-
 
 class Client:
     def __init__(self, socket: socket.socket, name: str, money: int, properties: list):
@@ -32,17 +25,7 @@ class Client:
         self.name = name
         self.money = money
         self.properties = properties
-        self.active_games = []
 
-def initialize_terminal():
-    """
-    Clears terminal and prints a welcome message to Banker.
-    
-    Parameters: None
-    Returns: None
-    """
-    os.system("cls")
-    print("Welcome to Terminal Monopoly, Banker!")
 
 def start_server() -> socket.socket:
     """
@@ -55,7 +38,7 @@ def start_server() -> socket.socket:
     Parameters: None
     Returns: Transmitter socket aka the Banker's sender socket.  
     """
-    global players, port
+    global clients, port
     # Create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -85,9 +68,9 @@ def start_server() -> socket.socket:
     while not game_full:
         # Accepts connections while there are less than <num_players> players
         sleep(1)
-        if len(players) != num_players:
+        if len(clients) != num_players:
             client_socket, addr = server_socket.accept()
-            print("Got a connection from %s" % str(addr))
+            print(f"Got a connection from {addr}")
             client_handler = threading.Thread(target=handshake, args=(client_socket,handshakes))
             client_handler.start()
         else: 
@@ -123,7 +106,7 @@ def start_receiver():
         server.listen()
         s.print_w_dots('[RECEIVER] Receiver accepting connections at {}'.format(port+1))
         to_read = [server]  # add server to list of readable sockets.
-        clients = {}
+        connected_clients = {}
         while True:
             # check for a connection to the server or data ready from clients.
             # readers will be empty on timeout.
@@ -133,24 +116,33 @@ def start_receiver():
                     player,address = reader.accept()
                     # Client(player, 'Player', starting_cash, [])
                     s.print_w_dots('Player connected from: ' + address[0])
-                    clients[player] = address # store address of client in dict
+                    connected_clients[player] = address # store address of client in dict
                     to_read.append(player) # add client to list of readable sockets
                 else:
                     data = reader.recv(1024)
                     handle_data(data, reader)
-                    ### Else ifs chain here for all player input options
                     
                     if not data: # No data indicates disconnect
                         s.print_w_dots(f'Player at {address[0]} disconnected.')
                         to_read.remove(reader) # remove from monitoring
-                        del clients[reader] # remove from dict as well
-                        if(len(clients) == 0):
+                        del connected_clients[reader] # remove from dict as well
+                        if(len(connected_clients) == 0):
                             s.print_w_dots('[RECEIVER] All connections dropped. Receiver stopped.')
                             return
-            print(f'Time passed since last command: {timer}. ',flush=True,end='\r')
+            print(f'{s.set_cursor_str(90, 0)}{s.COLORS.backBLUE}Time passed since last command: {timer}. ',flush=True,end=f'\r{s.COLORS.RESET}')
             timer += 1
 
-def handle_data(data: bytes, client: socket.socket = None) -> str:
+
+def unit_test1():
+    """
+    Unit test function for the Banker module.
+    This adds many games.
+    """
+    gm.add_game(gm.Game('Battleship', [-1] * 4, 'board', 'other_data'))
+    gm.add_game(gm.Game('Battleship', [None] * 2, 'board', 'other_data'))
+    gm.add_game(gm.Game('Battleship', [-1] * 3, 'board', 'other_data'))
+
+def handle_data(data: bytes, client: socket.socket) -> str:
     """
     Handles all data received from player sockets. 
     
@@ -161,7 +153,7 @@ def handle_data(data: bytes, client: socket.socket = None) -> str:
     str representing the response to the player's data. 
     """
     global timer
-
+    client_name = get_client_by_socket(client).name
     # Example usage
     if data.decode() == 'request_board':
         timer = 0
@@ -171,37 +163,31 @@ def handle_data(data: bytes, client: socket.socket = None) -> str:
         s.print_w_dots(f'Gameboard sent to player {client[0]}')
 
     elif data.decode() == 'ships':
-        if len(active_games) == 0:
+        if gm.game_exists('Battleship') == False:
             s.print_w_dots('No active games to join.')
             number_of_players = 1
-            s.print_w_dots(f'Creating new game with {number_of_players} players.')
+            s.print_w_dots(f'Creating new Battleship with {number_of_players} players.')
             battleship_game = battleship.start_game()
-            active_games.append(Game('Battleship', [None] * number_of_players, battleship_game.board, battleship_game))
+            gm.add_game(gm.Game('Battleship', [-1] * number_of_players, battleship_game.board, battleship_game))
             s.print_w_dots('Game created.')
-            # @TODO adjust for additional games. battleship is not necessarily in 0th spot
-            # likewise, player 0 is not always the client communication.. use find or in fxn
-            active_games[0].players[0] = client
-            active_games[0].other_data.player_names.append(players[0].name)
-            s.print_w_dots(f'Player {client} joined game.')
-            battleship_board = battleship_game.board + battleship_game.popup("Test")
-            print(battleship_board)
-            print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
-            networking.send_message(client, battleship_board)
-            s.print_w_dots(f'Gameboard sent to player {client}')
-        else:
-            battleship_board = active_games[0].other_data.board + active_games[0].other_data.popup("Test")
+            gm.get_game_by_id(0).other_data.player_names.append(client_name)
+            s.print_w_dots(f'Player {client_name} joined game.')
             
-            print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
-            networking.send_message(client, battleship_board)
-            
-            s.print_w_dots(f'Gameboard sent to player {client}')
-        
-        if active_games[0].other_data.gamestate == 'placing ships':
-            # assuming player 0 in battleship
-                if len(active_games[0].other_data.ships[0]) != 5: 
-                    networking.send_message(client, f'{players[0].name}\'s turn to place ships!')
+        elif gm.player_in_game('Battleship', client_name) == True:
+            with open('errorlog.txt', 'a') as f:
+                f.write(f'Player {client_name} already in game.Line178\n')
+            if len(gm.get_game_by_name('Battleship')) > 1:
+                print('\n\n\nPlayer is in multiple games, need to select a specific game to rejoin.')
+                net.send_message(client, gm.display_games(name='Battleship', player_name=client_name))
 
+        else: # should only appear if player is in multiple games
+            net.send_message(client, gm.display_games())
 
+        # battleship_board =  + battleship_game.popup("Players: " + str(gm.get_game_by_id(0).other_data.player_names))
+        # print(battleship_board)
+        # print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
+        # net.send_message(client, battleship_board)
+        # s.print_w_dots(f'Gameboard sent to player {client}')
 
 def handshake(client_socket: socket.socket, handshakes: list):
     """
@@ -213,16 +199,38 @@ def handshake(client_socket: socket.socket, handshakes: list):
         initialization. 
     handshakes (list) Boolean list of successful handshakes. By default, all values are false.  
     """
-    global players
+    global clients
     # Attempt handshake
     client_socket.send("Welcome to the game!".encode('utf-8'))
     message = client_socket.recv(1024).decode('utf-8')
     if message == "Connected!":
-        handshakes[len(players)] = True
-        players.append(Client(client_socket, 'Player 1', 2000, []))
-        players[len(players)-1].name = input(f"\033[36;0HWhat is this player's name? ")     
+        handshakes[len(clients)] = True
+        clients.append(Client(client_socket, 'Player 1', 2000, []))
+        clients[len(clients)-1].name = input(f"{s.COLORS.backGREEN}{s.set_cursor_str(70,25)}What is this player's name?{s.COLORS.RESET}\n")  
+
+        # If the player doesn't enter a name, assign a default name.
+        # Also blacklist other illegal names here that would break the game.
+        if clients[len(clients)-1].name == "" or clients[len(clients)-1].name == "PAD ME PLEASE!":
+            clients[len(clients)-1].name = f"Player {len(clients)}"   
     else: 
-        handshakes[len(players)] = False
+        handshakes[len(clients)] = False
+
+def get_client_by_socket(socket: socket.socket) -> Client:
+    """
+    Returns the client object associated with the given socket. 
+    
+    Parameters:
+    socket (socket.socket) The socket of the client. 
+    
+    Returns:
+    Client object associated with the given socket. 
+    """
+    global clients
+    for client in clients:
+        # Checking only if IP is the same. This won't work if multiple clients are on the same IP.
+        # Think: testing locally.
+        if client.socket.getpeername()[0] == socket.getpeername()[0]:
+            return client
 
 def set_gamerules() -> None:
     """
@@ -241,7 +249,10 @@ def set_gamerules() -> None:
         set_gamerules()
 
 if __name__ == "__main__":
-    initialize_terminal()
+    os.system("cls")
+    print("Welcome to Terminal Monopoly, Banker!")
+
+    unit_test1()
     server_socket = start_server()
     start_receiver()
     # print(f"Found {players}, each at: ")

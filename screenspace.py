@@ -61,6 +61,11 @@ def notification(msg: str, n: int, color: str) -> str:
 
 
 def replace_sequence(match, x, y):
+    """
+    Replaces the x and y coordinates in the matched string with the new x and y coordinates.
+    Useful when updating the cursor position in a string, allowing for set_cursor_str() to 
+    be used in any quadrant.
+    """
     # Extract the number N from the matched string
     nx = int(match.group(2))
     ny = int(match.group(1))
@@ -80,6 +85,13 @@ def update_quadrant(n: int, data: str, padding: bool = True):
 
     Set padding = True if you're not sure whether your module needs padding. 
     """
+
+    # If you're really desparate to add padding, for some edge case
+    # you can add it to the data string.
+    if not padding:
+        if 'PAD ME PLEASE!' in data:
+            data = data.replace('PAD ME PLEASE!', '')
+            padding = True
 
     # Sets the x and y coordinates based on the quadrant number corresponding to the top left corner of the quadrant plus border padding.
     match n:

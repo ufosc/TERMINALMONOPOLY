@@ -256,10 +256,14 @@ def get_input() -> None:
             ss.update_quadrant(active_terminal, board_data, padding=False)
 
             # Get current gamestate and respond accordingly
-            gamestate = net.receive_message(sockets[1])
+            # gamestate = net.receive_message(sockets[1])
 
-            if gamestate == f'{name}\'s turn to place ships!':
-                pass
+            # if gamestate == f'{name}\'s turn to place ships!':
+            #     pass
+
+            
+
+
             
         elif stdIn == "fish":
             fishing_gamestate = 'start'
@@ -289,7 +293,7 @@ if __name__ == "__main__":
     get_graphics()
 
     # Feel free to comment out the 3 following lines for testing purposes.
-    # initialize()
+    initialize()
     # ss.make_fullscreen()
     # ss.calibrate_screen('player')
 

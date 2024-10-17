@@ -1,6 +1,8 @@
 import screenspace as ss
 import style as s
 from fishing import fishing_game
+from socket import socket as Socket
+import networking as net
 
 def calculator() -> str:
     """A simple calculator module that can perform basic arithmetic operations."""
@@ -124,8 +126,8 @@ def attack():
 def stocks():
     pass
 
-def battleship() -> str:
-    pass
+def battleship(server: Socket, gamestate: str) -> str:
+    net.send_message(server, 'battleship')
 
 fishing_game_obj = fishing_game()
 def fishing(gamestate: str) -> tuple[str, str]:
