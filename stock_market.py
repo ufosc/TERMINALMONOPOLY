@@ -219,7 +219,7 @@ def draw_graph(data, width, height):
         min_value = min(scaled_data)
 
     # draw the top axis
-    print(f"\033[1;35H" + "     +" + "-" * width + "+")
+    print(f"\033[2;35H" + "     +" + "-" * width + "+")
     # width is the total number of columns available for graph
 
     # iterates from height to 0 to print each line of the graph
@@ -251,10 +251,10 @@ def draw_graph(data, width, height):
             else:
                 line += ' '
         line += '|'  # adds the vertical axis
-        print(f"\033[{1 + counter};35H{line}")  # prints the whole line of the graph
+        print(f"\033[{2 + counter};35H{line}")  # prints the whole line of the graph
 
     # draw the bottom axis
-    print(f"\033[{1 + counter + 1};35H" + "     +" + "-" * width + "+")
+    print(f"\033[{2 + counter + 1};35H" + "     +" + "-" * width + "+")
 
     # draw the x-axis labels
     x_labels = "     "
@@ -263,7 +263,7 @@ def draw_graph(data, width, height):
             x_labels += f"{i // 10:>2}"  # labels added every 10 units
         else:
             x_labels += " "
-    print(f"\033[{1 + counter + 2};35H{x_labels}")
+    print(f"\033[{2 + counter + 2};35H{x_labels}")
 
 
     # print("\nX-axis: Time")
@@ -298,7 +298,6 @@ def move_down():
 def select_stock():
     global selected_stock, transaction_amount, mode, graph_display_mode
     if mode:
-        print(f"\n{mode.capitalize()}ing {transaction_amount} shares of {selected_stock}.")
         if mode == "buy":
             player1_portfolio.buy_stock(selected_stock, transaction_amount)
             print("\a")
@@ -318,7 +317,7 @@ def display_graph():
     global selected_stock, graph_display_mode
     if selected_stock:
         graph_display_mode = True
-        print(f"\033[15;0HDisplaying graph for: {selected_stock}")
+        print(f"\033[1;45HDisplaying graph for: {selected_stock}")
         build_graph()
 
 
@@ -369,16 +368,14 @@ if __name__ == '__main__':
     # initialize market and portfolios
     market = stock_market()
     market.add_stock("PLZA", 20.00, -5, 5)
-    market.add_stock("BLVD", 5.00, -10, 10)
-    market.add_stock("DRVE", 0.01, -15, 15)
-
     market.add_stock("DMY1", 20.00, -5, 5)
-    market.add_stock("DMY2", 5.00, -10, 10)
-    market.add_stock("DMY3", 0.01, -15, 15)
-    market.add_stock("DMY4", 20.00, -5, 5)
-    market.add_stock("DMY5", 5.00, -10, 10)
+    market.add_stock("DMY2", 20.00, -5, 5)
+    market.add_stock("BLVD", 5.00, -10, 10)
+    market.add_stock("DMY3", 5.00, -10, 10)
+    market.add_stock("DMY4", 5.00, -10, 10)
+    market.add_stock("DRVE", 0.01, -15, 15)
+    market.add_stock("DMY5", 0.01, -15, 15)
     market.add_stock("DMY6", 0.01, -15, 15)
-    market.add_stock("DMY7", 0.01, -15, 15)
 
     player_name = "Name"
     player1_portfolio = portfolio("Player1", market)
