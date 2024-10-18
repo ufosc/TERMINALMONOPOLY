@@ -111,7 +111,13 @@ class stock_market:
         for ticker, stock_obj in self.stocks.items():
             price_change = stock_obj.percentage_change
             price_color = "\033[32m" if price_change >= 0 else "\033[31m"
-            stock_lines.append(f"{ticker}: {price_color}${stock_obj.get_price():.5f} ({price_change:+.5f}%)\033[0m")
+            arrow = "▲" if price_change >= 0 else "▼"  # Green up or red down arrow
+
+            # Place the arrow right before the parentheses with percentage change
+            stock_lines.append(
+                f"{ticker}: {price_color}${stock_obj.get_price():.5f} {arrow} ({price_change:+.5f}%)\033[0m")
+
+        return stock_lines
 
 
         return stock_lines
@@ -366,13 +372,13 @@ if __name__ == '__main__':
     market.add_stock("BLVD", 5.00, -10, 10)
     market.add_stock("DRVE", 0.01, -15, 15)
 
-    market.add_stock("DMMY1", 20.00, -5, 5)
-    market.add_stock("DMMY2", 5.00, -10, 10)
-    market.add_stock("DMMY3", 0.01, -15, 15)
-    market.add_stock("DMMY4", 20.00, -5, 5)
-    market.add_stock("DMMY5", 5.00, -10, 10)
-    market.add_stock("DMMY6", 0.01, -15, 15)
-    market.add_stock("DMMY7", 0.01, -15, 15)
+    market.add_stock("DMY1", 20.00, -5, 5)
+    market.add_stock("DMY2", 5.00, -10, 10)
+    market.add_stock("DMY3", 0.01, -15, 15)
+    market.add_stock("DMY4", 20.00, -5, 5)
+    market.add_stock("DMY5", 5.00, -10, 10)
+    market.add_stock("DMY6", 0.01, -15, 15)
+    market.add_stock("DMY7", 0.01, -15, 15)
 
     player_name = "Name"
     player1_portfolio = portfolio("Player1", market)
