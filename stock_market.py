@@ -122,7 +122,7 @@ class stock_market:
 
     def display_time(self):
         # display current time in "Day HH:MM AM/PM" format
-        return f"Current market time: {self.current_time.strftime('%A %I:%M %p')}"
+        return f"Current time: {self.current_time.strftime('%A %I:%M %p')}"
 
 
 # general functions outside of classes
@@ -137,6 +137,7 @@ def clear_console():
 def display_stock_prices(market):
     times_run = 0
     while True:
+        print("\033[?25l", end="")
         # stock prices on the left
         times_run += 1
         stock_lines = market.display_stock_prices()
@@ -148,45 +149,34 @@ def display_stock_prices(market):
         portfolio_lines = player1_portfolio.display_portfolio()
 
         # move the cursor to row 0, column 0 and print the current time
-        print(f"\033[0;0H\033[32m{current_time}\033[0m")
+        print(f"\033[1;0H" + " " * 30)
+        print(f"\033[1;0H\033[32m{current_time}\033[0m")
 
-        # determine maximum number of rows to print
-        max_lines = max(len(stock_lines), len(portfolio_lines))
+        for i in range(len(stock_lines)):
+            if(i < 5):
+                print(f"\033[{3 + i};0H" + " " * 30)
+                print(f"\033[{3 + i};0H{stock_lines[i]}")
+            elif i >= 5:
+                print(f"\033[{3 + i };0H" + " " * 30)
+                print(f"\033[{3 + i };0H{stock_lines[i]}")
 
-        # start printing from row 1 (row 0 is used for time)
-        for i in range(max_lines):
-            # print stock prices on the left starting at row (i+1), column 0
-            if i < len(stock_lines):
-                left_side = stock_lines[i]
-                # move cursor to row i+1, column 0 and print stock price
-                print(f"\033[{i + 2};0H{' ' * 40}")
-                print(f"\033[{i + 2};0H{left_side}")
-            else:
-                # clear line if there's no stock data for this row
-                print(f"\033[{i + 2};0H{' ' * 40}")
+        for i in range(len(portfolio_lines)):
+            print(f"\033[{i + 17};41H{portfolio_lines[i]}")
 
-            # print portfolio on the right starting at row (i+1), column 40
-            if i < len(portfolio_lines):
-                right_side = portfolio_lines[i]
-                # move cursor to row i+1, column 40 and print portfolio data
-                print(f"\033[{i + 2};40H{' ' * 40}")
-                print(f"\033[{i + 2};40H{right_side}")
-            else:
-                # clear line if there's no portfolio data for this row
-                print(f"\033[{i + 2};40H{' ' * 40}")
-
-        # print(f"\033[{len(stock_lines) + 4};0H")
-        # update stock prices
-
-        # THIS IS THE LINE THAT GETS THE CURSOR BACK TO THE INPUT LINE
-        print(f"\033[{len(stock_lines) + 4};0H")
+        #update the stock prices
         market.update_stock_prices()
 
         # sleep to control the update rate
         time.sleep(0.5)
+        print("\033[?25h", end="")
+
+
+
+
+
 
 def build_graph():
-    width, height = 50, 7  # adjusted for terminal size
+    width, height = 35, 10  # adjusted for terminal size
     data = [random.randint(0, 100) for _ in range(50)]
     selected_stock_prices = []
     # creates array data with random values
@@ -223,8 +213,7 @@ def draw_graph(data, width, height):
         min_value = min(scaled_data)
 
     # draw the top axis
-    print(
-        f"\033[{start_of_graph_row};0H" + "     +" + "-" * width + "+")
+    print(f"\033[1;35H" + "     +" + "-" * width + "+")
     # width is the total number of columns available for graph
 
     # iterates from height to 0 to print each line of the graph
@@ -256,10 +245,10 @@ def draw_graph(data, width, height):
             else:
                 line += ' '
         line += '|'  # adds the vertical axis
-        print(f"\033[{start_of_graph_row + counter};0H{line}")  # prints the whole line of the graph
+        print(f"\033[{1 + counter};35H{line}")  # prints the whole line of the graph
 
     # draw the bottom axis
-    print(f"\033[{start_of_graph_row + counter + 1};0H" + "     +" + "-" * width + "+")
+    print(f"\033[{1 + counter + 1};35H" + "     +" + "-" * width + "+")
 
     # draw the x-axis labels
     x_labels = "     "
@@ -268,10 +257,8 @@ def draw_graph(data, width, height):
             x_labels += f"{i // 10:>2}"  # labels added every 10 units
         else:
             x_labels += " "
-    print(f"\033[{start_of_graph_row + counter + 2};0H{x_labels}")
+    print(f"\033[{1 + counter + 2};35H{x_labels}")
 
-    # THIS IS THE LINE THAT GETS THE CURSOR BACK TO INPUT LINE
-    print(f"\033[7;0H")
 
     # print("\nX-axis: Time")
     # print("Y-axis: Price")
@@ -308,8 +295,10 @@ def select_stock():
         print(f"\n{mode.capitalize()}ing {transaction_amount} shares of {selected_stock}.")
         if mode == "buy":
             player1_portfolio.buy_stock(selected_stock, transaction_amount)
+            print("\a")
         if mode == "sell":
             player1_portfolio.sell_stock(selected_stock, transaction_amount)
+            print("\a")
         selected_stock = None
         transaction_amount = 0
         mode = None
@@ -329,21 +318,19 @@ def display_graph():
 
 
 def print_menu():
+    for i in range(17, 24):
+        print(f"\033[{i};0H{' ' * 30}")
 
-    for i in range(8, 15):
-        print(f"\033[{i};0H{' ' * 80}")
-
-    print("\033[8;0HSelect a stock to buy, sell, or view graph:")
+    print("\033[17;0H" + "Select a stock:")
     for i, stock in enumerate(stocks):
-        print(f"\033[{9 + i}; 0H", end="")
         if i == current_index:
-            print(f"> {stock}")
+            print(f"\033[{18 + i};0H> {stock}")
         else:
-            print(f"  {stock}")
+            print(f"\033[{18 + i};0H  {stock}")
     if selected_stock:
-        print(f"\033[{9 + len(stocks)};0HYou selected: {selected_stock}")
+        print(f"\033[{18 + len(stocks)};0H" + f"You selected: {selected_stock}")
         if mode == "buy" or mode == "sell":
-            print(f"\033[{10 + len(stocks)};0HTransaction amount: {transaction_amount}")
+            print(f"\033[{19 + len(stocks)};0H" + f"Transaction amount: {transaction_amount}")
 
 def buy_mode():
     global mode
@@ -378,6 +365,14 @@ if __name__ == '__main__':
     market.add_stock("PLZA", 20.00, -5, 5)
     market.add_stock("BLVD", 5.00, -10, 10)
     market.add_stock("DRVE", 0.01, -15, 15)
+
+    market.add_stock("DMMY1", 20.00, -5, 5)
+    market.add_stock("DMMY2", 5.00, -10, 10)
+    market.add_stock("DMMY3", 0.01, -15, 15)
+    market.add_stock("DMMY4", 20.00, -5, 5)
+    market.add_stock("DMMY5", 5.00, -10, 10)
+    market.add_stock("DMMY6", 0.01, -15, 15)
+    market.add_stock("DMMY7", 0.01, -15, 15)
 
     player_name = "Name"
     player1_portfolio = portfolio("Player1", market)
