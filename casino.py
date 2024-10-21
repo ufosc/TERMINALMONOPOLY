@@ -1,4 +1,5 @@
 import player
+import screenspace as ss
 import os
 
 module_name = "Casino"
@@ -9,15 +10,14 @@ module_description = "Gamble your money at the casino!"
 def module(active_terminal):
     wrong = False
     while True:
-        player.ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {player.balance} $\nSelect a game by typing the command." + get_submodules() + "\n☒ Exit (e)")
-        player.ss.print_screen()
+        ss.overwrite(player.COLORS.RESET + "\rSelect a game through typing the associated command." + " " * 20)
+        ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {player.balance} $\nSelect a game by typing the command." + get_submodules() + "\n☒ Exit (e)")
         if(wrong):
-            player.ss.overwrite(player.COLORS.RESET + player.COLORS.RED + "\nGame does not exist. Refer to the list of games.")
+            ss.overwrite(player.COLORS.RESET + player.COLORS.RED + "\rGame does not exist. Refer to the list of games.")
         game = input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\r").lower()
-        player.ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
+        ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
         if(game == "e"):
-            player.ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
-            player.ss.print_screen()
+            ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
             break
         elif(game == "game"):
             wrong = True #Don't import the template...
@@ -31,23 +31,23 @@ def module(active_terminal):
 
                 player.balance -= bet
                     
-                player.ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
+                ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
                 player.balance += i.play(player,active_terminal,bet)
             except ImportError:
                 wrong = True
 
 def get_bet():
-    player.ss.overwrite(player.COLORS.RESET + "\nType in your bet. (0 to cancel)" + " " * 20)
+    ss.overwrite(player.COLORS.RESET + "\rType in your bet. (0 to cancel)" + " " * 20)
     while True:
         try:
             bet = int(input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\r"))
             if(bet < 0):
-                player.ss.overwrite(player.COLORS.RESET + player.COLORS.RED+"\rYou need to bet a number above 0. (0 to cancel)" + " " * 20)
+                ss.overwrite(player.COLORS.RESET + player.COLORS.RED+"\rYou need to bet a number above 0. (0 to cancel)" + " " * 20)
             else:
-                player.ss.overwrite(player.COLORS.RESET+"\r" + " " * 60)
+                ss.overwrite(player.COLORS.RESET+"\r" + " " * 60)
                 return bet
         except ValueError:
-            player.ss.overwrite(player.COLORS.RESET + player.COLORS.RED+"\rType in a valid number for your bet. (0 to cancel)" + " " * 20)
+            ss.overwrite(player.COLORS.RESET + player.COLORS.RED+"\rType in a valid number for your bet. (0 to cancel)" + " " * 20)
 
 def get_submodules():
     modules_list = ""
