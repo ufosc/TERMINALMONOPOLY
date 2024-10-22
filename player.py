@@ -155,7 +155,6 @@ def calculate() -> None:
         else:
             update_history(player_equation)
             ss.update_quadrant(active_terminal, calculator_terminal_response(1))
-            ss.print_screen()
 
 def display_balance() -> None:
     """
@@ -175,22 +174,6 @@ def list_properties() -> None:
     Returns: None
     """
     ss.update_quadrant(active_terminal, text_dict.get('properties'))
-    ss.print_screen()
-
-def set_terminal(n: int) -> None:
-    """
-    Updates global "active_terminal" variable for all terminal updating needs. Also updates the active terminal
-    in screenspace module, and prints the new screen.
-    
-    Parameters: 
-    n (int) number [1-4] of which terminal to set as active. 
-    
-    Returns: None
-    """
-    global active_terminal
-    active_terminal = n
-    ss.update_active_terminal(n)
-    ss.print_screen()
 
 def game_input() -> None:
     """
@@ -332,7 +315,7 @@ if __name__ == "__main__":
     get_graphics()
 
     # Feel free to comment out the 3 following lines for testing purposes.
-    initialize()
+    # initialize()
     # ss.make_fullscreen()
     # ss.calibrate_screen('player')
 
