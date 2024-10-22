@@ -115,6 +115,12 @@ def get_graphics() -> dict:
                  'fishing 1 bass': text[16].replace('\n', ''),
                  'fishing 1 salmon': text[17].replace('\n', ''),
                  'popup 2': text[18],
+                 'casino_lose': text[19],
+                 'casino_win': text[20],
+                 'casino_tie': text[21],
+                 'coin_flip_heads': text[22],
+                 'coin_flip_middle': text[23],
+                 'coin_flip_tails': text[24]
                  } 
     return text_dict
 

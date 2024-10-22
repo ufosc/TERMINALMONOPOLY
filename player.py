@@ -154,7 +154,43 @@ def calculate() -> None:
             ss.update_quadrant(active_terminal, calculator_terminal_response(3), padding=True)
         else:
             update_history(player_equation)
-            ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
+            ss.update_quadrant(active_terminal, calculator_terminal_response(1))
+            ss.print_screen()
+
+def display_balance() -> None:
+    """
+    Display player's cash, assets, etc. 
+
+    Parameters: None
+    Returns: None
+    """
+    pass
+
+def list_properties() -> None:
+    """
+    Temporary function to list all properties on the board by calling the property list stored in ascii.txt.
+    Can be reworked to add color and better formatting.
+    
+    Parameters: None
+    Returns: None
+    """
+    ss.update_quadrant(active_terminal, text_dict.get('properties'))
+    ss.print_screen()
+
+def set_terminal(n: int) -> None:
+    """
+    Updates global "active_terminal" variable for all terminal updating needs. Also updates the active terminal
+    in screenspace module, and prints the new screen.
+    
+    Parameters: 
+    n (int) number [1-4] of which terminal to set as active. 
+    
+    Returns: None
+    """
+    global active_terminal
+    active_terminal = n
+    ss.update_active_terminal(n)
+    ss.print_screen()
 
 def game_input() -> None:
     """
@@ -277,6 +313,9 @@ def get_input() -> None:
             ss.clear_screen()
             ss.initialize_terminals()
             ss.overwrite(COLORS.GREEN + "Screen calibrated.")
+        elif stdIn == "casino":
+            import casino
+            casino.module(active_terminal)
         else:
             # ss.overwrite('\n' + ' ' * ss.WIDTH)
             ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
