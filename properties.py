@@ -1,11 +1,13 @@
 import style as s
 from style import COLORS
 
+
 class Property:
     """
     Property class for Monopoly game\n
     Contains location data.\n
     """
+
     name = "Go"
     players = list(range(0))
     houses = 0
@@ -24,7 +26,23 @@ class Property:
     rentHotel = 0
     mortgage = 0
 
-    def __init__(self, num_players:int, name:str, owner:int, position:tuple, color:COLORS, purchasePrice:int, housePrice:int, rent:int, rent1H:int, rent2H:int, rent3H:int, rent4H:int, rentHotel:int,mortgage:int) -> None:
+    def __init__(
+        self,
+        num_players: int,
+        name: str,
+        owner: int,
+        position: tuple,
+        color: COLORS,
+        purchasePrice: int,
+        housePrice: int,
+        rent: int,
+        rent1H: int,
+        rent2H: int,
+        rent3H: int,
+        rent4H: int,
+        rentHotel: int,
+        mortgage: int,
+    ) -> None:
         self.players = list(range(num_players))
         self.name = name
         self.owner = owner
@@ -41,7 +59,7 @@ class Property:
         self.rent4H = rent4H
         self.rentHotel = rentHotel
         self.mortgage = mortgage
-    
+
     def getPrice(self) -> int:
         if self.purchasePrice == 0:
             return -1
@@ -63,9 +81,8 @@ class Property:
                 case 5:
                     return self.rentHotel
 
-
-# Old Code: (In case there was a mistake in transferring the data values)
-        '''self.locations = {
+        # Old Code: (In case there was a mistake in transferring the data values)
+        """self.locations = {
             # locations[x][3] indicates who owns, but also is used for special codes below:
                 # Special codes: -1 is not owned, -2 is mortaged, -3 is community chest, -4 is chance, -5 is tax
                 # -6 is jail, -7 is go to jail, -8 is free parking, -9 is luxury, -10 is go 
@@ -109,12 +126,12 @@ class Property:
         37: ["Park Place", [], 0, -1, (23, 72), COLORS.BLUE],
         38: ["Luxury Tax", [], 0, -9, (26, 72), COLORS.LIGHTGRAY],
         39: ["Boardwalk", [], 0, -1, (29, 72), COLORS.BLUE]
-    }'''
+    }"""
         """Dictionary of Monopoly locations\n
         @locations: {int: [str, list, int, bool]}\n
         key: number
         value: [name, players, number of houses [0-4], owned, (x,y) coordinates on gameboard, color code]"""
-        '''self.deeds = {"Mediterranean Avenue": (60, 50, 2, 10, 30, 90, 160, 250, 30),
+        """self.deeds = {"Mediterranean Avenue": (60, 50, 2, 10, 30, 90, 160, 250, 30),
                     "Baltic Avenue":          (60, 50, 4, 20, 60, 180, 320, 450, 30),
                     "Oriental Avenue":        (100, 50, 6, 30, 90, 270, 400, 550, 50),
                     "Vermont Avenue":         (100, 50, 6, 30, 90, 270, 400, 550, 50),
@@ -136,7 +153,7 @@ class Property:
                     "Pennsylvania Avenue":    (320, 200, 28, 150, 450, 1000, 1200, 1400, 160),
                     "Park Place":             (350, 200, 35, 175, 500, 1100, 1300, 1500, 175),
                     "Boardwalk":              (400, 200, 50, 200, 600, 1400, 1700, 2000, 200)
-                    }'''
+                    }"""
         """dict[str, tuple]: properties
         Key: title
         Value: tuple with values as follows:\n

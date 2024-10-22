@@ -24,7 +24,7 @@ class COLORS:
     dispGREEN = "\033[38;5;2m"
     dispRED = "\033[38;5;9m"
     dispBLUE = "\033[38;5;12m"
-    RESET = "\033[0m" # Reset color
+    RESET = "\033[0m"  # Reset color
 
     backBROWN = BROWN.replace("38", "48")
     backLIGHTBLUE = LIGHTBLUE.replace("38", "48")
@@ -41,10 +41,11 @@ class COLORS:
     backCHANCE = CHANCE.replace("38", "48")
     backCOMMUNITY = COMMUNITY.replace("38", "48")
     backBLACK = BLACK.replace("38", "48")
-    
-    # @TODO add default compatible colors for terminals that cannot handle RGB values (see issue #11). 
+
+    # @TODO add default compatible colors for terminals that cannot handle RGB values (see issue #11).
     cBROWN = ""
     cbBROWN = ""
+
 
 def colortest():
     """
@@ -52,30 +53,33 @@ def colortest():
     """
     i = 0
     for color in dir(COLORS):
-        if not color.startswith('__'):
+        if not color.startswith("__"):
             print(str(i) + ": " + getattr(COLORS, color) + color + COLORS.RESET)
             i += 1
 
-def print_w_dots(text: str, size: int=50, end: str='\n') -> None:
+
+def print_w_dots(text: str, size: int = 50, end: str = "\n") -> None:
     """
     Prints a green string with predetermined dot padding after it.
-    
-    Parameters: 
-    text (str): string to pad dots after. 
+
+    Parameters:
+    text (str): string to pad dots after.
     size (int): integer of how long the padded string should be. Default 50.
     end (str): value to print immediately at the end of the text (after clearing color formatting). Default newline.
 
-    Returns: 
+    Returns:
     None
     """
-    for i in range(size-len(text)):
-        text += '.'
-    print(COLORS.dispGREEN+text, end=COLORS.RESET+end)
+    for i in range(size - len(text)):
+        text += "."
+    print(COLORS.dispGREEN + text, end=COLORS.RESET + end)
+
 
 def center_lines(text, width):
-        lines = text.split('\n')
-        centered_lines = [line.center(width) for line in lines]
-        return '\n'.join(centered_lines)
+    lines = text.split("\n")
+    centered_lines = [line.center(width) for line in lines]
+    return "\n".join(centered_lines)
+
 
 def get_graphics() -> dict:
     """
@@ -83,49 +87,55 @@ def get_graphics() -> dict:
 
     Parameters: None
 
-    Returns: 
+    Returns:
     Dictionary with the following keys:
     - 'help' A page of useful information to the player.
     - 'properties' List of properties in the game.
     - 'divider' ASCII graphic used throughout gameplay, i.e. printing deed information.
     - 'skull' ASCII graphic used on a killed terminal.
-    - 'gameboard' The default gameboard. needs to be decoded  with 'unicode_escape' and 'utf-8' 
-    - 'help 2' Displays additional information. 
+    - 'gameboard' The default gameboard. needs to be decoded  with 'unicode_escape' and 'utf-8'
+    - 'help 2' Displays additional information.
     - 'logo' The game logo.
     - 'history and status' Information about the game history and status.
     """
-    with open("ascii.txt", encoding='utf-8') as f:
+    with open("ascii.txt", encoding="utf-8") as f:
         text = f.read().split("BREAK_TEXT")
-    text_dict = {'help': text[0].rstrip(),
-                 'properties': text[1],
-                 'divider': text[2].lstrip(),
-                 'skull': text[3].lstrip(),
-                 'gameboard': bytes(text[4].lstrip(), 'utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8'),
-                 'help 2': center_lines(text[5], 75),
-                 'logo': text[6],
-                 'history and status': text[7],
-                 'commands': text[8],
-                 'chance cards text': text[9].strip(),
-                 'community chest text': text[10].strip(),
-                 'popup 1': text[11].strip(),
-                 'terminals': text[12].strip(),
-                 'fishing 1 idle': text[13].lstrip(),
-                 'fishing 1 win': text[14].lstrip(),
-                 'fishing 1 carp': text[15].replace('\n', ''),
-                 'fishing 1 bass': text[16].replace('\n', ''),
-                 'fishing 1 salmon': text[17].replace('\n', ''),
-                 'popup 2': text[18],
-                 'casino_lose': text[19],
-                 'casino_win': text[20],
-                 'casino_tie': text[21],
-                 'coin_flip_heads': text[22],
-                 'coin_flip_middle': text[23],
-                 'coin_flip_tails': text[24]
-                 } 
+    text_dict = {
+        "help": text[0].rstrip(),
+        "properties": text[1],
+        "divider": text[2].lstrip(),
+        "skull": text[3].lstrip(),
+        "gameboard": bytes(text[4].lstrip(), "utf-8")
+        .decode("unicode_escape")
+        .encode("latin-1")
+        .decode("utf-8"),
+        "help 2": center_lines(text[5], 75),
+        "logo": text[6],
+        "history and status": text[7],
+        "commands": text[8],
+        "chance cards text": text[9].strip(),
+        "community chest text": text[10].strip(),
+        "popup 1": text[11].strip(),
+        "terminals": text[12].strip(),
+        "fishing 1 idle": text[13].lstrip(),
+        "fishing 1 win": text[14].lstrip(),
+        "fishing 1 carp": text[15].replace("\n", ""),
+        "fishing 1 bass": text[16].replace("\n", ""),
+        "fishing 1 salmon": text[17].replace("\n", ""),
+        "popup 2": text[18],
+        "casino_lose": text[19],
+        "casino_win": text[20],
+        "casino_tie": text[21],
+        "coin_flip_heads": text[22],
+        "coin_flip_middle": text[23],
+        "coin_flip_tails": text[24],
+    }
     return text_dict
 
-def set_cursor(x: int, y: int) -> None:
-    print(f"\033[{y};{x}H",end="")
 
-def set_cursor_str(x:int ,y:int) -> str:
+def set_cursor(x: int, y: int) -> None:
+    print(f"\033[{y};{x}H", end="")
+
+
+def set_cursor_str(x: int, y: int) -> str:
     return f"\033[{y};{x}H"

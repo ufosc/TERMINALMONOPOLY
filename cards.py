@@ -3,16 +3,19 @@ import random
 from board import Board
 from player_class import Player
 
+
 class Cards:
     """
     Cards class for Monopoly game\n
     Contains card data.\n
     """
+
     def __init__(self) -> None:
-        self.chance = s.get_graphics().get('chance cards text').split("\n")
-        self.community_chest = s.get_graphics().get('community chest text').split("\n")
+        self.chance = s.get_graphics().get("chance cards text").split("\n")
+        self.community_chest = s.get_graphics().get("community chest text").split("\n")
         random.shuffle(self.chance)
         random.shuffle(self.community_chest)
+
     def draw_chance(self, p: Player, board: Board, players) -> str:
         """
         Draw chance card\n
@@ -21,13 +24,13 @@ class Cards:
 
         card_number = int(self.chance[-1].split(".")[0])
         match card_number:
-            case 1: 
+            case 1:
                 board.update_location(p, p.location, 39)
-            case 2: 
+            case 2:
                 board.update_location(p, p.location, 0)
             case 3:
                 board.update_location(p, p.location, 24)
-            case 4: 
+            case 4:
                 board.update_location(p, p.location, 11)
             case 5:
                 if p.location < 5 or p.location > 35:
@@ -38,7 +41,7 @@ class Cards:
                     board.update_location(p, p.location, 25)
                 else:
                     board.update_location(p, p.location, 35)
-            case 6: 
+            case 6:
                 if p.location < 5 or p.location > 35:
                     board.update_location(p, p.location, 5)
                 elif p.location < 15:
@@ -47,26 +50,26 @@ class Cards:
                     board.update_location(p, p.location, 25)
                 else:
                     board.update_location(p, p.location, 35)
-            case 7: 
+            case 7:
                 if p.location < 12 or p.location > 28:
                     board.update_location(p, p.location, 12)
                 else:
                     board.update_location(p, p.location, 28)
-            case 8: 
+            case 8:
                 p.receive(50)
-            case 9: 
+            case 9:
                 p.jailcards += 1
-            case 10: 
+            case 10:
                 board.update_location(p, p.location, p.location - 3)
-            case 11: 
+            case 11:
                 p.jail = True
                 board.update_location(p, p.location, 10)
-            case 12: 
+            case 12:
                 for property in p.properties:
-                    if(board.locations[property].houses == 5):
-                        p.pay(150) #price for 4 houses x1.5
-                    elif(board.locations[property].houses > 0):
-                        p.pay(25*board.locations[property].houses)
+                    if board.locations[property].houses == 5:
+                        p.pay(150)  # price for 4 houses x1.5
+                    elif board.locations[property].houses > 0:
+                        p.pay(25 * board.locations[property].houses)
             case 13:
                 p.pay(15)
             case 14:
@@ -75,9 +78,10 @@ class Cards:
                 for receiver in players:
                     p.pay(50)
                     receiver.receive(50)
-            case 16: 
+            case 16:
                 p.receive(150)
         return self.chance[-1]
+
     def draw_community_chest(self, p: Player, board: Board, players) -> str:
         """
         Draw community chest card\n
@@ -92,7 +96,7 @@ class Cards:
                 p.receive(200)
             case 3:
                 p.pay(50)
-            case 4: 
+            case 4:
                 p.receive(50)
             case 5:
                 p.jailcards += 1
@@ -115,12 +119,12 @@ class Cards:
                 p.pay(50)
             case 13:
                 p.receive(25)
-            case 14: 
+            case 14:
                 for property in p.properties:
-                    if(board.locations[property].houses == 5):
-                        p.pay(240) #price for 4 houses x1.5
-                    elif(board.locations[property].houses > 0):
-                        p.pay(40*board.locations[property].houses)
+                    if board.locations[property].houses == 5:
+                        p.pay(240)  # price for 4 houses x1.5
+                    elif board.locations[property].houses > 0:
+                        p.pay(40 * board.locations[property].houses)
             case 15:
                 p.receive(10)
             case 16:
