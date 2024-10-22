@@ -46,7 +46,7 @@ def render_hand(player, active_terminal, hand, dealer_hand):
                 dealer_hand_str += card_temp[i] + " "
         dealer_hand_str += "\n"
     
-    ss.update_quadrant(active_terminal, header + f"\n\n{dealer_hand_str} {"\n" * 5}{hand_str}")
+    ss.update_quadrant(active_terminal, header + f"\n\n{dealer_hand_str}" + '\n' * 5 + f"{hand_str}")
 
 def draw(player, dealer, hidden,score):
     card_type, card_value = random.choice(list(cards.items()))

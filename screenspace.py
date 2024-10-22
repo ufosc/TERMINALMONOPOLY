@@ -59,7 +59,6 @@ def notification(msg: str, n: int, color: str) -> str:
     writeto += p
     return writeto
 
-
 def replace_sequence(match, x, y):
     """
     Replaces the x and y coordinates in the matched string with the new x and y coordinates.
@@ -86,8 +85,7 @@ def update_quadrant(n: int, data: str, padding: bool = True):
     Set padding = True if you're not sure whether your module needs padding. 
     """
 
-    # If you're really desparate to add padding, for some edge case
-    # you can add it to the data string.
+    # If you're really desparate to add padding, for some edge case you can add it to the data string.
     if not padding:
         if 'PAD ME PLEASE!' in data:
             data = data.replace('PAD ME PLEASE!', '')
