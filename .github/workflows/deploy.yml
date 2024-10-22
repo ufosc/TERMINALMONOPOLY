@@ -1,0 +1,33 @@
+name: Run Initial Server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  run-initial-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install boto3
+
+      - name: Run Initial Server
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+          TASK_DEFINITION: ${{ secrets.TASK_DEFINITION }}
+          SUBNET_IDS: ${{ secrets.SUBNET_IDS }}
+          SECURITY_GROUP_IDS: ${{ secrets.SECURITY_GROUP_IDS }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+        run: python initial_server.py

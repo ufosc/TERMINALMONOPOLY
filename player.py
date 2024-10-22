@@ -18,6 +18,9 @@ balance = 0
 properties = 0
 calculator_history_queue = []
 calculator_history_current_capacity = 15
+initial_server_ip = '0.0.0.0'
+initial_server_port = 4000
+
 
 def get_graphics():
     """Grab text from ascii.txt and split into dictionary"""
@@ -41,6 +44,21 @@ def initialize():
     os.system("cls")
     print("Welcome to Terminal Monopoly, Player!")
     s.print_w_dots("Initializing client socket connection")     
+
+    if (int(input("Input 1 to play on the local server, or 2 for the remote server: ")) == 1):
+
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((initial_server_ip, initial_server_port))
+
+        game_server_ip = client_socket.recv(1024).decode()
+        client_socket.close()
+
+        game_server_port = 3131 # Default port for game server
+        game_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        game_socket.connect((game_server_ip, game_server_port))
+
+
+
     client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
     client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sockets = (client_receiver, client_sender)
