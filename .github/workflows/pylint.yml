@@ -18,6 +18,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pylint
+    - name: Install Autopep8
+      run: pip install autopep8
+    - name: Lint Action
+      uses: wearerequired/lint-action@v2.3.0
+      with:
+        autopep8: true
+        github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
