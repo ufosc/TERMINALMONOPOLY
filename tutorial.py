@@ -127,7 +127,7 @@ skipped = print_tutorial_screen(cols, rows, "Terminal Monopoly", [
 ])
 
 if not skipped:
-    print_tutorial_screen(cols, rows, "Page 1", [
+    print_tutorial_screen(cols, rows, "Page 1/4", [
         #all of the text is currently copilot nonsense to show that it works
         {"col": 3, "row": 2, "num_lines": 0, "text":"Firstly, what the hell is a Monopoly?"},
         {"col": 5, "row": 5, "num_lines": 0, "text":"• Monopoly is a classic board game where your goal is to make all of your friends go bankrupt!"},
@@ -135,11 +135,40 @@ if not skipped:
         {"col": 5, "row": 9, "num_lines": 0, "text":"• If you land on a property that is not owned by anybody, you can purchase it for yourself,"},
         {"col": 9, "row": 10, "num_lines": 0, "text":"otherwise, you pay the person who owns it a fixed amount determined by the property card."},
         {"col": 5, "row": 12, "num_lines": 0, "text":"• Properties are grouped into color sets. If you own all of the properties in a color set,"},
-        {"col": 9, "row": 13, "num_lines": 0, "text":"you can build houses on the properties, which increases the amount players will need to pay."},
+        {"col": 9, "row": 13, "num_lines": 0, "text":"you can build houses on the properties, which increases the amount players will need to pay."}
     ])
 
-    print_tutorial_screen(cols, rows, "Page 2", [
+    print_tutorial_screen(cols, rows, "Page 2/4", [
         {"col": 3, "row": 2, "num_lines": 0, "text":"So, what makes Terminal Monopoly so special?"},
+        {"col": 5, "row": 5, "num_lines": 0, "text":"• Terminal Monopoly is run entirely... in your terminal."},
+        {"col": 5, "row": 7, "num_lines": 0, "text":"• The coolest part is that while you wait for you turn there are a variety of minigames to play,"},
+        {"col": 9, "row": 8, "num_lines": 0, "text":"which can be opened and accessed by moving between four (4) modules."},
+        {"col": 5, "row": 10, "num_lines": 0, "text":"• Some minigames require active attention, like Battleship, while others can run in the background, like Stocks."}
     ])
 
+    print_tutorial_screen(cols, rows, "Page 3/4", [
+        {"col": 3, "row": 2, "num_lines": 0, "text":"What the basics?"},
+        {"col": 5, "row": 5, "num_lines": 0, "text":"• Every turn you will be prompted to roll the dice."},
+        {"col": 5, "row": 7, "num_lines": 0, "text":'• When you land on an available property you can choose to purchase with "y" or "n".'},
+        {"col": 5, "row": 9, "num_lines": 0, "text":"• After making an action you will promoted with three (3) options:"},
+        {"col": 9, "row": 10, "num_lines": 0, "text":'• "e" to end your turn,'},
+        {"col": 9, "row": 11, "num_lines": 0, "text":'• "p" to manage your owned properties,'},
+        {"col": 9, "row": 12, "num_lines": 0, "text":'• "d" to view the deed of a property to dont own.'}
+    ])
+
+    print_tutorial_screen(cols, rows, "Page 4/4",[
+        {"col": 3, "row": 2, "num_lines": 0, "text":"How do you interpret the board?"},
+        {"col": 5, "row": 5, "num_lines": 0, "text":"• Each tile has number one (1) to thirty-nine (39)"},
+        {"col": 5, "row": 7, "num_lines": 0, "text":'• Each property has a color at the top corresponding to its "monopoly".'},
+        {"col": 5, "row": 9, "num_lines": 0, "text":"• Entirely blue tiles are Community Chest, and entirely orange tiles are Chance."},
+        {"col": 5, "row": 11, "num_lines": 0, "text":"• The grey tiles are:"}, 
+        {"col": 9, "row": 12, "num_lines": 0, "text":"• bottom right: GO,"},
+        {"col": 9, "row": 13, "num_lines": 0, "text":"• bottom left: jail,"},
+        {"col": 9, "row": 14, "num_lines": 0, "text":"• top right: go to jail,"},
+        {"col": 9, "row": 15, "num_lines": 0, "text":"• top left: free parking,"},
+        {"col": 9, "row": 16, "num_lines": 0, "text":"• all others: railroads and utilities."},
+        {"col": 5, "row": 18, "num_lines": 0, "text":"• Player locations are represented by a small dot colored to correspond to the player."},
+        {"col": 5, "row": 20, "num_lines": 0, "text":"• If a property is owned, the bottom left will be that player's color instead of grey."},
+        {"col": 5, "row": 22, "num_lines": 0, "text":"• The number of houses owned by a player is represented by a number of green squares on the bottom of a tile."},   
+    ])
 
