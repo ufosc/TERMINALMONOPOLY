@@ -280,8 +280,9 @@ def move_up():
     if mode:
         transaction_amount += 1
     else:
-        if current_index > 0:
-            current_index -= 1
+        current_index -= 1
+        if(current_index < 0):
+            current_index = len(stocks) - 1
     print_menu()
 
 
@@ -291,8 +292,9 @@ def move_down():
         if transaction_amount > 0:
             transaction_amount -= 1
     else:
-        if current_index < len(stocks) - 1:
-            current_index += 1
+        current_index += 1
+        if(current_index > len(stocks) - 1):
+            current_index = 0
     print_menu()
 
 def select_stock():
@@ -397,5 +399,3 @@ if __name__ == '__main__':
     graph_chart_thread.join()
     stock_display_thread.join()
     keyboard_listener_thread.join()
-
-
