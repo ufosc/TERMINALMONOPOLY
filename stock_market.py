@@ -120,7 +120,7 @@ class stock_market:
         return stock_lines
 
 
-        return stock_lines
+
 
     def update_time(self, seconds_passed):
         # increment time by minutes. 5 real-world seconds = 1 hour (60 minutes in-game)
@@ -155,7 +155,7 @@ def display_stock_prices(market):
         portfolio_lines = player1_portfolio.display_portfolio()
 
         # move the cursor to row 0, column 0 and print the current time
-        print(f"\033[1;0H" + " " * 30)
+        print(f"\033[1;0H" + " " * 40)
         print(f"\033[1;0H\033[32m{current_time}\033[0m")
 
         for i in range(len(stock_lines)):
