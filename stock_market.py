@@ -398,4 +398,4 @@ if __name__ == '__main__':
     stock_display_thread.join()
     keyboard_listener_thread.join()
 
-#    print(f"\a") beep?
+
