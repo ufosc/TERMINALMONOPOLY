@@ -15,14 +15,15 @@ class portfolio:
     def __init__(self, player_name, stock_market):
         self.player_name = player_name
         self.stock_market = stock_market
-        self.owned_stocks = {"BLVD": 0, "PLZA": 0, "DRVE": 0,
-                             "DMY1": 0, "DMY2": 0, "DMY3": 0, "DMY4": 0}
+        self.owned_stocks = {}
+        self.portfolio_stock_names = stock_market.stock_names  # Store all stock names as a list
+        for stock_name in self.portfolio_stock_names:  # Iterate through the stock names
+            self.owned_stocks.update({stock_name: 0})  # Initialize owned stocks with 0 shares for each stock
         self.current_index_for_arrow = 0
         self.current_selected_stock = None
         self.current_graph_display_mode = False
         self.current_mode = None
         self.current_transaction_amount = 0
-        self.portfolio_stock_names = stock_market.stock_names
         self.total_portfolio_value = 0
 
     def buy_stock(self, stock_ticker, num_shares):
@@ -322,8 +323,6 @@ def display_graph(players_portfolio):
         print(f"\033[1;45HDisplaying graph for: {players_portfolio.current_selected_stock}")
         build_graph(players_portfolio)
 
-
-
 def print_menu(players_portfolio):
     for i in range(17, 24):
         print(f"\033[{i};1H{' ' * 30}")
@@ -385,17 +384,17 @@ if __name__ == '__main__':
     # initialize market and portfolios
     market = stock_market()
     market.add_stock("PLZA", 20.00, -5, 5)
-    market.add_stock("DMY1", 20.00, -5, 5)
-    market.add_stock("DMY2", 20.00, -5, 5)
+    market.add_stock("FISH", 20.00, -5, 5)
+    market.add_stock("RCKT", 20.00, -5, 5)
     market.add_stock("BLVD", 5.00, -10, 10)
-    market.add_stock("DMY3", 5.00, -10, 10)
-    market.add_stock("DMY4", 5.00, -10, 10)
+    market.add_stock("TRIS", 5.00, -10, 10)
+    market.add_stock("UTIL", 5.00, -10, 10)
     market.add_stock("DRVE", 0.01, -15, 15)
-    market.add_stock("DMY5", 0.01, -15, 15)
-    market.add_stock("DMY6", 0.01, -15, 15)
+    market.add_stock("CYBR", 0.01, -15, 15)
+    market.add_stock("SYNC", 0.01, -15, 15)
 
     player_name = "Name"
-    player1_portfolio = portfolio("Player1", market)
+    player1_portfolio = portfolio("H&S", market)
     player2_portfolio = portfolio(player_name, market)
     player3_portfolio = portfolio(player_name, market)
     player4_portfolio = portfolio(player_name, market)
