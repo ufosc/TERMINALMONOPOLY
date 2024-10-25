@@ -20,8 +20,8 @@ class portfolio:
         for stock_name in self.portfolio_stock_names:  # Iterate through the stock names
             self.owned_stocks.update({stock_name: 0})  # Initialize owned stocks with 0 shares for each stock
         self.current_index_for_arrow = 0
-        self.current_selected_stock = None
-        self.current_graph_display_mode = False
+        self.current_selected_stock = "PLZA"
+        self.graph_selected_stock = "PLZA"
         self.current_mode = None
         self.current_transaction_amount = 0
         self.total_portfolio_value = 0
@@ -61,9 +61,15 @@ class stock:
         self.min_percent_change = min_percent_change
         self.max_percent_change = max_percent_change
         self.is_owned = False
+        self.historical_prices = []
+        for i in range(30):
+            self.historical_prices.append(initial_price)
 
     def update_price(self):
         self.price = self.fluctuate_stock_price(self.price)
+        self.historical_prices.append(self.price)
+        if len(self.historical_prices) > 35:
+            self.historical_prices.pop(0)
 
     def fluctuate_stock_price(self, current_stock_price):
         rand_num = random.uniform(self.min_percent_change, self.max_percent_change)
@@ -172,6 +178,7 @@ def display_stock_prices(market):
                 print(f"\033[{3 + i };0H{stock_lines[i]}")
 
         for i in range(len(portfolio_lines)):
+            #print(f"\033[{i + 17}:41H" + " " * 40)
             print(f"\033[{i + 17};41H{portfolio_lines[i]}")
 
         #update the stock prices
@@ -186,31 +193,18 @@ def display_stock_prices(market):
 
 
 
-def build_graph(players_portfolio):
+def build_graph(players_portfolio, market):
     width, height = 35, 10  # adjusted for terminal size
     data = [random.randint(0, 100) for _ in range(50)]
-    selected_stock_prices = []
     # creates array data with random values
     while True:  # infinite loop that:
         # clear_console()  # clears
-        if players_portfolio.current_selected_stock != None and players_portfolio.current_graph_display_mode == True:
-            stock_obj = market.stocks[players_portfolio.current_selected_stock]
-            selected_stock_prices.append(stock_obj.get_price())
-            # add current price
-
-            if len(selected_stock_prices) > width:  # maintain size
-                selected_stock_prices.pop(0)  # deletes old value
-
-            draw_graph(selected_stock_prices, width, height, players_portfolio)  # draws graph
-            time.sleep(0.5)  # pauses for 0.5 seconds
-        else:
-            draw_graph(data, width, height, players_portfolio)  # draws graph
-            data.append(random.randint(0, 100))  # adds value
-            data.pop(0)  # deletes oldest value
-            time.sleep(0.5)
+        draw_graph(market.stocks[players_portfolio.graph_selected_stock].historical_prices, width, height, players_portfolio, market)  # draws graph
+        time.sleep(0.5)  # pauses for 0.5 seconds
 
 
-def draw_graph(data, width, height, players_portfolio):
+
+def draw_graph(data, width, height, players_portfolio, market):
     max_value = max(data)
     min_value = min(data)
     start_of_graph_row = 16
@@ -231,7 +225,7 @@ def draw_graph(data, width, height, players_portfolio):
     counter = 0
     for y in range(height, -1, -1):
         counter += 1
-        label = f"{y:.1f}"
+        label = f"{market.get_stock_price(players_portfolio.current_selected_stock)- 4 + y:.1f}"
         line = f"{label:>4} |"  # formats y-axis labels with width of 2 char
         for x in range(width):  # iterates over each column of the graph from 0 to width - 1
 
@@ -270,7 +264,7 @@ def draw_graph(data, width, height, players_portfolio):
             x_labels += " "
     print(f"\033[{2 + counter + 2};35H{x_labels}")
 
-
+    print(f"\033[1;45HDisplaying graph for: {players_portfolio.graph_selected_stock}")
     # print("\nX-axis: Time")
     # print("Y-axis: Price")
     # sys.stdout.write("\033[7;0H" + "> " + "\033[0m")
@@ -308,20 +302,16 @@ def select_stock(players_portfolio):
         if players_portfolio.current_mode == "sell":
             players_portfolio.sell_stock(players_portfolio.current_selected_stock, players_portfolio.current_transaction_amount)
             print("\a")
-        players_portfolio.current_selected_stock = None
+        #players_portfolio.current_selected_stock = None
         players_portfolio.current_transaction_amount = 0
         players_portfolio.current_mode = None
         print_menu(players_portfolio)
     else:
         players_portfolio.current_selected_stock = players_portfolio.portfolio_stock_names[players_portfolio.current_index_for_arrow]
-        players_portfolio.current_graph_display_mode = False
         print_menu(players_portfolio)
 
-def display_graph(players_portfolio):
-    if players_portfolio.current_selected_stock:
-        players_portfolio.current_graph_display_mode = True
-        print(f"\033[1;45HDisplaying graph for: {players_portfolio.current_selected_stock}")
-        build_graph(players_portfolio)
+def display_graph(players_portfolio, market):
+    players_portfolio.graph_selected_stock = players_portfolio.portfolio_stock_names[players_portfolio.current_index_for_arrow]
 
 def print_menu(players_portfolio):
     for i in range(17, 24):
@@ -353,6 +343,10 @@ def print_menu(players_portfolio):
         print(f"\033[{12 + len(players_portfolio.portfolio_stock_names)};1H" + f"You selected: {players_portfolio.current_selected_stock}")
         if players_portfolio.current_mode == "buy" or players_portfolio.current_mode == "sell":
             print(f"\033[{13 + len(players_portfolio.portfolio_stock_names)};1H" + f"Transaction amount: {players_portfolio.current_transaction_amount}")
+        else:
+            print(
+                f"\033[{13 + len(players_portfolio.portfolio_stock_names)};1H" + " " * 15)
+
 
 def buy_mode(players_portfolio):
     if players_portfolio.current_selected_stock:
@@ -364,12 +358,12 @@ def sell_mode(players_portfolio):
         players_portfolio.current_mode = "sell"
         print_menu(players_portfolio)
 
-def listen_for_keys(players_portfolio):
+def listen_for_keys(players_portfolio, market):
     print_menu(players_portfolio)
     keyboard.add_hotkey('w', lambda:move_up(players_portfolio))
     keyboard.add_hotkey('s', lambda:move_down(players_portfolio))
     keyboard.add_hotkey('enter', lambda:select_stock(players_portfolio))
-    keyboard.add_hotkey('g', lambda:display_graph(players_portfolio))
+    keyboard.add_hotkey('g', lambda:display_graph(players_portfolio, market))
     keyboard.add_hotkey('ctrl+b', lambda:buy_mode(players_portfolio))
     keyboard.add_hotkey('ctrl+s', lambda:sell_mode(players_portfolio))
     keyboard.wait('esc')
@@ -400,9 +394,9 @@ if __name__ == '__main__':
     player4_portfolio = portfolio(player_name, market)
 
     # create threads
-    graph_chart_thread = threading.Thread(target=build_graph, args=(player1_portfolio,))
+    graph_chart_thread = threading.Thread(target=build_graph, args=(player1_portfolio, market,))
     stock_display_thread = threading.Thread(target=display_stock_prices, args=(market,))
-    keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=(player1_portfolio,))
+    keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=(player1_portfolio, market,))
 
     # start threads
     graph_chart_thread.start()
