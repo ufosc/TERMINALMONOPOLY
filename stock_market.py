@@ -305,7 +305,7 @@ def select_stock(players_portfolio):
             players_portfolio.buy_stock(players_portfolio.current_selected_stock, players_portfolio.current_transaction_amount)
             print("\a")
         if players_portfolio.current_mode == "sell":
-            players_portfolio.sell_stock(players_portfolio.selected_stock, players_portfolio.current_transaction_amount)
+            players_portfolio.sell_stock(players_portfolio.current_selected_stock, players_portfolio.current_transaction_amount)
             print("\a")
         players_portfolio.current_selected_stock = None
         players_portfolio.current_transaction_amount = 0
