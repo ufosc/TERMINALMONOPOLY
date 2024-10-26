@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import os
 import threading
 import keyboard
+import heapq
 
 
 # hello
@@ -62,12 +63,22 @@ class stock:
         self.max_percent_change = max_percent_change
         self.is_owned = False
         self.historical_prices = []
+        self.prices_per_day = []
+        self.mover_change = 0
         for i in range(30):
             self.historical_prices.append(initial_price)
 
     def update_price(self):
         self.price = self.fluctuate_stock_price(self.price)
         self.historical_prices.append(self.price)
+        self.prices_per_day.append(self.price)
+        if len(self.prices_per_day) == 240:
+            # 240 times per game day   ^^^  (adjust here and at other comment for faster update)
+            last_element = self.prices_per_day[-1]
+            first_element = self.prices_per_day[0]
+            self.mover_change = (last_element - first_element) / first_element * 100
+            # self.prices_per_day.clear()
+
         if len(self.historical_prices) > 35:
             self.historical_prices.pop(0)
 
@@ -99,6 +110,8 @@ class stock_market:
         self.stock_names = []
         self.stocks = {}
         self.players = []
+        self.top_three_movers = []
+        heapq.heapify(self.top_three_movers)
         self.current_time = datetime(2024, 9, 16, 9, 0, 0)
 
     def add_stock(self, stock_ticker, stock_price, min_percent_change, max_percent_change):
@@ -176,6 +189,14 @@ def display_stock_prices(market):
             elif i >= 5:
                 print(f"\033[{3 + i };0H" + " " * 30)
                 print(f"\033[{3 + i };0H{stock_lines[i]}")
+
+
+        if len(market.stocks['BLVD'].prices_per_day) == 240:
+            # 240 times per game day                    ^^^  (adjust here and at other comment for faster update)
+            top_movers(market)
+            for s in market.stocks:
+                market.stocks[s].prices_per_day.clear()
+
 
         for i in range(len(portfolio_lines)):
             #print(f"\033[{i + 17}:41H" + " " * 40)
@@ -367,6 +388,28 @@ def listen_for_keys(players_portfolio, market):
     keyboard.add_hotkey('ctrl+b', lambda:buy_mode(players_portfolio))
     keyboard.add_hotkey('ctrl+s', lambda:sell_mode(players_portfolio))
     keyboard.wait('esc')
+
+
+def add_mover(market, mover, change, k):
+    if len(market.top_three_movers) < k:
+        heapq.heappush(market.top_three_movers, (change, mover))
+    else:
+        if change > market.top_three_movers[0][0]:
+            heapq.heapreplace(market.top_three_movers, (change, mover))
+
+def top_movers(market):
+    k = 3
+    counter = 0
+    for s in market.stocks:
+        add_mover(market, market.stocks[s].ticker, market.stocks[s].mover_change, k)
+
+    top_movers_sorted = sorted(market.top_three_movers, reverse=True)
+    print(f"\033[13;1H Top Movers:")
+    for change, mover in top_movers_sorted:
+        print(f"\033[{14 + counter};1H {mover}: {change:.2f}")
+        counter += 1
+
+
 
 
 if __name__ == '__main__':
