@@ -2,7 +2,6 @@ import player
 import random
 import screenspace as ss
 import time
-import os
 from style import get_graphics
 
 suits = ["♥", "♦", "♣", "♠"]
@@ -73,8 +72,6 @@ def end(wins, losses, total_rounds, active_terminal):
     banker_card = None
     card = None
     render(banker_card, card, wins, losses, total_rounds, active_terminal)
-
-    #@TODO: Make end screen using win and lose graphics
 
     graphics = get_graphics()
     win_gfx = graphics["casino_win"]
