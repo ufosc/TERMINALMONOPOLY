@@ -47,10 +47,6 @@ def initialize():
     ADDRESS = input("Enter Host IP: ")
     PORT = input("Enter Host Port: ")
 
-    # temp vbls for local testing
-    # ADDRESS = '192.168.56.1'
-    # PORT = '3131'
-
     s.print_w_dots("Press enter to connect to the server...", end='')
     input()
     try:
@@ -72,14 +68,22 @@ def initialize():
         else:
             initialize()
 
-    s.print_w_dots("Attempting to connect to Banker's receiver...")
     sleep(1)
-    try:
-        sockets[1].connect((ADDRESS, int(PORT)+1))
-    except Exception as e:
-        print(e)
-        s.print_w_dots("Failed connecting. ")
-    
+    confirmation_msg = net.receive_message(sockets[0]) # sometimes gets hung up for player 2 @TODO: Fix this
+    if 'Game Start!' in confirmation_msg:
+        print(f"You are player {confirmation_msg[-1]}.")
+        input()
+
+        s.print_w_dots("Attempting to connect to Banker's receiver...")
+        sleep(1)
+        try:
+            sockets[1].connect((ADDRESS, int(PORT)+1))
+        except Exception as e:
+            print(e)
+            with open ("error_log.txt", "a") as f:
+                f.write(f"Failed to connect to Banker's receiver. {e}\n")
+            s.print_w_dots("Failed connecting. ")
+
 def handshake(sock: socket.socket) -> str:
     """
     Used in ensuring the client and server are connected and can send/receive messages. 
@@ -91,14 +95,52 @@ def handshake(sock: socket.socket) -> str:
     """
     # Sockets should send and receive relatively simultaneously. 
     # As soon as the client connects, the server should send confirmation message.
-    message = sock.recv(1024).decode('utf-8')
+    message = net.receive_message(sock)
+    # message = sock.recv(1024).decode('utf-8')
     print(message)
     if message == "Welcome to the game!":
-        sock.send(bytes("Connected!", 'utf-8'))
+        net.send_message(sock, "Connected!")
+        # Now start notification socket. 
+        import threading
+        notif_thread = threading.Thread(target=start_notification_listener, args=(sockets[0],))
+        notif_thread.daemon = True
+        notif_thread.start()
         return message
     else:
         s.print_w_dots(COLORS.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
 
+def start_notification_listener(my_socket: socket.socket) -> None:
+    """
+    Starts a new socket on a port 1 above the current socket, listens for notifications.
+    Notifications are sent to the player's second socket, which is always listening for notifications and does not send any data back.
+    Additionally, the player should have a queue of notifications to be displayed in the client's interface, so they do not cover one another.
+    Keep track of the notifications sent to the player and display them in the order they were received, across other parts of the client's interface. Think: set_cursor_str. Notifications are NOT terminal-based.
+    
+    Parameters:
+    sock (socket.socket) Player's main socket to send the notification to.
+    
+    Returns:
+    None
+    """
+    notif_list = []
+    current_pos = 1 # Current position of the notification in the player's interface, where value is 1-4 for each terminal.
+
+    listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Binds to the next available port (assuming port + 1)
+    listener.bind((my_socket.getsockname()[0], my_socket.getsockname()[1]+1))
+    listener.listen()
+    while True:
+        notif_socket, addr = listener.accept()
+        notif = net.receive_message(notif_socket)
+        notif_list.append(notif)
+
+        # Display notifications in the player's interface. Places the notification in the next available terminal.
+        print(ss.notification(notif_list.pop(0), (current_pos) if current_pos != active_terminal else (current_pos + 1) if current_pos + 1 <= 4 else 1
+                              if active_terminal != 1 else 2, s.COLORS.RED)) # this is probably an overly defined ternary operator(s)
+        current_pos = (current_pos + 1) if current_pos + 1 <= 4 else 1
+        print(s.COLORS.RESET)
+        ss.set_cursor(0, ss.INPUTLINE)
+        
 def calculate() -> None:
     """
     Helper method for calling calculator() in modules.py. Updates screen accordingly. 
@@ -269,7 +311,7 @@ def get_input() -> None:
             ss.overwrite("\r")
         elif stdIn == "ships":
             # Access game from banker
-            sockets[1].send('ships'.encode())
+            net.send_message(sockets[1], 'ships')
             sleep(0.1)
             board_data = net.receive_message(sockets[1])
             ss.update_quadrant(active_terminal, board_data, padding=False)
@@ -279,10 +321,6 @@ def get_input() -> None:
 
             # if gamestate == f'{name}\'s turn to place ships!':
             #     pass
-
-            
-
-
             
         elif stdIn == "fish":
             fishing_gamestate = 'start'
@@ -290,11 +328,15 @@ def get_input() -> None:
                 game_data, fishing_gamestate = m.fishing(fishing_gamestate)
                 ss.update_quadrant(active_terminal, game_data, padding=False)
             ss.set_cursor(0, ss.INPUTLINE)
- 
+
+        elif stdIn == "ttt" or stdIn == "tictactoe":
+            m.ttt_handler(sockets[1], active_terminal)
+
         elif stdIn.startswith('reset'):
             ss.calibrate_screen('player')
             ss.clear_screen()
             ss.initialize_terminals()
+            ss.update_terminal(active_terminal, active_terminal)
             ss.overwrite(COLORS.GREEN + "Screen calibrated.")
         elif stdIn == "casino":
             import casino
@@ -307,7 +349,6 @@ def get_input() -> None:
         ss.overwrite(COLORS.RED + "You are still in a game!")
         get_input()
 
-
 if __name__ == "__main__":
     """
     Main driver function for player.
@@ -315,7 +356,7 @@ if __name__ == "__main__":
     get_graphics()
 
     # Feel free to comment out the 3 following lines for testing purposes.
-    # initialize()
+    initialize()
     # ss.make_fullscreen()
     # ss.calibrate_screen('player')
 
@@ -326,7 +367,6 @@ if __name__ == "__main__":
     # Prints help in quadrant 2 to orient player.
     ss.update_quadrant(2, text_dict.get('help'), padding=True)
     get_input()
-
     # s.print_w_dots("Goodbye!")
 
 def shutdown():
