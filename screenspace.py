@@ -256,7 +256,7 @@ def overwrite(text: str = ""):
     set_cursor(0, INPUTLINE)
     print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r')
 
-def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowed = []): # arbitrary large numbers
+def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowed = [], allowed = []): # arbitrary large numbers
     """
     Prompts the user to enter an integer within a specified range and validates the input.
     Parameters:
@@ -294,6 +294,7 @@ def initialize_terminals():
     """
     Initializes the terminal screen with the default number displays and terminal borders.
     """
+    clear_screen()
     print(get_graphics()['terminals'])
     for i in range(4):
         update_quadrant(i+1, data=None)

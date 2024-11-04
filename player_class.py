@@ -10,7 +10,7 @@ class Player:
         self.location = 0
         self.jail = False
         self.jailcards = 0
-        self.name = "Player #" + str(order + 1)
+        self.name = "Player " + str(order + 1)
     """
     Player cash\n
     @cash: int\n
@@ -31,7 +31,7 @@ class Player:
         if (board.locations[location].owner == -1):
             board.locations[location].owner = self.order
             if location == 5 or location == 15 or location == 25 or location == 35: # railroad
-                owned_rails = [k for k in range(5, 36, 10) if board.locations[k].owner == self.order]
+                owned_rails = [k for k in [5, 15, 25, 35] if board.locations[k].owner == self.order]
                 for k in owned_rails:
                     board.locations[k].houses = len(owned_rails)   
             elif location == 12: # electric company, check if water works is owned

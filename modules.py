@@ -159,7 +159,7 @@ def ttt_handler(server: Socket, active_terminal: int):
 
     if 'select a game' in game_data:
         ss.update_quadrant(active_terminal, game_data, padding=True)    
-        game_id = ss.get_valid_int(prompt='Enter the game id: ', min_val=-1, max_val=10) # 10 is incorrect! temp for now @TODO
+        game_id = ss.get_valid_int(prompt='Enter the game id: ', min_val=-1, max_val=10) # 10 is incorrect! temp for now TODO
         # Send the server the game id to join. Should be validated on server side. 
         net.send_message(server, f'ttt,joingame,{game_id}')
 
@@ -168,7 +168,7 @@ def ttt_handler(server: Socket, active_terminal: int):
         ss.update_quadrant(active_terminal, game_data, padding=True)
 
     if ('X' in game_data and 'O' in game_data and (not '▒' in game_data)) or '▒' in game_data: # If the game data sent back is a board, then we can play the game
-        # @TODO check this is going to work with player name's that have 'X' or 'O' in them, or hell, with the '▒' character
+        # TODO check this is going to work with player name's that have 'X' or 'O' in them, or hell, with the '▒' character
         simple_board = destruct_board(game_data)
         original_board = destruct_board(game_data)
         x,y = 0,0

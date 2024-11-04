@@ -1,15 +1,20 @@
 import socket
 import threading
 import os
+import random
+import sys
+import io
+
 import style as s
 import screenspace as ss 
-import random
 
 import gamemanager as gm
 import networking as net
 
 import modules_directory.tictactoe as tictactoe
 import modules_directory.battleship as battleship
+
+import monopoly as mply
 
 import select
 from time import sleep
@@ -18,10 +23,8 @@ bank_cash = 100000
 starting_cash = 1500
 clients = []
 port = 3131
-board = ""
 num_players = 0
 
-global timer
 timer = 0
 
 class Client:
@@ -30,6 +33,8 @@ class Client:
         self.name = name
         self.money = money
         self.properties = properties
+        self.can_roll = True
+        self.num_rolls = 0
 
 def start_server() -> socket.socket:
     """
@@ -66,13 +71,14 @@ def start_server() -> socket.socket:
     game_full = False
     while not game_full:
         # Accepts connections while there are less than <num_players> players
-        if len(clients) != num_players:
+        if len(clients) < num_players:
             client_socket, addr = server_socket.accept()
             print(f"Got a connection from {addr}")
             client_handler = threading.Thread(target=handshake, args=(client_socket,handshakes))
             client_handler.start()
         else: 
             game_full = True
+        sleep(0.5) 
     s.print_w_dots("Game is full. Starting game...")
     s.print_w_dots("")
     s.print_w_dots("")
@@ -128,16 +134,28 @@ def start_receiver():
             print(f'{s.set_cursor_str(0, os.get_terminal_size().lines-3)}{s.COLORS.backBLUE}Time passed since last command: {timer}. ',flush=True,end=f'\r{s.COLORS.RESET}')
             timer += 1
 
-def unittest1():
+def unittest(test: int):
     """
     Unit test function for the Banker module.
-    This adds many games.
+    Add here as you think of more tests.
     """
-    gm.add_game(gm.Game('Battleship', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
-    gm.add_game(gm.Game('Battleship', [Client(None, None, 0, [])] * 2, 'board', 'other_data'))
-    gm.add_game(gm.Game('Battleship', [Client(None, "Name", 0, [])] * 3, 'board', 'other_data'))
-    gm.add_game(gm.Game('TicTacToe', [Client(None, "nada", 0, [])] * 2, 'board', None))
-
+    global num_players
+    match test:
+        case 1:
+            print("Running unittest1")
+            num_players = 2
+            gm.add_game(gm.Game('Battleship', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
+            gm.add_game(gm.Game('Battleship', [Client(None, None, 0, [])] * 2, 'board', 'other_data'))
+            gm.add_game(gm.Game('Battleship', [Client(None, "Name", 0, [])] * 3, 'board', 'other_data'))
+            gm.add_game(gm.Game('TicTacToe', [Client(None, "nada", 0, [])] * 2, 'board', None))
+        case 2:
+            gm.add_game(gm.Game('Fake Game', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
+            num_players = 1
+        case _:
+            print("Invalid test number.")
+            print("Running unittest2")
+            unittest(2)
+    
 def handle_data(data: bytes, client: socket.socket) -> str:
     """
     Handles all data received from player sockets. 
@@ -156,27 +174,29 @@ def handle_data(data: bytes, client: socket.socket) -> str:
     
     # current_client.data_queue.put(decoded_data)
 
-    if decoded_data == 'request_board':
-        return "unimplemented"
-        # Player requests board:
-        # Send board size, then board in segments
-        board_data = board.encode()
-        s.print_w_dots(f'Gameboard sent to player {client[0]}')
+    if decoded_data == 'request_board': 
+        net.send_message(client, mply.get_gameboard())
+        s.print_w_dots(f'Gameboard sent to player {client}')
+
+    elif decoded_data.startswith('mply'):
+        monopoly_game(current_client, decoded_data)
 
     elif decoded_data == 'ships':
         if gm.game_exists('Battleship') == False:
             s.print_w_dots('No active games to join.')
             number_of_players = 1
             s.print_w_dots(f'Creating new Battleship with {number_of_players} players.')
-            battleship_game = battleship.start_game()
-            gm.add_game(gm.Game('Battleship', [-1] * number_of_players, battleship_game.board, battleship_game))
+            battleship_game_object = battleship.start_game()
+            battleship_game = gm.Game('Battleship', [-1] * number_of_players, battleship_game_object.board, battleship_game_object)
+            gm.add_game(battleship_game)
             s.print_w_dots('Game created.')
-            gm.get_game_by_id(0).other_data.player_names.append(current_client.name)
-            s.print_w_dots(f'Player {current_client.name} joined game.')
+            battleship_game_object.player_names.append(current_client.name)
+            s.print_w_dots(f'{current_client.name} joined game.')
+            net.send_message(client, battleship_game_object.generate_water_and_coords())
             
         elif gm.player_in_game('Battleship', current_client.name) == True:
             if len(gm.get_game_by_name('Battleship')) >= 1:
-                print('Player is already playing at least one game, need to select a specific game to rejoin.')
+                print(f'{current_client.name} is already playing at least one game, need to select a specific game to rejoin.')
                 net.send_message(client, gm.display_games(name='Battleship', player_name=current_client.name))
 
         else: # should only appear if player is in multiple games
@@ -211,7 +231,7 @@ def handle_data(data: bytes, client: socket.socket) -> str:
             game_id = int(decoded_data.split(',')[2])
 
             if game_id == -1: # Create a new game.
-                # Don't let a player create a new game if they're already in one.. This might be adjusted later @TODO debug
+                # Don't let a player create a new game if they're already in one.. This might be adjusted later TODO debug
                 if gm.player_in_game('TicTacToe', current_client.name) == True:
                     if len(gm.get_game_by_name('TicTacToe')) >= 1:
                         print(f"{ttt_location_info}Player input -1 when already playing another game, need to select a specific game to rejoin.")
@@ -220,7 +240,7 @@ def handle_data(data: bytes, client: socket.socket) -> str:
                 else: 
                     opponent = int(decoded_data.split(',')[3])
                     # Check if valid opponent inputted
-                    if clients[opponent] == None or clients[opponent] == current_client:
+                    if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == current_client:
                         net.send_message(client, "\nInvalid opponent. Please select another player.")
                         return
 
@@ -239,7 +259,7 @@ def handle_data(data: bytes, client: socket.socket) -> str:
                 if queried_game.name == 'TicTacToe' and len(queried_game.players) < queried_game.MAXPLAYERS:
                     # Game is a TicTacToe game and has space for another player
                     # Note that this means a player can accidentally join a game they're not supposed to
-                    # if they know the game ID. This is a security flaw. @TODO fix this
+                    # if they know the game ID. This is a security flaw. TODO fix this
                     gm.add_player_to_game(game_id, current_client.name)
                     s.print_w_dots(f'Player {current_client.name} joined game.')
                     
@@ -341,7 +361,7 @@ def get_client_by_socket(socket: socket.socket) -> Client:
         # Only checking the IP address for now. This will not work if two clients are on the same IP address.
         # Think: locally testing. This has proven to be an issue while testing tic tac toe on the same machine.
         # While this should work in a real-world scenario, it's not ideal for testing and is currently being 
-        # ignored. @TODO fix this. Not as simple as client.socket.getpeername()[1] == socket.getpeername()[1]
+        # ignored. TODO fix this. Not as simple as client.socket.getpeername()[1] == socket.getpeername()[1]
         print(f"Comparing {client.socket.getpeername()} to {socket.getpeername()}")
         if client.socket.getpeername()[0] == socket.getpeername()[0]:
             return client
@@ -355,23 +375,103 @@ def set_gamerules() -> None:
     """
     global bank_cash, starting_cash, num_players
     try:
-        # bank_cash = ss.get_valid_int("Enter the amount of money the bank starts with: ")
-        # starting_cash = ss.get_valid_int("Enter the amount of money each player starts with: ")
-        # num_players = ss.get_valid_int("Enter the number of players: ")
-        num_players = 1
+        bank_cash = ss.get_valid_int("Enter the amount of money the bank starts with: ")
+        starting_cash = ss.get_valid_int("Enter the amount of money each player starts with: ")
+        num_players = ss.get_valid_int("Enter the number of players: ")
     except:
         print("Failed to set gamerules. Try again.")
         input()
         set_gamerules()
 
+def monopoly_controller() -> None:
+    print("About to start Monopoly game.")
+    sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
+    net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.")
+    print("Sent gameboard to player 1.")
+    last_turn = 0
+    while True:
+        sleep(1)
+        if mply.turn != last_turn:
+            print(ss.set_cursor_str(0, 20) + f"Player {mply.turn} is up.")
+            last_turn = mply.turn
+            net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.")
+            clients[mply.turn].can_roll = True
+            print(f"Sent gameboard to player {mply.turn}.")
+
+
+def monopoly_game(client: Client = None, cmd: str = None) -> None:
+    """
+    Description:
+        This is the main game loop for Monopoly.
+        It will be called from the main function in its own thread. 
+    Notes:
+        Monopoly command looks like this: "mply,<action>,<specific data>,<even more specific data>,<etc>" 
+
+        player_roll all happens on the player side, so the player can handle all of that. 
+        All data during player_roll will be sent to banker like the following:
+        recv_message() -> handle_data() -> monopoly_game()
+        Where monopoly_game parses the data and banker does not need to send anything back. 
+
+        Now for player_choice, banker and player will do a bit more back and forth.
+        Most of the game logic can be handled on the player side, but banker will
+        have to preface the messages with cash, properties, etc. 
+
+        TODO fill out this docstring with more information.
+    """
+    dice = (0, -1)
+    if mply.players[mply.turn].name == client.name: # Check if the client who sent data is the current player
+        action = cmd.split(',')[1]
+        if action == None or action == '':
+            ret_val = mply.request_roll()
+            net.send_monopoly(client.socket, ret_val)
+        elif action == 'roll' and client.can_roll:
+            dice = mply.roll()
+            client.num_rolls += 1
+            ret_val = mply.process_roll(client.num_rolls, dice)
+            if ret_val.startswith("player_choice"):
+                ret_val.replace("player_choice", "")
+                client.can_roll = False
+            net.send_monopoly(client.socket, ret_val)
+        elif action == 'trybuy': #TODO Better handling of locations would be nice. 
+            mply.buy_logic("banker", "b")
+            ret_val = mply.get_gameboard()
+            # Need to check if doubles were rolled, otherwise end the rolling phase
+            if dice[0] != dice[1]:
+                client.can_roll = False
+            net.send_monopoly(client.socket, ret_val)
+        elif action == 'propmgmt': #TODO This is almost complete. Still somewhat buggy.
+            try: 
+                property_id = cmd.split(',')[2]
+            except:
+                property_id = ""
+            ret_val = mply.housing_logic(mply.players[0], "banker", property_id)
+            net.send_monopoly(client.socket, ret_val)
+        elif action == 'deed': #TODO This is not yet complete. Very buggy. 
+            try: 
+                property_id = cmd.split(',')[2]
+            except:
+                property_id = ""
+            mply.update_status(mply.players[0], "deed", [], "banker", property_id)
+        elif action == 'continue':
+            ret_val = mply.get_gameboard()
+            net.send_monopoly(client.socket, ret_val)
+        elif action == 'endturn':
+            mply.end_turn()
+            ret_val = "ENDOFTURN" + mply.get_gameboard()
+            net.send_monopoly(client.socket, ret_val)
+
 if __name__ == "__main__":
+
     os.system("cls")
     print("Welcome to Terminal Monopoly, Banker!")
 
-    unittest1()
-    num_players = 1
+    test = ss.get_valid_int("Enter a test number: ")
+    unittest(test)
     # set_gamerules()
     start_server()
+    game = mply.start_game(starting_cash, num_players)
+    print(game)
+    threading.Thread(target=monopoly_controller, daemon=True).start()
     start_receiver()
     # print(f"Found {players}, each at: ")
     # for player in player_data:
