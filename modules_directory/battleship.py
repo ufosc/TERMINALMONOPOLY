@@ -2,6 +2,10 @@ import screenspace as ss
 import style as s
 import random
 import os
+# Now that this has been moved to modules_directory, it does not 
+# run standalone with the current imports. This is *fine* because
+# it does not *need* to standalone, but debugging could get 
+# annoying. 
 
 class Ship():
     """

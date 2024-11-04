@@ -42,7 +42,7 @@ class COLORS:
     backCOMMUNITY = COMMUNITY.replace("38", "48")
     backBLACK = BLACK.replace("38", "48")
     
-    # @TODO add default compatible colors for terminals that cannot handle RGB values (see issue #11). 
+    # TODO add default compatible colors for terminals that cannot handle RGB values (see issue #11). 
     cBROWN = ""
     cbBROWN = ""
 

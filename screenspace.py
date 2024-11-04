@@ -34,9 +34,21 @@ def print_board(gameboard: list[str]) -> None:
     for y in range(len(gameboard)):
         print(gameboard[y])
 
-def notification(msg: str, n: int, color: str) -> str:
+def notification(message: str, n: int, color: str) -> str:
+    """
+    Generates a notification popup message for the player.
+    Parameters:
+        message (str): The message to be displayed in the notification.
+        n (int): The position identifier for the popup. 
+                 1 - Top-left, 2 - Top-right, 3 - Bottom-left, 4 - Bottom-right, -1 - Custom position.
+        color (str): The color code for the popup text.
+    Returns:
+        str: The formatted string with the notification message and its position.
+    """
     message = message + " " * max(0, (78 - len(message)))
-        # Max 78 character popup for messaging the player.
+    # Max 78 character popup for messaging the player.
+    x,y = -1,-1
+    writeto = ""
     match n:
         case 1:
             x,y = 2+10,2+5
@@ -57,7 +69,7 @@ def notification(msg: str, n: int, color: str) -> str:
             # Custom text wrapping
             p += set_cursor_str(x+2, y+i) + message[(i-1)*26:(i-1)*26+26]
     writeto += p
-    return writeto
+    return writeto + set_cursor_str(0, INPUTLINE)
 
 def replace_sequence(match, x, y):
     """
@@ -138,7 +150,6 @@ def update_quadrant(n: int, data: str, padding: bool = True):
         set_cursor(x=x-12 + cols//2, y= y-0+rows//2)
         print('╚══════════════════════╝')
 
-
 def update_terminal(n: int, o: int):
     """
     Updates the terminal border to indicate the active terminal. Turns off the border for the inactive terminal.
@@ -196,7 +207,41 @@ def update_terminal(n: int, o: int):
     
     set_cursor(0,INPUTLINE)
     print(COLORS.RESET, end='')
+
+def indicate_keyboard_hook(t: int):
+    """
+    Indicates that the keyboard hook is active for a certain terminal. 
+    Changes the color of the terminal border.
+    This is important for the player to know why they can't type on the input line.
+    """
+    x,y = -1,-1
+    border_chars = [('╔','╦','╠','╬'),
+                    ('╦','╗','╬','╣'),
+                    ('╠','╬','╚','╩'),
+                    ('╬','╣','╩','╝')]
     
+    match t: 
+        case 1:
+            x,y = 0,1
+        case 2:
+            x,y = cols+2, 1
+        case 3:
+            x,y = 0, rows+2
+        case 4:
+            x,y = cols+2, rows+2
+    t = t - 1 # 0-indexed
+    c = COLORS.LIGHTBLUE
+    set_cursor(x,y)
+    print(c, end='')
+    print(border_chars[t][0] + '═' * cols + border_chars[t][1], end='')
+    set_cursor(x,y+rows+1)
+    print(border_chars[t][2] + '═' * cols + border_chars[t][3], end='')
+    for i in range(y, y + rows):
+        set_cursor(x, i+1)
+        print('║')
+        set_cursor(x+cols + (1 if (t + 1) % 2 == 0 else 2), i+1)
+        print('║')
+
 def overwrite(text: str = ""):
     """
     Writes text over 2nd to last line of the terminal (input line).
@@ -210,6 +255,30 @@ def overwrite(text: str = ""):
     """
     set_cursor(0, INPUTLINE)
     print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r')
+
+def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowed = [], allowed = []): # arbitrary large numbers
+    """
+    Prompts the user to enter an integer within a specified range and validates the input.
+    Parameters:
+        prompt (str): The message displayed to the user when asking for input.
+        min_val (int, optional): The minimum acceptable value (inclusive). Defaults to -1000000000.
+        max_val (int, optional): The maximum acceptable value (inclusive). Defaults to 1000000000.
+        disallowed (list, optional): A list of disallowed values. Defaults to an empty list.
+    Returns:
+        int: A valid integer input by the user within the specified range.
+    Raises:
+        ValueError: If the input is not a valid integer or is outside the specified range.
+    """
+    while True:
+        try:
+            set_cursor(0, INPUTLINE)
+            value = int(input(prompt))
+            if value < min_val or value > max_val or value in disallowed:
+                raise ValueError
+            return value
+        except ValueError:
+            overwrite("Invalid input. Please enter a valid integer.")
+            set_cursor(0, INPUTLINE)
 
 def clear_screen():
     """
@@ -225,6 +294,7 @@ def initialize_terminals():
     """
     Initializes the terminal screen with the default number displays and terminal borders.
     """
+    clear_screen()
     print(get_graphics()['terminals'])
     for i in range(4):
         update_quadrant(i+1, data=None)
