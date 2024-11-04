@@ -1,4 +1,5 @@
 import os
+import sys
 import socket
 from time import sleep
 import style as s
@@ -369,9 +370,10 @@ if __name__ == "__main__":
     get_graphics()
 
     # Feel free to comment out the 3 following lines for testing purposes.
-    initialize()
-    # ss.make_fullscreen()
-    # ss.calibrate_screen('player')
+    if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
+        initialize()
+        ss.make_fullscreen()
+        ss.calibrate_screen('player')
 
     ss.clear_screen()
     ss.initialize_terminals()
