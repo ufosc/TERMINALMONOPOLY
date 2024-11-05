@@ -21,6 +21,7 @@ class portfolio:
         for stock_name in self.portfolio_stock_names:  # Iterate through the stock names
             self.owned_stocks.update({stock_name: 0})  # Initialize owned stocks with 0 shares for each stock
         self.current_index_for_arrow = 0
+        #default stock is the first one in the list - PLZA
         self.current_selected_stock = "PLZA"
         self.graph_selected_stock = "PLZA"
         self.current_mode = None
@@ -43,7 +44,7 @@ class portfolio:
             if num_shares > 0:
                 stock_price = self.stock_market.get_stock_price(stock_ticker)  # fetch the latest price
                 self.total_portfolio_value = self.total_portfolio_value + (num_shares * stock_price)
-                portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Equity: ${num_shares * stock_price:.5f}")
+                portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Equity: ${num_shares * stock_price:.2f}")
                 has_stocks = True
         if not has_stocks:
             portfolio_lines.append("No stocks owned.")
@@ -139,7 +140,7 @@ class stock_market:
 
             # Place the arrow right before the parentheses with percentage change
             stock_lines.append(
-                f"{ticker}: {price_color}${stock_obj.get_price():.5f} {arrow} ({price_change:+.5f}%)\033[0m")
+                f"{ticker}: {price_color}${stock_obj.get_price():.5f} {arrow} ({price_change:+.2f}%)\033[0m")
 
         return stock_lines
 
@@ -286,15 +287,8 @@ def draw_graph(data, width, height, players_portfolio, market):
     print(f"\033[{2 + counter + 2};35H{x_labels}")
 
     print(f"\033[1;45HDisplaying graph for: {players_portfolio.graph_selected_stock}")
-    # print("\nX-axis: Time")
-    # print("Y-axis: Price")
-    # sys.stdout.write("\033[7;0H" + "> " + "\033[0m")
-
-    # print(f"\033[6;0H> ")
-
 
 # keyboard functionality
-
 def move_up(players_portfolio):
     if players_portfolio.current_mode:
         players_portfolio.current_transaction_amount += 10
@@ -332,13 +326,18 @@ def select_stock(players_portfolio):
         print_menu(players_portfolio)
 
 def display_graph(players_portfolio, market):
-    players_portfolio.graph_selected_stock = players_portfolio.portfolio_stock_names[players_portfolio.current_index_for_arrow]
+    #making the graph selected stock equal to the current selected stock ensure the
+    #graph can only be changed when the player has hit enter on a certain stock. Ex:
+    #moving the arrow to a stock and hitting g without hitting enter first to select
+    #that stock will now do nothing
+    players_portfolio.graph_selected_stock = players_portfolio.current_selected_stock
 
 def print_menu(players_portfolio):
     for i in range(17, 24):
         print(f"\033[{i};1H{' ' * 30}")
 
-    print("\033[17;1H" + "Select a stock:")
+    #print("\033[17;1H" + "Select a stock:")
+    print(f"\033[17;1H" + "Selected stock: "  + f"{players_portfolio.current_selected_stock}")
     wrap_stocks_col1 = 10
     wrap_stocks_col2 = 20
     for i, s in enumerate(players_portfolio.portfolio_stock_names):
@@ -385,8 +384,8 @@ def listen_for_keys(players_portfolio, market):
     keyboard.add_hotkey('s', lambda:move_down(players_portfolio))
     keyboard.add_hotkey('enter', lambda:select_stock(players_portfolio))
     keyboard.add_hotkey('g', lambda:display_graph(players_portfolio, market))
-    keyboard.add_hotkey('ctrl+b', lambda:buy_mode(players_portfolio))
-    keyboard.add_hotkey('ctrl+s', lambda:sell_mode(players_portfolio))
+    keyboard.add_hotkey('shift+b', lambda:buy_mode(players_portfolio))
+    keyboard.add_hotkey('shift+s', lambda:sell_mode(players_portfolio))
     keyboard.wait('esc')
 
 
@@ -406,7 +405,10 @@ def top_movers(market):
     top_movers_sorted = sorted(market.top_three_movers, reverse=True)
     print(f"\033[13;1H Top Movers:")
     for change, mover in top_movers_sorted:
-        print(f"\033[{14 + counter};1H {mover}: {change:.2f}")
+        #prints out the stock ticker with the current stock's price
+        print(f"\033[{14 + counter};1H {mover}: ${market.get_stock_price(mover):.3f}")
+        #prints out the green arrow with the percent change in green
+        print(f"\033[{14 + counter};15H \033[32m▲ +{change:.2f}%\033[0m")
         counter += 1
 
 
