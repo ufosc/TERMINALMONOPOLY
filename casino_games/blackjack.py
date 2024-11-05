@@ -155,6 +155,12 @@ def turn(player, active_terminal, turn):
         return "TIE"
 
 def play(player, active_terminal, bet):
+    """
+    Blackjack
+    
+    Initializes a basic one-player game of Blackjack for casino.py
+    Returns the wager to be sent to the player
+    """
     outcome = turn(player, active_terminal, 1)
 
     graphics = get_graphics()
