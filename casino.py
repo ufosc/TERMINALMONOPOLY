@@ -1,38 +1,48 @@
+from time import sleep
 import player
 import screenspace as ss
 import os
+import networking as net
 
 module_name = "Casino"
 module_command = "casino"
 module_description = "Gamble your money at the casino!"
 
-#! BIG TODO - Not really tied into the game's data.
-def module(active_terminal):
+def module(active_terminal, socket):
     wrong = False
     while True:
+        net.send_message(socket, "bal 0")
+        sleep(0.1)
+        balance = int(net.receive_message(socket))
         ss.overwrite(player.COLORS.RESET + "\rSelect a game through typing the associated command." + " " * 20)
-        ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {player.balance} $\nSelect a game by typing the command." + get_submodules() + "\n☒ Exit (e)")
+        ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {balance} $\nSelect a game by typing the command." + get_submodules() + "\n☒ Exit (e)")
         if(wrong):
             ss.overwrite(player.COLORS.RESET + player.COLORS.RED + "\rGame does not exist. Refer to the list of games.")
-        game = input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\r").lower()
+        game = input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\r").lower().split(" ")
         ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
-        if(game == "e"):
+        if(game[0] == "e"):
             ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
             break
-        elif(game == "game"):
+        elif(game[0] == "game"):
             wrong = True #Don't import the template...
         else:
             try:
                 wrong = False
-                i = __import__('casino_games.' + game, fromlist=[''])
+                i = __import__('casino_games.' + game[0], fromlist=[''])
 
                 bet = get_bet()
                 if(bet == 0): continue
 
-                player.balance -= bet
-                    
+                #player.balance -= bet
+                net.send_message(socket, "bal -" + str(bet))
+                sleep(0.1)
+                balance = int(net.receive_message(socket))
+
                 ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
-                player.balance += i.play(player,active_terminal,bet)
+                net_change = i.play(player,active_terminal,bet)
+                net.send_message(socket, "bal " + str(net_change))
+                sleep(0.1)
+                balance = int(net.receive_message(socket))
             except ImportError:
                 wrong = True
 

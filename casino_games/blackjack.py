@@ -7,7 +7,7 @@ from style import COLORS
 game_title = "🃑 Blackjack"
 
             # 0         1         2      3      4
-card_temp = ["┌───┐", "│   │", "| ", " │", "└───┘"] # This is not in ASCII.txt due to its strange composition.
+card_temp = ["┌───┐", "│   │", "│ ", " │", "└───┘"] # This is not in ASCII.txt due to its strange composition.
 cards = {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "1 0": 10, "A": 11, "J": 10, "K": 10, "Q": 10}
 
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)

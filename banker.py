@@ -207,6 +207,16 @@ def handle_data(data: bytes, client: socket.socket) -> str:
         # print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
         # net.send_message(client, battleship_board)
         # s.print_w_dots(f'Gameboard sent to player {client}')
+    elif decoded_data.startswith('bal '):
+        """
+        Gets and changes client's balance.
+        The second parameter is added to the value of the client's balance.
+        Use 0 to simply get the balance.
+        """
+        command_data = decoded_data.split(' ')
+        current_client.money += int(command_data[1])
+        net.send_message(client, str(current_client.money))
+
     elif decoded_data.startswith('ttt'):
         ttt_game = None
         ttt_location_info = s.set_cursor_str(random.randint(0, 100), random.randint(0, 40)) + random.choice([s.COLORS.dispBLUE, s.COLORS.dispGREEN, s.COLORS.dispRED]) # just throw the information somewhere on the screen
