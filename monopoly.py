@@ -207,9 +207,9 @@ def buy_logic(mode: str = "normal", pinput: str = ""):
         choice = input(ss.set_cursor_str(0, 37) + "b to buy, enter to continue?")
     else:
         choice = pinput
-    if(board.locations[CL].purchasePrice != 0 and board.locations[CL].owner == -1):
+    if(board.locations[CL].purchasePrice != 0 and input(f"\033[37;0HBuy {board.locations[CL].name} for ${board.locations[CL].purchasePrice}? (y/n) ") == 'y'):
         price = board.locations[CL].purchasePrice
-        if(players[turn].cash > price and choice == 'b'):
+        if(players[turn].cash > price):
             players[turn].buy(CL, board)
             board.locations[CL].owner = turn
             update_history(f"{players[turn].name} bought {board.locations[CL].name} for ${price}")
@@ -229,6 +229,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
     exit_flag = False
     try:   
         if propertyid == 'e':
+            print("\033[37;0H " + ' ' * 78+ "\033[38;0H " + ' ' * 78 + "\033[39;0H " + ' ' * 78)
             exit_flag = True
         else:
             propertyid =  int(propertyid)
@@ -273,9 +274,9 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
                     if mode == "normal":
                         try:
                             houses = int(houses)
-                            if(0 <= houses <= max_houses):
-                                p.cash -= cost * houses
-                                update_history(f"{p} bought {houses} houses on {board.locations[propertyid].name}!")
+                            if(0 <= houses <= max):
+                                p.cash -= board.locations[propertyid].housePrice * houses
+                                update_history(f"{p} bought {houses} house{'s' if houses > 1 else ''} on {board.locations[propertyid].name}!")
                                 board.locations[propertyid].houses += houses
                                 refresh_board()
                             else:
@@ -290,8 +291,85 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
             return get_gameboard() + ss.set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
     return get_gameboard()
 
-def mortgage_logic():
-    input("\033[37;0HWhat property to mortgage?") 
+def mortgage_logic(p:Player):
+    update_status(p, "properties")
+    propertyid = input("\033[38;0HWhat property to mortgage? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
+    flag = True
+    exit = False
+    try:   
+        if propertyid == 'e':
+            print("\033[37;0H " + ' ' * 78+ "\033[38;0H " + ' ' * 78 + "\033[39;0H " + ' ' * 78+ "\033[40;0H " + ' ' * 78+ "\033[41;0H " + ' ' * 78+ "\033[42;0H " + ' ' * 78)
+            exit = True
+        else:
+            propertyid =  int(propertyid)
+    except ValueError: ###AHHHHHHHH clean me please
+        print(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {p.properties}", end=COLORS.RESET)
+        flag = False
+    if flag and not exit:
+        if not propertyid in p.properties:
+            print("\033[42;0HYou do not own this property!")
+        elif board.locations[propertyid].mortgage == 0:
+            print("\033[42;0HYou cannot mortgage this property!")
+        elif board.locations[propertyid].houses != 0:
+            print("\033[42;0HYou must sell your houses on this property first!")
+        elif board.locations[propertyid].mortgaged:
+            print("\033[39;0HThis property is already mortgaged!")
+            answer = input(f"\033[40;0HWould you like to repay your mortgage for ${board.locations[propertyid].mortgage * 1.1}? (y/n)")
+            if answer == 'y' or answer == 'Y':
+                price = board.locations[propertyid].mortgage * 1.1
+                if (players[turn].cash > price):
+                    players[turn].buy(propertyid,board)
+                    board.locations[propertyid].mortgaged = False
+                    update_history(f"{players[turn].name} repaid their mortgage on {board.locations[propertyid].name}")
+        else:
+            p.cash += board.locations[propertyid].mortgage
+            board.locations[propertyid].mortgaged = True 
+            update_history(f"{p} mortgaged {board.locations[propertyid].name}!")
+    if not exit:
+        refresh_board()
+        mortgage_logic(p)
+    
+def sell_logic(p:Player):
+    update_status(p, "properties")
+    propertyid = input("\033[38;0HWhat property do you want to sell houses on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
+    flag = True
+    exit = False
+    try:   
+        if propertyid == 'e':
+            print("\033[37;0H " + ' ' * 78+ "\033[38;0H " + ' ' * 78 + "\033[39;0H " + ' ' * 78)
+            exit = True
+        else:
+            propertyid =  int(propertyid)
+    except ValueError: ###AHHHHHHHH clean me please
+        print(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {p.properties}", end=COLORS.RESET)
+        flag = False
+    if flag and not exit:
+        if not propertyid in p.properties:
+            print("\033[40;0HYou do not own this property!")
+        else: 
+            family = board.locations[propertyid].color
+            if family == COLORS.CYAN or family == COLORS.LIGHTBLACK or board.locations[propertyid].name.startswith("Electric"):
+                print("\033[40;0HThis property cannot have houses.")
+                flag = False
+            if flag and board.locations[propertyid].houses == 0: 
+                print("\033[40;0HYou do not own any house on this property!")
+                flag = False
+            if flag:
+                houses = input(f"Sell price is ${board.locations[propertyid].housePrice // 2}. How many houses would you like to sell? (Max {board.locations[propertyid].houses}/min 0)")
+                try:
+                    houses = int(houses)
+                    if (0 <= houses <= board.locations[propertyid].houses):
+                        p.cash += houses * board.locations[propertyid].housePrice // 2
+                        board.locations[propertyid].houses -= houses
+                        update_history(f"{p} sold {houses} house{'s' if houses > 1 else ''} on {board.locations[propertyid].name}!")
+                        refresh_board()
+                    else:
+                        raise ValueError
+                except ValueError:
+                    print(f"Invalid input. Please enter a number 0-{board.locations[propertyid].houses}")
+    if not exit:
+        sell_logic(p)
+
 
 from datetime import datetime
 def log_error(error_message: str) -> None:
