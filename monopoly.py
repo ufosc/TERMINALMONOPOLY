@@ -680,7 +680,7 @@ def player_choice():
             if choice == "e":
                 pass
             elif choice == "p":
-                housing_logic(players[turn])
+                manageProperties(players[turn])
             elif choice == "d":
                 update_status(players[turn], "deed")
             else:
@@ -694,7 +694,7 @@ def player_choice():
             update_history(f"{players[turn]} declared bankruptcy.")
             players[turn].order = -1
         elif(option == "m"): # Mortgage properties
-            pass
+            mortgage_logic()
         elif(option == "s"): # Sell houses/hotels
             housing_logic()
 
