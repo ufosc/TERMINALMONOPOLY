@@ -461,12 +461,12 @@ while(True):
     #if they roll a double the function calls itself and updates its their number of consecutive rolls
     player_roll(num_rolls=1)
     if(players[turn].cash > 0):
-        choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
+        choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed: ")
         while(choice != 'e'): # @TODO remove soon! players should not be able to do these actions during gameboard screen
             if choice == "e":
                 pass
             elif choice == "p":
-                housing_logic(players[turn])
+                manageProperties(players[turn])
             elif choice == "d":
                 update_status(players[turn], "deed")
             else:
@@ -480,7 +480,7 @@ while(True):
             update_history(f"Player {turn} declared bankruptcy.")
             players[turn].order = -1
         elif(option == "m"): # Mortgage properties
-            pass
+            mortgage_logic()
         elif(option == "s"): # Sell houses/hotels
             housing_logic()
 
