@@ -287,8 +287,6 @@ def bottom_screen_wipe():
     print("\033[40;0H" + " " * 76)
     print("\033[41;0H" + " " * 76)
     print("\033[42;0H" + " " * 76)
-    print("\033[43;0H" + " " * 76)
-    print("\033[44;0H" + " " * 76)
 
 #Rolls the dice and returns them for the player as a tuple
 def roll():
