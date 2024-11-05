@@ -307,18 +307,18 @@ def player_roll(num_rolls):
         input("\033[36;0HRoll dice?")
         dice = roll()
         bottom_screen_wipe()
-        update_history(f"Player {turn} rolled {dice[0]} and {dice[1]}")
+        update_history(f"{players[turn].name} rolled {dice[0]} and {dice[1]}")
 
         if dice[0] == dice[1]:
             if  num_rolls == 1:
-                update_history(f"{players[turn]} rolled doubles! Roll again.")
+                update_history(f"{players[turn].name} rolled doubles! Roll again.")
 
             elif num_rolls == 2:
-                update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
-                update_history(f"Player {turn} rolled doubles three times\n in a row!")
-                update_history(f"Player {turn} is going to jail!")
+                update_history(f"{players[turn].name} rolled doubles three times\n in a row!")
+                update_history(f"{players[turn].name} is going to jail!")
                 players[turn].jail = True
                 board.update_location(players[turn], -1)
         refresh_board()
@@ -407,7 +407,7 @@ while(True):
             else:
                 print("Invalid option!")
             choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
-        update_history(f"{players[turn]} ended their turn.")
+        update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
         option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
