@@ -392,7 +392,7 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
                 update_history(f"{players[turn]} rolled doubles! Roll again.")
 
             elif num_rolls == 2:
-                update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
+                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
                 update_history(f"{players[turn].name} rolled doubles three times in a row!")
