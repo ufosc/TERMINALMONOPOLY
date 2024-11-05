@@ -298,6 +298,20 @@ def sell_logic(p:Player):
     if not exit:
         sell_logic(p)
 
+def manageProperties(p:Player):
+    print("\033[38;0H" + ' ' * 78)
+    while True:
+        choice = input("\033[37;0He to exit, b to buy houses, s to sell houses, m to mortgage:")
+        if choice == "e":
+            break   
+        elif choice == "b":
+            housing_logic(p)
+        elif choice == "s":
+            sell_logic(p)
+        elif choice == "m":
+            mortgage_logic(p)
+        else:
+            print("\033[38;0HInvalid option!"  + ' ' * 76)
 
 from datetime import datetime
 def log_error(error_message: str) -> None:
@@ -335,14 +349,14 @@ print(COLORS.WHITE + "\033[0;0H", end="")
 print(gameboard)
 
 def unittest():
-    players[1].buy(1, board)
-    players[1].buy(3, board)
-    players[2].buy(5, board)
-    players[2].buy(15, board)
-    players[2].buy(25, board)
-    players[2].buy(35, board)
-    players[3].buy(12, board)
-    players[3].buy(28, board)
+    players[0].buy(1, board)
+    players[0].buy(3, board)
+    players[1].buy(5, board)
+    players[1].buy(15, board)
+    players[1].buy(25, board)
+    players[1].buy(35, board)
+    players[2].buy(12, board)
+    players[2].buy(28, board)
 
 unittest()
 #wipes the bottom of the screen where the player does all of their input
