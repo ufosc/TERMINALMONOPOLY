@@ -270,7 +270,7 @@ def mortgage_logic(p:Player):
     exit = False
     try:   
         if propertyid == 'e':
-            print("\033[37;0H " + ' ' * 78+ "\033[38;0H " + ' ' * 78 + "\033[39;0H " + ' ' * 78+ "\033[40;0H " + ' ' * 78+ "\033[41;0H " + ' ' * 78+ "\033[42;0H " + ' ' * 78)
+            print("\033[37;0H " + ' ' * 70+ "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70+ "\033[40;0H " + ' ' * 70+ "\033[41;0H " + ' ' * 70+ "\033[42;0H " + ' ' * 70)
             exit = True
         else:
             propertyid =  int(propertyid)
@@ -606,7 +606,7 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
     if dice[0] == dice[1] and players[turn].jail == False:
         num_rolls +=1
         request_roll()
-    return "player_choice" + ss.set_cursor_str(0, 38) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
+    return "player_choice" + ss.set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
 
 def end_turn():
     global turn
@@ -614,7 +614,7 @@ def end_turn():
 
 def player_choice():
     if(players[turn].cash > 0):
-        choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
+        choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
         while(choice != 'e'): 
             if choice == "e":
                 pass
@@ -624,7 +624,7 @@ def player_choice():
                 update_status(players[turn], "deed")
             else:
                 add_to_output("Invalid option!")
-            choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
+            choice = input("\033[36;0H'e' to end turn, p to manage properties, ?")
         update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
