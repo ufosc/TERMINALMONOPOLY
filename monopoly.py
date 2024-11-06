@@ -82,7 +82,7 @@ def refresh_board():
             add_to_output(COLORS.RESET)
             add_to_output(f"\033[{board.locations[i].x+2};{board.locations[i].y+5}H" + COLORS.RED + "▀")
 
-        if(board.locations[i].owner == -2): # If mortgaged
+        if(board.locations[i].mortgaged): # If mortgaged
             add_to_output(COLORS.RESET)
             add_to_output(f"\033[{board.locations[i].x+2};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
 
@@ -230,7 +230,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
     try:   
         if propertyid == 'e':
             print("\033[37;0H " + ' ' * 70 + "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70    )
-            exit = True
+            exit_flag = True
         else:
             propertyid =  int(propertyid)
     except ValueError: ###AHHHHHHHH clean me please
