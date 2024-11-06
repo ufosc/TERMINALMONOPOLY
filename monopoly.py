@@ -82,7 +82,7 @@ def refresh_board():
             add_to_output(COLORS.RESET)
             add_to_output(f"\033[{board.locations[i].x+2};{board.locations[i].y+5}H" + COLORS.RED + "▀")
 
-        if(board.locations[i].owner == -2): # If mortgaged
+        if(board.locations[i].mortgaged): # If mortgaged
             add_to_output(COLORS.RESET)
             add_to_output(f"\033[{board.locations[i].x+2};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
 
@@ -204,7 +204,7 @@ def refresh_h_and_s():
 def buy_logic(mode: str = "normal", pinput: str = ""):
     CL = players[turn].location
      # Add buy logic
-    if(board.locations[CL].purchasePrice != 0 and input(f"\033[37;0HBuy {board.locations[CL].name} for ${board.locations[CL].purchasePrice}? (y/n) ") == 'y'):
+    if(board.locations[CL].purchasePrice != 0 and input(f"\033[36;0HBuy {board.locations[CL].name} for ${board.locations[CL].purchasePrice}? (y/n) ") == 'y'):
         price = board.locations[CL].purchasePrice
         if(players[turn].cash > price):
             players[turn].buy(CL, board)
@@ -221,7 +221,7 @@ def housing_logic(p: Player, mode: str = "normal", propertyid: str = "", num_hou
     try:   
         if propertyid == 'e':
             print("\033[37;0H " + ' ' * 70 + "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70    )
-            exit = True
+            exit_flag = True
         else:
             propertyid =  int(propertyid)
     except ValueError: ###AHHHHHHHH clean me please
@@ -260,7 +260,7 @@ def housing_logic(p: Player, mode: str = "normal", propertyid: str = "", num_hou
                         raise ValueError
                 except ValueError:
                     print(f"Invalid input. Please enter a number 0-{max}")
-    if not exit:
+    if not exit_flag:
         housing_logic(p)
 
 def mortgage_logic(p:Player):
