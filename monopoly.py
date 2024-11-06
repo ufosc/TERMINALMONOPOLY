@@ -176,12 +176,12 @@ def buy_logic():
 
 def housing_logic(p: Player):
     update_status(p, "properties")
-    propertyid = input("\033[38;0HWhat property do you want to build on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
+    propertyid = input("\033[38;0HWhat property to build on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
     flag = True
     exit = False
     try:   
         if propertyid == 'e':
-            print("\033[37;0H " + ' ' * 78+ "\033[38;0H " + ' ' * 78 + "\033[39;0H " + ' ' * 78)
+            print("\033[37;0H " + ' ' * 70 + "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70    )
             exit = True
         else:
             propertyid =  int(propertyid)
@@ -252,14 +252,14 @@ def mortgage_logic(p:Player):
         else:
             p.cash += board.locations[propertyid].mortgage
             board.locations[propertyid].mortgaged = True 
-            update_history(f"{p} mortgaged {board.locations[propertyid].name}!")
+            update_history(f"{p.name} mortgaged {board.locations[propertyid].name}!")
     if not exit:
         refresh_board()
         mortgage_logic(p)
     
 def sell_logic(p:Player):
     update_status(p, "properties")
-    propertyid = input("\033[38;0HWhat property do you want to sell houses on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
+    propertyid = input("\033[38;0HWhat property to sell houses on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
     flag = True
     exit = False
     try:   
@@ -475,7 +475,7 @@ while(True):
     #if they roll a double the function calls itself and updates its their number of consecutive rolls
     player_roll(num_rolls=1)
     if(players[turn].cash > 0):
-        choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed: ")
+        choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed: ")
         while(choice != 'e'): # @TODO remove soon! players should not be able to do these actions during gameboard screen
             if choice == "e":
                 pass
