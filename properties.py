@@ -23,6 +23,7 @@ class Property:
     rent4H = 0
     rentHotel = 0
     mortgage = 0
+    mortgaged = False
 
     def __init__(self, num_players:int, name:str, owner:int, position:tuple, color:COLORS, purchasePrice:int, housePrice:int, rent:int, rent1H:int, rent2H:int, rent3H:int, rent4H:int, rentHotel:int,mortgage:int) -> None:
         self.players = list(range(num_players))
