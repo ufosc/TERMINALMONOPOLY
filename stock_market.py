@@ -66,14 +66,14 @@ class stock:
         self.historical_prices = []
         self.prices_per_day = []
         self.mover_change = 0
-        for i in range(30):
+        for i in range(35):
             self.historical_prices.append(initial_price)
 
     def update_price(self):
         self.price = self.fluctuate_stock_price(self.price)
-        self.historical_prices.append(self.price)
+        self.historical_prices.append(round(self.price, 5))
         self.prices_per_day.append(self.price)
-        if len(self.prices_per_day) == 240:
+        if len(self.prices_per_day) == 5:
             # 240 times per game day   ^^^  (adjust here and at other comment for faster update)
             last_element = self.prices_per_day[-1]
             first_element = self.prices_per_day[0]
@@ -165,7 +165,7 @@ def clear_console():
         _ = os.system('clear')  # For macOS/Linux
 
 
-def display_stock_prices(market):
+def display_stock_prices(market, players_portfolio):
     times_run = 0
     while True:
         print("\033[?25l", end="")
@@ -180,19 +180,19 @@ def display_stock_prices(market):
         portfolio_lines = player1_portfolio.display_portfolio()
 
         # move the cursor to row 0, column 0 and print the current time
-        print(f"\033[1;0H" + " " * 40)
-        print(f"\033[1;0H\033[32m{current_time}\033[0m")
+        print(f"\033[1;1H" + " " * 40)
+        print(f"\033[1;1H\033[32m{current_time}\033[0m")
 
         for i in range(len(stock_lines)):
             if(i < 5):
-                print(f"\033[{3 + i};0H" + " " * 30)
-                print(f"\033[{3 + i};0H{stock_lines[i]}")
+                print(f"\033[{2 + i};1H" + " " * 30)
+                print(f"\033[{2 + i};1H{stock_lines[i]}")
             elif i >= 5:
-                print(f"\033[{3 + i };0H" + " " * 30)
-                print(f"\033[{3 + i };0H{stock_lines[i]}")
+                print(f"\033[{2 + i };1H" + " " * 30)
+                print(f"\033[{2 + i };1H{stock_lines[i]}")
 
 
-        if len(market.stocks['BLVD'].prices_per_day) == 240:
+        if len(market.stocks['BLVD'].prices_per_day) == 5:
             # 240 times per game day                    ^^^  (adjust here and at other comment for faster update)
             top_movers(market)
             for s in market.stocks:
@@ -201,7 +201,14 @@ def display_stock_prices(market):
 
         for i in range(len(portfolio_lines)):
             #print(f"\033[{i + 17}:41H" + " " * 40)
-            print(f"\033[{i + 17};41H{portfolio_lines[i]}")
+            print(f"\033[{i + 17 -1};41H{portfolio_lines[i]}")
+
+        width, height = 35, 10  # adjusted for terminal size
+        draw_graph(market.stocks[players_portfolio.graph_selected_stock].historical_prices, width, height,
+                   players_portfolio, market)  # draws graph
+        #the print below prints out the list of historical prices so we can visually make sure
+        #the prices being pulled are live and accurate
+        #print(f"\033[20;1H{market.stocks[players_portfolio.graph_selected_stock].historical_prices}")
 
         #update the stock prices
         market.update_stock_prices()
@@ -222,6 +229,7 @@ def build_graph(players_portfolio, market):
     while True:  # infinite loop that:
         # clear_console()  # clears
         draw_graph(market.stocks[players_portfolio.graph_selected_stock].historical_prices, width, height, players_portfolio, market)  # draws graph
+        print(f"\033[20;1H{market.stocks[players_portfolio.graph_selected_stock].historical_prices}")
         time.sleep(0.5)  # pauses for 0.5 seconds
 
 
@@ -240,7 +248,7 @@ def draw_graph(data, width, height, players_portfolio, market):
         min_value = min(scaled_data)
 
     # draw the top axis
-    print(f"\033[2;35H" + "     +" + "-" * width + "+")
+    print(f"\033[2;35H" + "     +" + "─" * width + "+")
     # width is the total number of columns available for graph
 
     # iterates from height to 0 to print each line of the graph
@@ -248,16 +256,10 @@ def draw_graph(data, width, height, players_portfolio, market):
     for y in range(height, -1, -1):
         counter += 1
         label = f"{market.get_stock_price(players_portfolio.current_selected_stock)- 4 + y:.1f}"
-        line = f"{label:>4} |"  # formats y-axis labels with width of 2 char
+        line = f"{label:>4} │"  # formats y-axis labels with width of 2 char
         for x in range(width):  # iterates over each column of the graph from 0 to width - 1
 
-            if players_portfolio.current_selected_stock == None:
-                value_index = int(x * len(data) / width)
-                # scales column index to range of data list and converts to int
-                value = data[value_index]  # index in data list that corresponds to current column x
-            else:
-                value_index = int(x * len(scaled_data) / width)
-                value = scaled_data[value_index]
+            value = data[x]
 
             if max_value == min_value:
                 graph_y = height
@@ -271,11 +273,11 @@ def draw_graph(data, width, height, players_portfolio, market):
                 line += '*'
             else:
                 line += ' '
-        line += '|'  # adds the vertical axis
+        line += '│'  # adds the vertical axis
         print(f"\033[{2 + counter};35H{line}")  # prints the whole line of the graph
 
     # draw the bottom axis
-    print(f"\033[{2 + counter + 1};35H" + "     +" + "-" * width + "+")
+    print(f"\033[{2 + counter + 1};35H" + "     +" + "─" * width + "+")
 
     # draw the x-axis labels
     x_labels = "     "
@@ -337,7 +339,7 @@ def print_menu(players_portfolio):
         print(f"\033[{i};1H{' ' * 30}")
 
     #print("\033[17;1H" + "Select a stock:")
-    print(f"\033[17;1H" + "Selected stock: "  + f"{players_portfolio.current_selected_stock}")
+    #print(f"\033[17;1H" + "Selected stock: "  + f"{players_portfolio.current_selected_stock}")
     wrap_stocks_col1 = 10
     wrap_stocks_col2 = 20
     for i, s in enumerate(players_portfolio.portfolio_stock_names):
@@ -346,26 +348,26 @@ def print_menu(players_portfolio):
             #column and when there are more than three stocks the 3,4,5th stocks
             #will be on the next column at position 10 when 2 < i < 6
             if i <= 2:
-                print(f"\033[{18 + i};1H>  {s}")
+                print(f"\033[{17 + i};1H>  {s}")
             elif 2 < i < 6:
-                print(f"\033[{18 + i - 3};{wrap_stocks_col1}H>  {s}")
+                print(f"\033[{17 + i - 3};{wrap_stocks_col1}H>  {s}")
             elif 6 <= i <= 9:
-                print(f"\033[{18 + i - 6};{wrap_stocks_col2}H>  {s}")
+                print(f"\033[{17 + i - 6};{wrap_stocks_col2}H>  {s}")
         else:
             if i <= 2:
-                print(f"\033[{18 + i};1H  {s}")
+                print(f"\033[{17 + i};1H  {s}")
             elif 2 < i < 6:
-                print(f"\033[{18 + i - 3};{wrap_stocks_col1}H  {s}")
+                print(f"\033[{17 + i - 3};{wrap_stocks_col1}H  {s}")
             elif 6 <= i <= 9:
-                print(f"\033[{18 + i - 6};{wrap_stocks_col2}H  {s}")
+                print(f"\033[{17 + i - 6};{wrap_stocks_col2}H  {s}")
 
     if players_portfolio.current_selected_stock:
-        print(f"\033[{12 + len(players_portfolio.portfolio_stock_names)};1H" + f"You selected: {players_portfolio.current_selected_stock}")
+        print(f"\033[{11 + len(players_portfolio.portfolio_stock_names)};1H" + f"You selected: {players_portfolio.current_selected_stock}")
         if players_portfolio.current_mode == "buy" or players_portfolio.current_mode == "sell":
-            print(f"\033[{13 + len(players_portfolio.portfolio_stock_names)};1H" + f"Transaction amount: {players_portfolio.current_transaction_amount}")
+            print(f"\033[{11 + len(players_portfolio.portfolio_stock_names)};20H" + f"| Amount: {players_portfolio.current_transaction_amount}")
         else:
             print(
-                f"\033[{13 + len(players_portfolio.portfolio_stock_names)};1H" + " " * 15)
+                f"\033[{12 + len(players_portfolio.portfolio_stock_names)};1H" + " " * 15)
 
 
 def buy_mode(players_portfolio):
@@ -403,12 +405,12 @@ def top_movers(market):
         add_mover(market, market.stocks[s].ticker, market.stocks[s].mover_change, k)
 
     top_movers_sorted = sorted(market.top_three_movers, reverse=True)
-    print(f"\033[13;1H Top Movers:")
+    print(f"\033[12;1H Top Movers:")
     for change, mover in top_movers_sorted:
         #prints out the stock ticker with the current stock's price
-        print(f"\033[{14 + counter};1H {mover}: ${market.get_stock_price(mover):.3f}")
+        print(f"\033[{13 + counter};1H {mover}: ${market.get_stock_price(mover):.3f}")
         #prints out the green arrow with the percent change in green
-        print(f"\033[{14 + counter};15H \033[32m▲ +{change:.2f}%\033[0m")
+        print(f"\033[{13 + counter};15H \033[32m▲ +{change:.2f}%\033[0m")
         counter += 1
 
 
@@ -439,16 +441,16 @@ if __name__ == '__main__':
     player4_portfolio = portfolio(player_name, market)
 
     # create threads
-    graph_chart_thread = threading.Thread(target=build_graph, args=(player1_portfolio, market,))
-    stock_display_thread = threading.Thread(target=display_stock_prices, args=(market,))
+    #graph_chart_thread = threading.Thread(target=build_graph, args=(player1_portfolio, market,))
+    stock_display_thread = threading.Thread(target=display_stock_prices, args=(market, player1_portfolio))
     keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=(player1_portfolio, market,))
 
     # start threads
-    graph_chart_thread.start()
+    #graph_chart_thread.start()
     stock_display_thread.start()
     keyboard_listener_thread.start()
 
     # join threads to keep the program running
-    graph_chart_thread.join()
+#    graph_chart_thread.join()
     stock_display_thread.join()
     keyboard_listener_thread.join()
