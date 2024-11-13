@@ -203,11 +203,11 @@ def display_stock_prices(market, players_portfolio):
             for s in market.stocks:
                 market.stocks[s].prices_per_day.clear()
 
-        for i in range(5):
-            print(f"\033[{17 + i};41H" + " " * 35)
+        for i in range(6):
+            print(f"\033[{15 + i};41H" + " " * 35)
 
         for i in range(len(portfolio_lines)):
-            print(f"\033[{i + 17 -1};41H{portfolio_lines[i]}")
+            print(f"\033[{15 + i};41H{portfolio_lines[i]}")
 
         width, height = 35, 10  # adjusted for terminal size
         draw_graph(market.stocks[players_portfolio.graph_selected_stock].historical_prices, width, height,
