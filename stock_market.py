@@ -42,7 +42,7 @@ class portfolio:
             self.owned_stocks[stock_ticker] -= num_shares
 
     def display_portfolio(self):
-        portfolio_lines = [f">> \033[1m{self.player_name}'s Portfolio: ${self.total_portfolio_value:.2f}\033[0m <<"]
+        portfolio_lines = [f">> \033[1m{self.player_name}'s Portfolio: ${self.total_portfolio_value:.2f}\033[0m << | G/L (%)"]
         self.total_portfolio_value = 0
         has_stocks = False
         for stock_ticker, num_shares in self.owned_stocks.items():
