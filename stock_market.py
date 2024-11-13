@@ -29,7 +29,12 @@ class portfolio:
         self.total_portfolio_value = 0
 
     def buy_stock(self, stock_ticker, num_shares):
-        if stock_ticker in self.stock_market.stocks:
+        count = 0
+        if stock_ticker in self.stock_market.stocks.items():
+            for key, value in self.owned_stocks:
+                if value > 0:
+                    count += 1
+        if count <= 5:
             self.owned_stocks[stock_ticker] += num_shares
 
     def sell_stock(self, stock_ticker, num_shares):

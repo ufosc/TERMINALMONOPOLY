@@ -238,8 +238,8 @@ available in the StockModule interface.
 		help stocks - display help messages for stock market
 		w - move stock selection arrow or # of stocks up
 		s - move stock selection arrow down or # of stocks down
-		ctrl + b - buy selected stock
-		ctrl + s - sell selected stock
+		shift + b - buy selected stock
+		shift + s - sell selected stock
 		enter - confirm selection
 		g - display selected stock graph
 BREAK_TEXT
