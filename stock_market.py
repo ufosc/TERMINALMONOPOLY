@@ -30,11 +30,11 @@ class portfolio:
 
     def buy_stock(self, stock_ticker, num_shares):
         count = 0
-        if stock_ticker in self.stock_market.stocks.items():
-            for key, value in self.owned_stocks:
+        if stock_ticker in self.stock_market.stocks:
+            for key, value in self.owned_stocks.items():
                 if value > 0:
                     count += 1
-        if count <= 5:
+        if count <= 4:
             self.owned_stocks[stock_ticker] += num_shares
 
     def sell_stock(self, stock_ticker, num_shares):
@@ -203,9 +203,10 @@ def display_stock_prices(market, players_portfolio):
             for s in market.stocks:
                 market.stocks[s].prices_per_day.clear()
 
+        for i in range(5):
+            print(f"\033[{17 + i};41H" + " " * 35)
 
         for i in range(len(portfolio_lines)):
-            #print(f"\033[{i + 17}:41H" + " " * 40)
             print(f"\033[{i + 17 -1};41H{portfolio_lines[i]}")
 
         width, height = 35, 10  # adjusted for terminal size
