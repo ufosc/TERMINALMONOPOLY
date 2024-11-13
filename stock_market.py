@@ -78,7 +78,7 @@ class stock:
         self.price = self.fluctuate_stock_price(self.price)
         self.historical_prices.append(round(self.price, 5))
         self.prices_per_day.append(self.price)
-        if len(self.prices_per_day) == 5:
+        if len(self.prices_per_day) == 240:
             # 240 times per game day   ^^^  (adjust here and at other comment for faster update)
             last_element = self.prices_per_day[-1]
             first_element = self.prices_per_day[0]
@@ -197,7 +197,7 @@ def display_stock_prices(market, players_portfolio):
                 print(f"\033[{2 + i };1H{stock_lines[i]}")
 
 
-        if len(market.stocks['BLVD'].prices_per_day) == 5:
+        if len(market.stocks['BLVD'].prices_per_day) == 240:
             # 240 times per game day                    ^^^  (adjust here and at other comment for faster update)
             top_movers(market)
             for s in market.stocks:
@@ -245,53 +245,63 @@ def draw_graph(data, width, height, players_portfolio, market):
     start_of_graph_row = 16
     scaled_data = []
 
-    # print("\n" * 10)
-    if players_portfolio.current_selected_stock != None:
-        scale_factor = 10000
-        scaled_data = [(value * scale_factor) for value in data]
-        max_value = max(scaled_data)
-        min_value = min(scaled_data)
-
     # draw the top axis
     print(f"\033[2;35H" + "     +" + "─" * width + "+")
-    # width is the total number of columns available for graph
+    #draw the bottom axis
+    print(f"\033[14;35H" + "     +" + "─" * width + "+")
 
-    # iterates from height to 0 to print each line of the graph
-    counter = 0
-    for y in range(height, -1, -1):
-        counter += 1
-        label = f"{market.get_stock_price(players_portfolio.current_selected_stock)- 4 + y:.1f}"
-        line = f"{label:>4} │"  # formats y-axis labels with width of 2 char
-        for x in range(width):  # iterates over each column of the graph from 0 to width - 1
+    #this for loop will print the left and right sides of the graph
+    #borders
+    for i in range(11):
+        print(f"\033[{3 + i};40H" + "│")
+        print(f"\033[{3 + i};76H" + "│")
 
-            value = data[x]
-
-            if max_value == min_value:
-                graph_y = height
-            else:
-                graph_y = height - int((value - min_value) / (max_value - min_value) * height)
-            # converts the data value to a y-coordinate in the graph
-            # normalizes the data to range between 0 and 1 and then normalizes it to the graph height
-            # inverts y-coord because the terminal's origin is at the top-left
-            # graph_y is the row in the graph where the data point should be plotted
-            if y == graph_y:
-                line += '*'
-            else:
-                line += ' '
-        line += '│'  # adds the vertical axis
-        print(f"\033[{2 + counter};35H{line}")  # prints the whole line of the graph
-
-    # draw the bottom axis
-    print(f"\033[{2 + counter + 1};35H" + "     +" + "─" * width + "+")
-
-    # draw the x-axis labels
-    x_labels = "     "
-    for i in range(width):
-        if i % 10 == 0:
-            x_labels += f"{i // 10:>2}"  # labels added every 10 units
+    #this loop will print out the stock prices on the left side
+    center = data[0]
+    price_increments = (max_value - min_value)/10
+    list_of_ten_price_values = []
+    price_increment_dict = {}
+    line_for_graph_prices = ""
+    for i in range(11):
+        list_of_ten_price_values.append(max_value - (price_increments * i))
+        #clears the values inside the graph
+        #print(f"\033[{3 + i};41H" + " " * 35)
+        #clears the old values so we can print new values on top
+        print(f"\033[{3 + i};33H" + " " * 6)
+        if max_value < 1:
+            #prints just the decimal point and the following 3 values for penny stocks
+            #to ensure that 0.00 or 0.01 does not just display for them
+            print_pennies = f"{max_value - (price_increments * i)}"
+            print(f"\033[{3 + i};33H" + f"{print_pennies[1:7]}")
         else:
-            x_labels += " "
-    print(f"\033[{2 + counter + 2};35H{x_labels}")
+            print(f"\033[{3 + i};35H" + f"{max_value - (price_increments * i):.1f}")
+
+        #create a dictonary for prices that will be used for y-indices in the for loop
+        #below
+        price_increment_dict[max_value - (price_increments * i)] = (3 + i)
+
+    # this for loop will handle printing the "*" to indicate stock price in the
+    # correct location on the y-axis
+    for i in range(len(data)):
+        price_on_current_x = data[i]
+        # Find the closest price level from list_of_ten_price_values
+        closest_price = min(list_of_ten_price_values, key=lambda x: abs(x - price_on_current_x))
+
+        # Get the row from the dictionary
+        row_position = price_increment_dict[closest_price]
+
+        # Print "*" at the calculated (x, y) position
+        line_for_graph_prices += f"\033[{row_position};{41 + i}H*"  # Adjust 41 for initial x-offset as needed
+
+    for i in range(11):
+        print(f"\033[{i + 3};41H" + " " * 35)
+    print(line_for_graph_prices)
+
+    #prints out values from data to ensure they correspond to the correct
+    #value on the y-axis
+    # print(f"\033[25;20H" + " " * 45, end="")
+    # print(f"\033[26;20H" + " " * 45, end="")
+    # print(f"\033[25;20H" + f"{data[-34:]}", end="")
 
     print(f"\033[1;45HDisplaying graph for: {players_portfolio.graph_selected_stock}")
 
@@ -367,6 +377,7 @@ def print_menu(players_portfolio):
                 print(f"\033[{17 + i - 6};{wrap_stocks_col2}H  {s}")
 
     if players_portfolio.current_selected_stock:
+        print(f"\033[{11 + len(players_portfolio.portfolio_stock_names)};1H" + " " * 33)
         print(f"\033[{11 + len(players_portfolio.portfolio_stock_names)};1H" + f"You selected: {players_portfolio.current_selected_stock}")
         if players_portfolio.current_mode == "buy" or players_portfolio.current_mode == "sell":
             print(f"\033[{11 + len(players_portfolio.portfolio_stock_names)};20H" + f"| Amount: {players_portfolio.current_transaction_amount}")
@@ -435,9 +446,9 @@ if __name__ == '__main__':
     market.add_stock("BLVD", 5.00, -10, 10)
     market.add_stock("TRIS", 5.00, -10, 10)
     market.add_stock("UTIL", 5.00, -10, 10)
-    market.add_stock("DRVE", 0.01, -15, 15)
-    market.add_stock("CYBR", 0.01, -15, 15)
-    market.add_stock("SYNC", 0.01, -15, 15)
+    market.add_stock("DRVE", 0.010, -15, 15)
+    market.add_stock("CYBR", 0.010, -15, 15)
+    market.add_stock("SYNC", 0.010, -15, 15)
 
     player_name = "Name"
     player1_portfolio = portfolio("H&S", market)
