@@ -1,6 +1,6 @@
 from properties import Property
 from style import COLORS
-from player_class import Player
+from player_class import MonopolyPlayer
 
 class Board:
     """
@@ -52,7 +52,7 @@ class Board:
             39: Property(0, "Boardwalk", -1, (29,72), COLORS.BLUE, 400, 200, 50, 200, 600, 1400, 1700, 2000, 200),
         }
 
-    def update_location(self, player:Player, roll: int, new = None) -> None:
+    def update_location(self, player:MonopolyPlayer, roll: int, new = None) -> None:
         """
         Update location with player\n
         @location: int\n
@@ -78,7 +78,7 @@ class Board:
             self.locations[new].players.append(player.order)
             player.location = new
         
-    def current_location(self, player:Player) -> int:
+    def current_location(self, player:MonopolyPlayer) -> int:
         """
         Return current location\n
         @player: Player object\n

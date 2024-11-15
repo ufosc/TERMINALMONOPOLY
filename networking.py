@@ -10,10 +10,10 @@ def format_message(text: str) -> tuple:
     Formats a message to be sent over a socket connection.
     
     Parameters:
-    text (str) The message to be sent.
+        text (str) The message to be sent.
 
     Returns:
-    tuple (bytes, bytes) containing the header and the message with padding (body).
+        tuple (bytes, bytes) containing the header and the message with padding (body).
     """
     FOOTERSIZE = (16 - ((len(text) + HEADERSIZE) % 16)) % 16 # Padding to make sure the message is a multiple of 16 bytes
 
@@ -23,32 +23,34 @@ def format_message(text: str) -> tuple:
 
     return (bytes(header, 'utf-8'), msg + bytes((' ' * FOOTERSIZE), "utf-8")) # Return the header and the message with padding
 
-def send_message(other: socket.socket, text: str):
+def send_message(other: socket.socket, text: str) -> None:
     """
     Sends a message to a client socket.
     
     Parameters:
-    client (socket.socket) The client socket to send the message to.
-    text (str) The message to be sent.
+        client (socket.socket) The client socket to send the message to.
+        text (str) The message to be sent.
+
+    Returns:
+        None
     """
     header, body = format_message(text)
     other.send(header)
     other.send(body)
 
-def send_notif(other: socket.socket, text: str):
+def send_notif(other: socket.socket, text: str) -> None:
     """
     Sends a notification to a client socket. This is sent to the client's 
     second socket, which is used for notifications only. This socket is
     always listening for notifications and does not send any data back.
-    Additionally, the player should have a queue of notifications to be
-    displayed in the client's interface, so they do not cover one another.
-    Keep track of the notifications sent to the player and display them
-    in the order they were received, across other parts of the client's
-    interface. Think: set_cursor_str. Notifications are NOT terminal-based.
+    Notifications are NOT activeterminal-based.
     
     Parameters:
-    client (socket.socket) The client socket to send the notification to.
-    text (str) The notification to be sent.
+        client (socket.socket) The client socket to send the notification to.
+        text (str) The notification to be sent.
+    
+    Returns:
+        None
     """
     other_address, other_port = other.getpeername()
     
@@ -65,14 +67,17 @@ def send_notif(other: socket.socket, text: str):
     # Close the new socket
     new_socket.close()
 
-def send_monopoly(other: socket.socket, stream: str):
+def send_monopoly(other: socket.socket, stream: str) -> None:
     """
     Sends the whole Monopoly board state to a client socket.
     This is how the banker "throws" a player into Monopoly. 
     
     Parameters:
-    client (socket.socket) The client socket to send the message to.
-    stream (str) The Monopoly board state to be sent.
+        client (socket.socket) The client socket to send the message to.
+        stream (str) The Monopoly board state to be sent.
+
+    Returns:
+        None
     """
     other_address, other_port = other.getpeername()
     
@@ -94,10 +99,10 @@ def receive_message(other: socket.socket) -> str:
     Receives a message from a client socket.
     
     Parameters:
-    client (socket.socket) The client socket to receive the message from.
+        client (socket.socket) The client socket to receive the message from.
     
     Returns:
-    str representing the message received.
+        str representing the message received.
     """
     full_msg = bytearray(b'')
     new_msg = True

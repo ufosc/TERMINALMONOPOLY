@@ -18,22 +18,6 @@ global rows, cols
 rows = HEIGHT//2
 cols = WIDTH//2
 
-def print_board(gameboard: list[str]) -> None:
-    """
-    Used in printing the gameboard for the player. Overwrites the current screen to display the gameboard. 
-    
-    Parameters: 
-    gameboard (list[str]): A representation of the gameboard as a list of strings. 
-
-    Returns: None
-    """
-    # clear_screen()
-    # Resets cursor position to top left
-    print("\033[1A" * (HEIGHT + 4), end='\r')
-    
-    for y in range(len(gameboard)):
-        print(gameboard[y])
-
 def notification(message: str, n: int, color: str) -> str:
     """
     Generates a notification popup message for the player.
@@ -87,14 +71,21 @@ def replace_sequence(match, x, y):
     # Return the new sequence
     return f"\033[{new_y};{new_x}H"
 
-def update_quadrant(n: int, data: str, padding: bool = True):
+def update_quadrant(n: int, data: str, padding: bool = True) -> None:
     """
     Better quadrant update function.
     This exceeds others because it immediately updates a single quadrant with the new data.
     Previously, the screen would not update until print_screen() was called.
-    Furthermore, print_screen() would overwrite the entire screen, which is not ideal and slower. 
-
-    Set padding = True if you're not sure whether your module needs padding. 
+    Furthermore, print_screen() would overwrite the entire screen, which is not ideal and slower.\n
+    Set padding = True if you're not sure whether your module needs padding.
+    
+    Parameters: 
+        n (int): Number (1-4) of the terminal to change data. 
+        data (str): The string (with newlines to separate lines) to populate the quadrant with.
+        padding (bool): (default True) a flag whether or not your module needs extra padding 
+                (blank spaces) to fill in any missing lines
+    Returns: 
+        None
     """
 
     # If you're really desparate to add padding, for some edge case you can add it to the data string.
@@ -264,19 +255,28 @@ def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowe
         min_val (int, optional): The minimum acceptable value (inclusive). Defaults to -1000000000.
         max_val (int, optional): The maximum acceptable value (inclusive). Defaults to 1000000000.
         disallowed (list, optional): A list of disallowed values. Defaults to an empty list.
+        allowed (list, optional): A list of allowed values. Defaults to an empty list. 
+            If a space is in the whitelist, user is allowed to skip input (enter key), returning an empty string.
     Returns:
-        int: A valid integer input by the user within the specified range.
+        int: A valid integer input by the user within the specified range. (or an empty string if allowed)
     Raises:
-        ValueError: If the input is not a valid integer or is outside the specified range.
+        None: All exceptions are caught and handled by the function.
     """
     while True:
         try:
             set_cursor(0, INPUTLINE)
             value = int(input(prompt))
+            if value in allowed:
+                return value
             if value < min_val or value > max_val or value in disallowed:
                 raise ValueError
             return value
         except ValueError:
+            try:
+                value # check if value is defined. If not, the input was empty and the user pressed enter.
+            except UnboundLocalError:
+                if " " in allowed:
+                    return "" # This is the signal to skip input
             overwrite("Invalid input. Please enter a valid integer.")
             set_cursor(0, INPUTLINE)
 

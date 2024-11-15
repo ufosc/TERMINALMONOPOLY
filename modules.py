@@ -7,8 +7,35 @@ import networking as net
 import keyboard
 import time
 
-def calculator() -> str:
-    """A simple calculator module that can perform basic arithmetic operations."""
+calculator_history_queue = []
+calculator_history_current_capacity = 15
+
+def calculator(active_terminal) -> str:
+    # Helper function that contructs terminal printing.
+    def calculator_terminal_response(footer_option: int) -> str:
+        calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
+        footer_options = ["Awaiting an equation...\nPress 'e' to exit the calculator terminal.", 
+                      s.COLORS.BLUE+"Type 'calc' to begin the calculator!", 
+                      s.COLORS.RED+"Equation either malformed or undefined! Try again!\nPress 'e' to exit the calculator terminal"+s.COLORS.RESET]
+        response = calculator_header
+        for i in range(len(calculator_history_queue)-1, -1, -1):
+            response += calculator_history_queue[i][0]
+        response += '\n' + footer_options[footer_option]
+        
+        return response
+    
+    #Helper function to update calculator history
+    def update_history(equation: str) -> None:
+        global calculator_history_current_capacity
+
+        numLines = (len(equation)//75) + 1
+        while(numLines > calculator_history_current_capacity):
+            calculator_history_current_capacity += calculator_history_queue[0][1]
+            calculator_history_queue.pop(0)
+        
+        calculator_history_current_capacity -= numLines
+        calculator_history_queue.append((equation, numLines))
+
     #Uses recursion to calculate.
     def calculate(equation: str) -> float:
         for i in range(0, len(equation)-1):
@@ -53,43 +80,51 @@ def calculator() -> str:
         
         return float(equation)
 
-    response = '\nCALCULATOR TERMINAL\n' 
-    digit_result = 0
-    print("\r", end='')
-    equation = input(s.COLORS.GREEN)
-    if(equation == "e"):
-        return equation
-    
-    #Trims unnecessary spaces and pads operators with spaces
-    equation = equation.replace(" ", "")
-    for op in ['+', '-', '*', '/', '%', '^']:
-        equation = equation.replace(op, " " + op + " ")
-    
-    #Removes spaces from negative number
-    if(len(equation) > 1 and equation[1] == '-'):
-        equation = "-" + equation[3:]
+    # Initial comment in active terminal
+    ss.update_quadrant(active_terminal, calculator_terminal_response(0), padding=True)
+    # All other work is done on the work line (bottom of the screen)
+    while True:
+            
+        response = '\nCALCULATOR TERMINAL\n' 
+        digit_result = 0
+        print("\r", end='')
+        equation = input(s.COLORS.GREEN)
+        print(s.COLORS.RESET, end="")
+        if(equation == "e"):
+            ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
+            break
 
-    try:
-        digit_result = calculate(equation)
-    except:
-        return "error"
-        
-    responseEQ = f'{equation} = {digit_result}'
+        #Trims unnecessary spaces and pads operators with spaces
+        equation = equation.replace(" ", "")
+        for op in ['+', '-', '*', '/', '%', '^']:
+            equation = equation.replace(op, " " + op + " ")
+        #Removes spaces from negative number
+        if(len(equation) > 1 and equation[1] == '-'):
+            equation = "-" + equation[3:]
 
-    #There are 75 columns for each terminal, making any string longer than 75 characters overflow.
-    numOverflowingChar = len(responseEQ) - 75
-    lineNumber = 0
-    wrappedResponse = ""
-    while(numOverflowingChar > 0):
-        wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1))] + '\n'
-        lineNumber = lineNumber + 1
-        numOverflowingChar = numOverflowingChar - 75
-    
-    wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1)) + numOverflowingChar] + '\n'
-    #response += wrappedResponse
+        try:
+            digit_result = calculate(equation)
+            responseEQ = f'{equation} = {digit_result}'
 
-    print(s.COLORS.RESET, end='')
-    return wrappedResponse
+            #There are 75 columns for each terminal, making any string longer than 75 characters overflow.
+            numOverflowingChar = len(responseEQ) - 75
+            lineNumber = 0
+            wrappedResponse = ""
+            while(numOverflowingChar > 0):
+                wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1))] + '\n'
+                lineNumber = lineNumber + 1
+                numOverflowingChar = numOverflowingChar - 75
+            
+            wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1)) + numOverflowingChar] + '\n'
+            #response += wrappedResponse
+
+            player_equation = wrappedResponse
+
+            print(s.COLORS.RESET, end='')
+            update_history(player_equation)
+            ss.update_quadrant(active_terminal, calculator_terminal_response(0))
+        except:
+            ss.update_quadrant(active_terminal, calculator_terminal_response(2), padding=True)
 
 def list_properties() -> str:
     """

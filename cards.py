@@ -1,7 +1,7 @@
 import style as s
 import random
 from board import Board
-from player_class import Player
+from player_class import MonopolyPlayer
 
 class Cards:
     """
@@ -13,7 +13,7 @@ class Cards:
         self.community_chest = s.get_graphics().get('community chest text').split("\n")
         random.shuffle(self.chance)
         random.shuffle(self.community_chest)
-    def draw_chance(self, p: Player, board: Board, players) -> str:
+    def draw_chance(self, p: MonopolyPlayer, board: Board, players) -> str:
         """
         Draw chance card\n
         """
@@ -78,7 +78,7 @@ class Cards:
             case 16: 
                 p.receive(150)
         return self.chance[-1]
-    def draw_community_chest(self, p: Player, board: Board, players) -> str:
+    def draw_community_chest(self, p: MonopolyPlayer, board: Board, players) -> str:
         """
         Draw community chest card\n
         """
