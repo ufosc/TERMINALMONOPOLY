@@ -1,4 +1,4 @@
-class Player: 
+class MonopolyPlayer: 
     """
     Player class for Monopoly game\n
     Contains player data.\n
@@ -69,4 +69,4 @@ class Player:
         self.jail = False
 
     def __str__(self) -> str:
-        return f"Player {self.order}"
+        return self.name
