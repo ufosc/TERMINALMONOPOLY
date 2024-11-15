@@ -55,7 +55,7 @@ class Cards:
             case 8: 
                 p.receive(50)
             case 9: 
-                p.jailcards += 1
+                p.jail_cards += 1
             case 10: 
                 board.update_location(p, p.location, p.location - 3)
             case 11: 
@@ -95,7 +95,7 @@ class Cards:
             case 4: 
                 p.receive(50)
             case 5:
-                p.jailcards += 1
+                p.jail_cards += 1
             case 6:
                 board.update_location(p, p.location, 10)
                 p.jail = True

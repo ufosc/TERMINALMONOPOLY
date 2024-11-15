@@ -9,9 +9,10 @@ class MonopolyPlayer:
         self.order = order
         self.location = 0
         self.jail = False
-        self.jailcards = 0
+        self.jail_cards = 0
         self.name = name if name != "" else "Player " + str(order)
         self.jail_turns = 0
+        self.repeat_offender = 0
     """
     Player cash\n
     @cash: int\n
@@ -64,6 +65,7 @@ class MonopolyPlayer:
         self.location = 10
         self.jail = True
         self.jail_turns = 0
+        self.repeat_offender += 1
     def leave_jail(self) -> None:
         """
         Leave jail\n
@@ -87,7 +89,14 @@ class MonopolyPlayer:
         """
         Pay jail fine of $50
         """
-        self.pay(50)
+        self.pay(50 * self.repeat_offender)
         self.leave_jail()
+    def use_jail_card(self) -> None:
+        """
+        Use jail card\n
+        """
+        self.jail_cards -= 1
+        self.leave_jail()
+
     def __str__(self) -> str:
         return self.name
