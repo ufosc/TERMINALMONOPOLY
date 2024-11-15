@@ -10,6 +10,8 @@ import heapq
 # hello
 # hi
 
+# Seed the random number generator with the current time
+random.seed(time.time())
 
 # portfolio class will be owned by players
 class portfolio:
@@ -27,6 +29,8 @@ class portfolio:
         self.current_mode = None
         self.current_transaction_amount = 0
         self.total_portfolio_value = 0
+        self.gain_loss_dict = {}
+        self.gain_loss_percent = {}
 
     def buy_stock(self, stock_ticker, num_shares):
         count = 0
@@ -36,12 +40,26 @@ class portfolio:
                     count += 1
         if count <= 4:
             self.owned_stocks[stock_ticker] += num_shares
+            if stock_ticker not in self.gain_loss_dict:
+                self.gain_loss_dict[stock_ticker] = []
+            self.gain_loss_dict[stock_ticker].append([num_shares, self.stock_market.get_stock_price(stock_ticker)])
+
 
     def sell_stock(self, stock_ticker, num_shares):
         if stock_ticker in self.owned_stocks and self.owned_stocks[stock_ticker] >= num_shares:
             self.owned_stocks[stock_ticker] -= num_shares
 
+
     def display_portfolio(self):
+        sum_of_prices = 0
+        for key, value in self.gain_loss_dict.items():
+            for j in range(len(value)):
+                sum_of_prices += value[j][1]
+            average_price = sum_of_prices / len(value)
+            gain_loss_percent = (((self.stock_market.get_stock_price(key)) - (
+                average_price)) / average_price) * 100
+            self.gain_loss_percent[key] = gain_loss_percent
+
         portfolio_lines = [f">> \033[1m{self.player_name}'s Portfolio: ${self.total_portfolio_value:.2f}\033[0m << | G/L (%)"]
         self.total_portfolio_value = 0
         has_stocks = False
@@ -49,7 +67,10 @@ class portfolio:
             if num_shares > 0:
                 stock_price = self.stock_market.get_stock_price(stock_ticker)  # fetch the latest price
                 self.total_portfolio_value = self.total_portfolio_value + (num_shares * stock_price)
-                portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Equity: ${num_shares * stock_price:.2f}")
+                color_code = "\033[32m" if self.gain_loss_percent[stock_ticker] >= 0 else "\033[31m"  # Green for positive, Red for negative
+                sign = "+" if self.gain_loss_percent[stock_ticker] >= 0 else ""  # Add '+' only for positive values
+                portfolio_lines.append(f"{stock_ticker}: {num_shares} shares, Equity: ${num_shares * stock_price:.2f} " +
+                                       f"{color_code}{sign}{self.gain_loss_percent[stock_ticker]:.2f}%\033[0m")
                 has_stocks = True
         if not has_stocks:
             portfolio_lines.append("No stocks owned.")
@@ -62,6 +83,7 @@ class portfolio:
 class stock:
     def __init__(self, ticker, initial_price, min_percent_change, max_percent_change):
         self.ticker = ticker
+        self.stock_initial_price = initial_price
         self.price = initial_price
         self.percentage_change = 0
         self.num_shares_owned = 0
@@ -92,8 +114,8 @@ class stock:
         rand_num = random.uniform(self.min_percent_change, self.max_percent_change)
         self.percentage_change = rand_num
         new_price = current_stock_price + current_stock_price * (rand_num / 100)
-        if new_price <= 0.00001:
-            new_price = 0.01
+        if new_price <= self.stock_initial_price:
+            new_price = current_stock_price + .25 * self.stock_initial_price
         return new_price
 
     def get_price(self):
@@ -203,11 +225,12 @@ def display_stock_prices(market, players_portfolio):
             for s in market.stocks:
                 market.stocks[s].prices_per_day.clear()
 
-        for i in range(6):
-            print(f"\033[{15 + i};41H" + " " * 35)
+        # for i in range(6):
+        #     print(f"\033[{15 + i};35H" + " " * 41)
 
         for i in range(len(portfolio_lines)):
-            print(f"\033[{15 + i};41H{portfolio_lines[i]}")
+            print(f"\033[{15 + i};35H" + " " * 77)
+            print(f"\033[{15 + i};35H{portfolio_lines[i]}")
 
         width, height = 35, 10  # adjusted for terminal size
         draw_graph(market.stocks[players_portfolio.graph_selected_stock].historical_prices, width, height,
