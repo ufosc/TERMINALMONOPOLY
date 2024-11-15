@@ -3,14 +3,14 @@ class MonopolyPlayer:
     Player class for Monopoly game\n
     Contains player data.\n
     """
-    def __init__(self, cash:int, order:int) -> None:
+    def __init__(self, cash:int, order:int, name: str) -> None:
         self.cash = cash
         self.properties = []
         self.order = order
         self.location = 0
         self.jail = False
         self.jailcards = 0
-        self.name = "Player " + str(order + 1)
+        self.name = name if name != "" else "Player " + str(order)
         self.jail_turns = 0
     """
     Player cash\n

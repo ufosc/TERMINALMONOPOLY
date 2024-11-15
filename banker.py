@@ -583,11 +583,7 @@ if __name__ == "__main__":
     set_unittest() 
     # set_gamerules()
     start_server()
-    game = mply.start_game(STARTING_CASH, num_players)
+    game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)])
     print(game)
     threading.Thread(target=monopoly_controller, daemon=True).start()
     start_receiver()
-    # print(f"Found {players}, each at: ")
-    # for player in player_data:
-        # print(s.Fore.BLUE+ str(player_data[player][socket.socket]))
-    # print(s.Style.RESET_ALL)

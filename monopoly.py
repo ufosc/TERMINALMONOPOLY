@@ -626,7 +626,7 @@ def player_choice():
     # Wipe the bottom of the screen (input area)
     bottom_screen_wipe()
 
-def start_game(cash: int, num_p: int) -> str:
+def start_game(cash: int, num_p: int, names: list[str]) -> str:
     global CASH, num_players, players, gameboard, board, decks, mode
     ss.clear_screen()
     mode = "banker"
@@ -637,7 +637,7 @@ def start_game(cash: int, num_p: int) -> str:
     decks = Cards()
     players = []
     for i in range(num_players):
-        players.append(MonopolyPlayer(CASH, i))
+        players.append(MonopolyPlayer(CASH, i, names[i]))
 
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)
