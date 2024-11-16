@@ -163,8 +163,8 @@ def attack():
 def stocks():
     pass
 
-def ttt_handler(server: Socket, active_terminal: int):
-    net.send_message(server, 'ttt,getgamestate')
+def ttt_handler(server: Socket, active_terminal: int, player_id: int) -> None:
+    net.send_message(server, f'{player_id}ttt,getgamestate')
     time.sleep(0.1)
     game_data = net.receive_message(server)
     game_id = None 
@@ -181,7 +181,7 @@ def ttt_handler(server: Socket, active_terminal: int):
                 opponent = ss.get_valid_int(prompt=f"Enter the opponent's ID (1-4), not including your ID): ",
                                             min_val=1, max_val=4)-1 # -1 for zero-indexing
 
-                net.send_message(server, f'ttt,joingame,{game_id},{opponent}')
+                net.send_message(server, f'{player_id}ttt,joingame,{game_id},{opponent}')
                 ss.update_quadrant(active_terminal, "Attempting to join game...", padding=True)
                 game_data = net.receive_message(server)
                 if 'select a game' in game_data or (('X' in game_data and 'O' in game_data and (not '▒' in game_data)) or '▒' in game_data):
@@ -196,7 +196,7 @@ def ttt_handler(server: Socket, active_terminal: int):
         ss.update_quadrant(active_terminal, game_data, padding=True)    
         game_id = ss.get_valid_int(prompt='Enter the game id: ', min_val=-1, max_val=10) # 10 is incorrect! temp for now TODO
         # Send the server the game id to join. Should be validated on server side. 
-        net.send_message(server, f'ttt,joingame,{game_id}')
+        net.send_message(server, f'{player_id}ttt,joingame,{game_id}')
 
         # Wait for server to send back the new board
         game_data = net.receive_message(server)
@@ -240,7 +240,7 @@ def ttt_handler(server: Socket, active_terminal: int):
                     # At this point, the client can be sure that they have the
                     # correct game ID and that the move is valid. Thus, we add
                     # the game ID to the move string.
-                    net.send_message(server, f'ttt,move,{game_id},{x}.{y}')
+                    net.send_message(server, f'{player_id}ttt,move,{game_id},{x}.{y}')
                     # receive new board (for display) from server
                     ss.update_quadrant(active_terminal, "Updated board:\n" + net.receive_message(server), padding=True)
                     ss.update_terminal(active_terminal, active_terminal) # reset terminal to normal
@@ -254,8 +254,9 @@ def ttt_handler(server: Socket, active_terminal: int):
                 keyboard.unhook_all()
                 break
 
-def battleship(server: Socket, gamestate: str) -> str:
-    net.send_message(server, 'battleship')
+def battleship_handler(server: Socket, active_terminal: int, player_id: int) -> None:
+    net.send_message(server, f'{player_id}battleship')
+    # TODO implement battleship handler
 
 fishing_game_obj = fishing_game() # fishing is played LOCALLY, not over the network
 def fishing(gamestate: str) -> tuple[str, str]:

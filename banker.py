@@ -84,7 +84,7 @@ def start_server() -> socket.socket:
     s.print_w_dots("")
     # Send a message to each client that the game is starting, allowing them to see their terminals screen
     for i in range(len(clients)): 
-        net.send_message(clients[i].socket, f"Game Start!{num_players} {i+1}")
+        net.send_message(clients[i].socket, f"Game Start!{num_players} {i}")
         sleep(0.5)
     return server_socket
 
@@ -227,39 +227,45 @@ def set_unittest() -> None:
             print("Skipping unit tests.")
             return
     
-def handle_data(data: bytes, client: socket.socket) -> None:
+def handle_data(data: str, client: socket.socket) -> None:
     """
     Handles all data received from player sockets. 
     
     Parameters:
         data (str): Data received from player sockets. 
+        client (socket.socket): The client socket that sent the data.
     
     Returns:
         None
     """
     global timer
-    current_client = get_client_by_socket(client)
-    decoded_data = data
+    current_client = None
+    try:
+        current_client = clients[int(data[0])] # Assume the data is prefixed by the client number AKA player_id.
+        data = data[1:]
+    except:
+        current_client = get_client_by_socket(client) # This is a backup in case the client data is not prefixed by client.
+        print(f"{ss.set_cursor_str(0, 20)}Failed to get client from data. {s.COLORS.RED}Data was not prefixed by client.{s.COLORS.RESET}: {data}")
 
-    print(f"Received data from {current_client.name}: {data}")
+    print(f"{ss.set_cursor_str(0, random.randint(0, 40))}Received data from {current_client.name}: {data}")
     
-    if decoded_data == 'request_board': 
+    if data == 'request_board': 
         net.send_message(client, mply.get_gameboard())
         s.print_w_dots(f'Gameboard sent to player {client}')
     
-    elif decoded_data.startswith('request_info'):
+    elif data.startswith('request_info'):
         pass
 
-    elif decoded_data.startswith('mply'):
-        monopoly_game(current_client, decoded_data)
+    elif data.startswith('mply'):
+        monopoly_game(current_client, data)
 
-    elif decoded_data == 'ships':
-        handle_battleship(decoded_data, current_client)
+    elif data == 'ships':
+        handle_battleship(data, current_client)
 
-    elif decoded_data.startswith('ttt'):
-        handle_ttt(decoded_data, current_client)
+    elif data.startswith('ttt'):
+        handle_ttt(data, current_client)
 
-    elif decoded_data == 'bal':
+    elif data == 'bal':
         net.send_message(client, f'Your balance is: {current_client.money}')
     timer = 0
 
