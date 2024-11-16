@@ -260,7 +260,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         monopoly_game(current_client, data)
 
     elif data == 'ships':
-        handle_battleship(data, current_client)
+        handle_battleship(data, current_client) # tests
 
     elif data.startswith('ttt'):
         handle_ttt(data, current_client)
