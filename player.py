@@ -287,7 +287,10 @@ if __name__ == "__main__":
     if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
         initialize()
         ss.make_fullscreen()
-        ss.calibrate_screen('player')
+        # ss.calibrate_screen('player')
+    
+    ss.make_fullscreen()
+    ss.auto_calibrate_screen()
 
     ss.clear_screen()
     ss.initialize_terminals()

@@ -12,6 +12,9 @@ import platform
 import ctypes
 import shutil
 import re
+import sys
+import keyboard
+import time
 
 # Each quadrant is half the width and height of the screen 
 global rows, cols
@@ -340,6 +343,33 @@ def calibrate_print_commands():
         for j in range(len(commandsinfo[i])):
             print(f"\033[{34+i};79H" + commandsinfo[i][:j], end="")
 
+def auto_calibrate_screen() -> None:
+    """
+    Automatically calibrates the screen. The player doesn't really know what screen size is 
+    optimal, but we do. This function will automatically adjust the screen size to the ensure 
+    minimum requirements are met.
+    """
+    if os.name == 'nt': # Windows
+        while os.get_terminal_size().lines < HEIGHT or os.get_terminal_size().columns < WIDTH:
+            keyboard.press('ctrl')
+            keyboard.send('-')
+            keyboard.release('ctrl')
+            time.sleep(0.1)
+
+        while os.get_terminal_size().lines > HEIGHT + 10 or os.get_terminal_size().columns > WIDTH + 10:
+            keyboard.press('ctrl')
+            keyboard.send('+')
+            keyboard.release('ctrl')
+            time.sleep(0.1)
+    elif os.name == 'posix': # Linux/macOS
+        while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
+            os.system("printf '\033[1;1t'")
+            time.sleep(0.1)
+
+        while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
+            os.system("printf '\033[1;1t'")
+            time.sleep(0.1)
+
 def calibrate_screen(type: str) -> None:
     terminal_size = shutil.get_terminal_size()
     width = terminal_size.columns
@@ -412,3 +442,5 @@ def calibrate_screen(type: str) -> None:
             print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
             scaling_test = input()
         os.system('cls' if os.name == 'nt' else 'clear')
+
+    # auto_calibrate_screen("player")
