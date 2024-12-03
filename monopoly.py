@@ -84,7 +84,7 @@ def refresh_board():
 
         if(board.locations[i].mortgaged): # If mortgaged
             add_to_output(COLORS.RESET)
-            add_to_output(f"\033[{board.locations[i].x+2};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
+            add_to_output(f"\033[{board.locations[i].x+1};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
 
     add_to_output(COLORS.RESET)
 
@@ -251,9 +251,9 @@ def housing_logic(p: Player, mode: str = "normal", propertyid: str = "", num_hou
                 houses = input(f"Cost of housing is ${board.locations[propertyid].housePrice}. How many houses would you like to buy? (Max {max}/min 0)")
                 try:
                     houses = int(houses)
-                    if(0 <= houses <= max):
+                    if (0 < houses <= max):
                         p.cash -= board.locations[propertyid].housePrice * houses
-                        update_history(f"{p} bought {houses} house{'s' if houses > 1 else ''} on {board.locations[propertyid].name}!")
+                        update_history(f"{p.name} bought {houses} house{'s' if houses != 1 else ''} on {board.locations[propertyid].name}!")
                         board.locations[propertyid].houses += houses
                         refresh_board()
                     else:
@@ -282,7 +282,7 @@ def mortgage_logic(p:Player):
             print("\033[42;0HYou do not own this property!")
         elif board.locations[propertyid].mortgage == 0:
             print("\033[42;0HYou cannot mortgage this property!")
-        elif board.locations[propertyid].houses != 0:
+        elif board.locations[propertyid].houses != 0 and board.locations[propertyid].rentHotel != 0:
             print("\033[42;0HYou must sell your houses on this property first!")
         elif board.locations[propertyid].mortgaged:
             print("\033[39;0HThis property is already mortgaged!")
@@ -290,7 +290,8 @@ def mortgage_logic(p:Player):
             if answer == 'y' or answer == 'Y':
                 price = board.locations[propertyid].mortgage * 1.1
                 if (players[turn].cash > price):
-                    players[turn].buy(propertyid,board)
+                    board.locations[propertyid].mortgaged = False
+                    players[turn].cash -= int (price)
                     board.locations[propertyid].mortgaged = False
                     update_history(f"{players[turn].name} repaid their mortgage on {board.locations[propertyid].name}")
         else:
@@ -303,12 +304,12 @@ def mortgage_logic(p:Player):
     
 def sell_logic(p:Player):
     update_status(p, "properties")
-    propertyid = input("\033[38;0HWhat property to sell houses on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
+    propertyid = input("\033[38;0HWhat property to sell houses on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 70 + "\033[40;0H" + " " * 70+"\033[41;0H" + " " * 70+"\033[39;0H")
     flag = True
     exit = False
     try:   
         if propertyid == 'e':
-            print("\033[37;0H " + ' ' * 78+ "\033[38;0H " + ' ' * 78 + "\033[39;0H " + ' ' * 78)
+            print("\033[37;0H " + ' ' * 70+ "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70)
             exit = True
         else:
             propertyid =  int(propertyid)
@@ -342,9 +343,11 @@ def sell_logic(p:Player):
     if not exit:
         sell_logic(p)
 
-def manageProperties(p:Player):
-    print("\033[38;0H" + ' ' * 78)
+def manage_properties(p:Player):
+    print("\033[38;0H" + ' ' * 70)
+    update_status(p, "properties")
     while True:
+        print("\033[37;0H" + ' ' * 70)
         choice = input("\033[37;0He to exit, b to buy houses, s to sell houses, m to mortgage:")
         if choice == "e":
             break   
@@ -355,7 +358,8 @@ def manageProperties(p:Player):
         elif choice == "m":
             mortgage_logic(p)
         else:
-            print("\033[38;0HInvalid option!"  + ' ' * 76)
+            print("\033[38;0H" + ' ' * 70)
+            print("\033[38;0HInvalid option!")
 
 from datetime import datetime
 def log_error(error_message: str) -> None:
@@ -614,17 +618,19 @@ def end_turn():
 
 def player_choice():
     if(players[turn].cash > 0):
+        print("\033[36;0H" + ' ' * 70)
         choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
         while(choice != 'e'): 
             if choice == "e":
                 pass
             elif choice == "p":
-                manageProperties(players[turn])
+                manage_properties(players[turn])
             elif choice == "d":
                 update_status(players[turn], "deed")
             else:
                 add_to_output("Invalid option!")
-            choice = input("\033[36;0H'e' to end turn, p to manage properties, ?")
+            print("\033[36;0H" + ' ' * 70)
+            choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
         update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
