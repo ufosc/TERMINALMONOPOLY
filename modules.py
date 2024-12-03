@@ -4,7 +4,7 @@ from modules_directory.fishing import fishing_game
 from modules_directory.tictactoe import destruct_board, construct_board
 from socket import socket as Socket
 import networking as net
-import keyboard
+
 import time
 
 def calculator() -> str:

@@ -7,6 +7,8 @@ from style import COLORS
 import screenspace as ss
 import modules as m
 import networking as net
+import shop
+
 
 game_running = False
 text_dict = {}
@@ -20,6 +22,7 @@ balance = 0
 properties = 0
 calculator_history_queue = []
 calculator_history_current_capacity = 15
+playerfish = shop.FishInventory()
 
 def get_graphics():
     """Grab text from ascii.txt and split into dictionary"""
@@ -40,7 +43,7 @@ def initialize():
     Returns: None
     """
     global sockets, ADDRESS, PORT
-    os.system("cls")
+    os.system('cls' if os.name == 'nt' else 'clear')
     print("Welcome to Terminal Monopoly, Player!")
     s.print_w_dots("Initializing client socket connection")     
     client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
@@ -251,6 +254,8 @@ def get_input() -> None:
     stdIn = ""
 
     fishing_gamestate = 'start'
+    
+
 
     while(stdIn != "exit" or game_running):
         if screen == 'gameboard':
@@ -370,11 +375,11 @@ if __name__ == "__main__":
     get_graphics()
 
     # Feel free to comment out the 3 following lines for testing purposes.
-    if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
-        initialize()
-        ss.make_fullscreen()
-        ss.calibrate_screen('player')
-
+    # if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
+    #     initialize()
+    #     ss.make_fullscreen()
+    #     ss.calibrate_screen('player')
+    initialize()
     ss.clear_screen()
     ss.initialize_terminals()
     ss.update_terminal(active_terminal, active_terminal)

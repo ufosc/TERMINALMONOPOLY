@@ -5,7 +5,7 @@ import networking as net
 import os
 
 def main():
-    os.system('cls')
+    os.system('cls' if os.name == 'nt' else 'clear')
     cols = os.get_terminal_size().columns
     print("=" * int((cols/2 - 3)) + "SERVER" + "=" * int((cols/2 - 3)))
     # Create a socket

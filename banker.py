@@ -462,7 +462,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
 
 if __name__ == "__main__":
 
-    os.system("cls")
+    os.system('cls' if os.name == 'nt' else 'clear')
     print("Welcome to Terminal Monopoly, Banker!")
 
     test = ss.get_valid_int("Enter a test number: ")
