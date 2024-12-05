@@ -83,7 +83,9 @@ def refresh_board():
             add_to_output(f"\033[{board.locations[i].x+2};{board.locations[i].y+5}H" + COLORS.RED + "▀")
 
         if(board.locations[i].mortgaged): # If mortgaged
+        if(board.locations[i].mortgaged): # If mortgaged
             add_to_output(COLORS.RESET)
+            add_to_output(f"\033[{board.locations[i].x+1};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
             add_to_output(f"\033[{board.locations[i].x+1};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
 
     add_to_output(COLORS.RESET)
@@ -210,6 +212,7 @@ def buy_logic(mode: str = "normal", pinput: str = ""):
     if(board.locations[CL].purchasePrice != 0 and choice == 'y'):
         price = board.locations[CL].purchasePrice
         if(players[turn].cash > price):
+        if(players[turn].cash > price):
             players[turn].buy(CL, board)
             board.locations[CL].owner = turn
             update_history(f"{players[turn].name} bought {board.locations[CL].name} for ${price}")
@@ -239,11 +242,11 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
         flag = False
     if flag and not exit_flag:
         if not propertyid in p.properties:
-            add_to_output("You do not own this property!")
+            print("\033[40;0HYou do not own this property!")
         else: 
             family = board.locations[propertyid].color
             if family == COLORS.CYAN or family == COLORS.LIGHTBLACK or board.locations[propertyid].name.startswith("Electric"):
-                add_to_output("This property cannot be improved.")
+                print("\033[40;0HThis property cannot be improved.")
                 flag = False
                 if mode == "banker":
                     return get_gameboard() + ss.set_cursor_str(0, 40) + "This property cannot be improved."
@@ -251,7 +254,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
                 for i in range(propertyid-3 if propertyid > 3 else 0, propertyid+5 if propertyid < 35 else 39): # check only a few properties around for efficiency
                     if board.locations[i].color == family:
                         if not i in p.properties:
-                            add_to_output("You do not own a monopoly on these properties!")
+                            print("\033[40;0HYou do not own a monopoly on these properties!")
                             flag = False
                             if mode == "banker":
                                 return get_gameboard() + ss.set_cursor_str(0, 40) + "You do not own a monopoly on these properties!"  
@@ -290,7 +293,13 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
     if not exit_flag:
         if mode == "normal":
             housing_logic(p)
+        elif choice == "s":
+            sell_logic(p)
+        elif choice == "m":
+            mortgage_logic(p)
         else:
+            print("\033[38;0H" + ' ' * 70)
+            print("\033[38;0HInvalid option!")
             return get_gameboard() + ss.set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
     return get_gameboard()
 
@@ -412,6 +421,14 @@ def unittest():
     players[1].buy(35, board)
     players[2].buy(12, board)
     players[2].buy(28, board)
+    players[0].buy(1, board)
+    players[0].buy(3, board)
+    players[1].buy(5, board)
+    players[1].buy(15, board)
+    players[1].buy(25, board)
+    players[1].buy(35, board)
+    players[2].buy(12, board)
+    players[2].buy(28, board)
 
 #wipes the bottom of the screen where the player does all of their input
 def bottom_screen_wipe():
@@ -422,8 +439,6 @@ def bottom_screen_wipe():
     add_to_output(ss.set_cursor_str(0, 40) + " " * 76)
     add_to_output(ss.set_cursor_str(0, 41) + " " * 76)
     add_to_output(ss.set_cursor_str(0, 42) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 43) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 44) + " " * 76)
     add_to_output(ss.set_cursor_str(0, 36))
 
 #Rolls the dice and returns them for the player as a tuple
@@ -492,6 +507,7 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
                 update_history(f"{players[turn]} rolled doubles! Roll again.")
 
             elif num_rolls == 2:
+                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
                 update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
@@ -689,6 +705,7 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
         num_rolls += 1
         request_roll()
     return "player_choice" + ss.set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
+    return "player_choice" + ss.set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
 
 def end_turn():
     global turn
@@ -699,15 +716,21 @@ def player_choice():
     if(players[turn].cash > 0):
         print("\033[36;0H" + ' ' * 70)
         choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
+        print("\033[36;0H" + ' ' * 70)
+        choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
         while(choice != 'e'): 
             if choice == "e":
                 pass
             elif choice == "p":
                 manage_properties(players[turn])
+                manage_properties(players[turn])
             elif choice == "d":
                 update_status(players[turn], "deed")
             else:
                 add_to_output("Invalid option!")
+            print("\033[36;0H" + ' ' * 70)
+            choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
+        update_history(f"{players[turn].name} ended their turn.")
             print("\033[36;0H" + ' ' * 70)
             choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
         update_history(f"{players[turn].name} ended their turn.")
@@ -718,6 +741,7 @@ def player_choice():
             update_history(f"{players[turn]} declared bankruptcy.")
             players[turn].order = -1
         elif(option == "m"): # Mortgage properties
+            mortgage_logic()
             mortgage_logic()
         elif(option == "s"): # Sell houses/hotels
             housing_logic()
