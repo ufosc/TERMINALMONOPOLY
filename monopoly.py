@@ -204,10 +204,10 @@ def refresh_h_and_s():
 def buy_logic(mode: str = "normal", pinput: str = ""):
     CL = players[turn].location
     if mode == "normal":
-        choice = input(ss.set_cursor_str(0, 37) + "b to buy, enter to continue?")
+        choice = input(ss.set_cursor_str(0, 36) + f"Buy {board.locations[CL].name} for ${board.locations[CL].purchasePrice}? (y/n) ")
     else:
         choice = pinput
-    if(board.locations[CL].purchasePrice != 0 and input(f"\033[37;0HBuy {board.locations[CL].name} for ${board.locations[CL].purchasePrice}? (y/n) ") == 'y'):
+    if(board.locations[CL].purchasePrice != 0 and choice == 'y'):
         price = board.locations[CL].purchasePrice
         if(players[turn].cash > price):
             players[turn].buy(CL, board)
@@ -219,7 +219,8 @@ def buy_logic(mode: str = "normal", pinput: str = ""):
 def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "", num_houses: int = -1):
     update_status(p, "properties")
     if mode == "normal":
-        propertyid = input(ss.set_cursor_str(0, 39) + "What property do you want to build on? Enter property # or 'e' to exit.")
+        print(ss.set_cursor_str(0, 38) + ' ' * 75)
+        propertyid = input(ss.set_cursor_str(0, 38) + "What property do you want to build on? Enter property # or 'e' to exit.")
     else:
         if propertyid == "e":
             return get_gameboard()
@@ -229,7 +230,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
     exit_flag = False
     try:   
         if propertyid == 'e':
-            print("\033[37;0H " + ' ' * 70 + "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70    )
+            print("\033[37;0H " + ' ' * 70 + "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70)
             exit_flag = True
         else:
             propertyid =  int(propertyid)
@@ -253,8 +254,12 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
                             add_to_output("You do not own a monopoly on these properties!")
                             flag = False
                             if mode == "banker":
-                                return get_gameboard() + ss.set_cursor_str(0, 40) + "You do not own a monopoly on these properties!"
-                                
+                                return get_gameboard() + ss.set_cursor_str(0, 40) + "You do not own a monopoly on these properties!"  
+            if flag and board.locations[propertyid].mortgaged:
+                add_to_output("This property is mortaged.")
+                flag = False
+                if mode == "banker":
+                    return get_gameboard() + ss.set_cursor_str(0, 40) + "This property is mortaged."
             if flag:
                 cost = 0
                 if flag:
@@ -272,7 +277,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
                     if mode == "normal":
                         try:
                             houses = int(houses)
-                            if(0 < houses <= max):
+                            if(0 < houses and houses <= max_houses):
                                 p.cash -= board.locations[propertyid].housePrice * houses
                                 update_history(f"{p.name} bought {houses} house{'s' if houses != 1 else ''} on {board.locations[propertyid].name}!")
                                 board.locations[propertyid].houses += houses
@@ -289,9 +294,10 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
             return get_gameboard() + ss.set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
     return get_gameboard()
 
-def mortgage_logic(p:Player):
+def mortgage_logic(p:MonopolyPlayer):
     update_status(p, "properties")
-    propertyid = input("\033[38;0HWhat property to mortgage? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
+    print("\033[38;0H" + " " * 78 +"\033[39;0H" + " " * 78 + "\033[40;0H" + " " * 78+"\033[41;0H" + " " * 78+"\033[39;0H")
+    propertyid = input("\033[38;0HWhat property to mortgage? Enter property # or 'e' to exit.")
     flag = True
     exit = False
     try:   
@@ -328,7 +334,7 @@ def mortgage_logic(p:Player):
         refresh_board()
         mortgage_logic(p)
     
-def sell_logic(p:Player):
+def sell_logic(p:MonopolyPlayer):
     update_status(p, "properties")
     propertyid = input("\033[38;0HWhat property to sell houses on? Enter property # or 'e' to exit."+"\033[39;0H" + " " * 70 + "\033[40;0H" + " " * 70+"\033[41;0H" + " " * 70+"\033[39;0H")
     flag = True
@@ -369,7 +375,7 @@ def sell_logic(p:Player):
     if not exit:
         sell_logic(p)
 
-def manage_properties(p:Player):
+def manage_properties(p:MonopolyPlayer):
     print("\033[38;0H" + ' ' * 70)
     update_status(p, "properties")
     while True:
