@@ -83,7 +83,6 @@ def refresh_board():
             add_to_output(f"\033[{board.locations[i].x+2};{board.locations[i].y+5}H" + COLORS.RED + "▀")
 
         if(board.locations[i].mortgaged): # If mortgaged
-        if(board.locations[i].mortgaged): # If mortgaged
             add_to_output(COLORS.RESET)
             add_to_output(f"\033[{board.locations[i].x+1};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
             add_to_output(f"\033[{board.locations[i].x+1};{board.locations[i].y}H" + COLORS.backLIGHTGRAY + "M")
@@ -211,7 +210,6 @@ def buy_logic(mode: str = "normal", pinput: str = ""):
         choice = pinput
     if(board.locations[CL].purchasePrice != 0 and choice == 'y'):
         price = board.locations[CL].purchasePrice
-        if(players[turn].cash > price):
         if(players[turn].cash > price):
             players[turn].buy(CL, board)
             board.locations[CL].owner = turn
@@ -728,9 +726,6 @@ def player_choice():
                 update_status(players[turn], "deed")
             else:
                 add_to_output("Invalid option!")
-            print("\033[36;0H" + ' ' * 70)
-            choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
-        update_history(f"{players[turn].name} ended their turn.")
             print("\033[36;0H" + ' ' * 70)
             choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
         update_history(f"{players[turn].name} ended their turn.")
