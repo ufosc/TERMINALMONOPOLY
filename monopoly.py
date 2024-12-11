@@ -7,7 +7,7 @@ import os
 from properties import Property
 from cards import Cards
 from board import Board
-from player_class import Player
+from player_class import MonopolyPlayer
 import screenspace as ss
 import style as s
 
@@ -120,12 +120,12 @@ def update_history(message: str):
                 history.append(message[:40] + " " * (40 - len(message)))
                 message = message[40:]
         history.append(message + " " * (40 - len(message)))
-        if len(history) > 31:
-            while(len(history) > 31):
+        if len(history) > 30:
+            while(len(history) > 30):
                 history.pop(0)
     refresh_h_and_s()
 
-def update_status(p: Player, update: str, status: list = status, mode: str = "normal", property_id: str = ""):
+def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: str = "normal", property_id: str = ""):
     """
     Update the status\n
     """
@@ -145,7 +145,7 @@ def update_status(p: Player, update: str, status: list = status, mode: str = "no
             location = board.locations[int(propertyid)]
             if location.owner > -1: # if the location is owned
                 color = COLORS.playerColors[location.owner]
-                status.append(f"Current owner: " + color + f"Player{location.owner}" + COLORS.RESET)
+                status.append(f"Current owner: " + color + f"{players[location.owner]}" + COLORS.RESET)
                 status.append(f"Houses: {location.houses}")
             if(location.rent != 0): # if location could be owned and is not a utility or railroad
                 status.append(f"{location.color}=== {location.name} ===")
@@ -216,7 +216,7 @@ def buy_logic(mode: str = "normal", pinput: str = ""):
         else:
             update_history(f"{players[turn].name} did not buy {board.locations[CL].name}")
 
-def housing_logic(p: Player, mode: str = "normal", propertyid: str = "", num_houses: int = -1):
+def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "", num_houses: int = -1):
     update_status(p, "properties")
     if mode == "normal":
         propertyid = input(ss.set_cursor_str(0, 39) + "What property do you want to build on? Enter property # or 'e' to exit.")
@@ -340,29 +340,74 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
     if(players[turn].order != -1): # If player is not bankrupt
         player_color = COLORS.playerColors[turn]
         update_history(player_color + f"{players[turn].name}'s turn")
+        refresh_h_and_s()
         print_commands()
+
+        was_in_jail = players[turn].jail  # Flag to check if player was in jail before rolling
+        
+        if players[turn].jail:
+            if players[turn].jail_turns < 3:
+                while True:
+                    choice = input(f"\033[36;0HYou're in jail. Pay ${50*players[turn].repeat_offender} fine (f) or attempt to roll doubles (r)" + 
+                                  ( "\nYou have a Get Out of Jail Free card. (c) to use." if players[turn].jail_cards > 0 else ".")).lower().strip()
+                    if choice == 'f':
+                        players[turn].pay_jail_fine()
+                        update_history(f"{players[turn].name} paid ${50*players[turn].repeat_offender} to post bail.")
+                        break
+                    elif choice == 'c' and players[turn].jail_cards > 0:
+                        players[turn].use_jail_card()
+                        update_history(f"{players[turn].name} used a Get Out of Jail Free card.")
+                        break
+                    elif choice == 'r':
+                        update_history(f"{players[turn].name} will attempt to roll doubles.")
+                        break
+                    else:
+                        update_history(f"Invalid choice. Please enter (f) to pay fine or (r) to roll" + 
+                                   (". You have a Get Out of Jail Free card. (c) to use." if players[turn].jail_cards > 0 else "."))
+            else:
+                update_history(f"This is {players[turn].name}'s third turn in jail. They must attempt to roll doubles or they will pay the fine.")
+                
         input("\033[36;0HRoll dice?")
         dice = roll()
         bottom_screen_wipe()
-        update_history(f"Player {turn} rolled {dice[0]} and {dice[1]}")
+        update_history(f"{players[turn]} rolled {dice[0]} and {dice[1]}")
 
-        if dice[0] == dice[1]:
-            if  num_rolls == 1:
+        if players[turn].jail:
+            left_jail, reason = players[turn].attempt_jail_roll(dice)
+            if left_jail:
+                if reason == "doubles":
+                    update_history(f"{players[turn].name} rolled doubles and got out of jail!")
+                elif reason == "third_turn":
+                    update_history(f"{players[turn].name} didn't roll doubles on their third turn. They paid ${50*players[turn].repeat_offender} to post bail.")
+                    players[turn].pay_jail_fine()
+            else:
+                update_history(f"{players[turn].name} didn't roll doubles and is still in jail. Turns in jail: {players[turn].jail_turns}")
+                return
+
+        refresh_board()
+        
+        # Only check for doubles if the player wasn't in jail at the start of their turn
+        if dice[0] == dice[1] and not was_in_jail:
+            if num_rolls == 1:
                 update_history(f"{players[turn]} rolled doubles! Roll again.")
 
             elif num_rolls == 2:
                 update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
-                update_history(f"Player {turn} rolled doubles three times\n in a row!")
-                update_history(f"Player {turn} is going to jail!")
-                players[turn].jail = True
-                board.update_location(players[turn], -1)
+                update_history(f"{players[turn].name} rolled doubles three times in a row!")
+                update_history(f"{players[turn].name} is going to jail!")
+                players[turn].go_to_jail()
+                # board.locations[players[turn].location].players.remove(turn)
+                board.locations[10].players.append(turn)
+                refresh_board()
+                return
+
         refresh_board()
         #if player rolled their third double they will be in jail and their location doesn't update
         if players[turn].jail == False:
             if (players[turn].location + dice[0] + dice[1]) > 39:  # checks if player passed go
-                update_history(f"Player {players[turn].order} passed Go and received $200")
+                update_history(f"{players[turn]} passed Go and received $200")
             board.update_location(players[turn], dice[0] + dice[1])
             update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
             refresh_board()
@@ -382,14 +427,14 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
                         new_loc = players[turn].location
                         update_history(f"{players[turn].name} drew a Community Chest card! {card}")
                         if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                            update_history(f"Player {players[turn].order} passed Go and received $200")
+                            update_history(f"{players[turn]} passed Go and received $200")
                     case -4: #chance
                         old_loc = players[turn].location
                         card = decks.draw_chance(players[turn], board, players)
                         new_loc = players[turn].location
                         update_history(f"{players[turn].name} drew a Chance card! {card}")
                         if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                            update_history(f"Player {players[turn].order} passed Go and received $200")
+                            update_history(f"{players[turn]} passed Go and received $200")
                         if (board.locations[players[turn].location].owner != -4):
                             done_moving_around = False  # only case where loop is needed
                     case -5: #income tax
@@ -398,8 +443,8 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
                     case -6:  # jail
                         pass
                     case -7:  # go to jail
-                        players[turn].jail = True
-                        board.update_location(players[turn], -1)
+                        players[turn].go_to_jail()
+                        board.locations[10].players.append(turn)
                     case -8:  # free parking
                         pass
                     case -9:  # luxury tax
@@ -451,7 +496,7 @@ def process_roll(num_rolls: int, dice: tuple) -> str:
     TODO add more detail here
     """
     bottom_screen_wipe()
-    update_history(f"Player {turn} rolled {dice[0]} and {dice[1]}")
+    update_history(f"{players[turn]} rolled {dice[0]} and {dice[1]}")
 
     if dice[0] == dice[1]:
         if  num_rolls == 1:
@@ -461,15 +506,14 @@ def process_roll(num_rolls: int, dice: tuple) -> str:
             update_history(f"{players[turn]} rolled doubles!(X2) Roll again.")
 
         elif num_rolls == 3:
-            update_history(f"Player {turn} rolled doubles three times\n in a row!")
-            update_history(f"Player {turn} is going to jail!")
-            players[turn].jail = True
-            board.update_location(players[turn], -1)
+            update_history(f"{players[turn]} rolled doubles three times\n in a row!")
+            update_history(f"{players[turn]} is going to jail!")
+            players[turn].go_to_jail()
     refresh_board()
     #if player rolled their third double they will be in jail and their location doesn't update
     if players[turn].jail == False:
         if (players[turn].location + dice[0] + dice[1]) > 39:  # checks if player passed go
-            update_history(f"Player {players[turn].order} passed Go and received $200")
+            update_history(f"{players[turn]} passed Go and received $200")
         board.update_location(players[turn], dice[0] + dice[1])
         update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
         refresh_board()
@@ -499,24 +543,23 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
                     new_loc = players[turn].location
                     update_history(f"{players[turn].name} drew a Community Chest card! {card}")
                     if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                        update_history(f"Player {players[turn].order} passed Go and received $200")
+                        update_history(f"{players[turn]} passed Go and received $200")
                 case -4: #chance
                     old_loc = players[turn].location
                     card = decks.draw_chance(players[turn], board, players)
                     new_loc = players[turn].location
                     update_history(f"{players[turn].name} drew a Chance card! {card}")
                     if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                        update_history(f"Player {players[turn].order} passed Go and received $200")
+                        update_history(f"{players[turn]} passed Go and received $200")
                     if (board.locations[players[turn].location].owner != -4):
                         done_moving_around = False  # only case where loop is needed
                 case -5: #income tax
                     players[turn].pay(200)
                     update_history(f"{players[turn].name} paid income tax ($200)")
-                case -6:  # jail
-                    pass
+                case -6: #jail
+                    update_history("Just visiting!")
                 case -7:  # go to jail
-                    players[turn].jail = True
-                    board.update_location(players[turn], -1)
+                    players[turn].go_to_jail()
                 case -8:  # free parking
                     pass
                 case -9:  # luxury tax
@@ -540,9 +583,10 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
             players[board.locations[cl].owner].receive(rent)
             update_history(f"{players[turn].name} paid ${rent} to {players[board.locations[cl].owner].name}")
     refresh_board()
-    #checks if player rolled a double, and has them roll again if they did.
-    if dice[0] == dice[1] and players[turn].jail == False:
-        num_rolls +=1
+        
+    # Check for doubles and roll again only if player wasn't in jail at the start of their turn
+    if dice[0] == dice[1]: # and not was_in_jail:
+        num_rolls += 1
         request_roll()
     return "player_choice" + ss.set_cursor_str(0, 38) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
 
@@ -551,6 +595,7 @@ def end_turn():
     turn = (turn + 1)%num_players
 
 def player_choice():
+    global bankrupts
     if(players[turn].cash > 0):
         choice = input("\033[38;0He to end turn, p to manage properties, d to view a deed?")
         while(choice != 'e'): 
@@ -563,12 +608,12 @@ def player_choice():
             else:
                 add_to_output("Invalid option!")
             choice = input("\033[38;0H'e' to end turn, p to manage properties, ?")
-        update_history(f"{players[turn]} ended their turn.")
+        update_history(f"{players[turn].name} ended their turn.")
     else:
-        update_history(f"Player {turn} is in debt. Resolve debts before ending turn.")
+        update_history(f"{players[turn]} is in debt. Resolve debts before ending turn.")
         option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
         if(option == "b"): # Declare bankruptcy
-            update_history(f"Player {turn} declared bankruptcy.")
+            update_history(f"{players[turn]} declared bankruptcy.")
             players[turn].order = -1
         elif(option == "m"): # Mortgage properties
             pass
@@ -586,7 +631,7 @@ def player_choice():
     # Wipe the bottom of the screen (input area)
     bottom_screen_wipe()
 
-def start_game(cash: int, num_p: int) -> str:
+def start_game(cash: int, num_p: int, names: list[str]) -> str:
     global CASH, num_players, players, gameboard, board, decks, mode
     ss.clear_screen()
     mode = "banker"
@@ -597,7 +642,7 @@ def start_game(cash: int, num_p: int) -> str:
     decks = Cards()
     players = []
     for i in range(num_players):
-        players.append(Player(CASH, i))
+        players.append(MonopolyPlayer(CASH, i, names[i]))
 
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)
@@ -618,7 +663,7 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
     # CASH = input("Starting cash?")
     # num_players = int(input("Number players?"))
     for i in range(num_players):
-        players.append(Player(CASH, i))
+        players.append(MonopolyPlayer(CASH, i, f"Player {i+1}"))
 
     turn = 0
 
@@ -644,6 +689,6 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
     for index, player in enumerate(players):
         if player.order != -1:
             color = COLORS.playerColors[index]
-            update_history(color + f"Player {index} wins!")
+            update_history(color + f"{players[index]} wins!")
             break
     add_to_output("\033[40;0H")
