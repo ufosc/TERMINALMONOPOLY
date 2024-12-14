@@ -120,7 +120,8 @@ def get_graphics() -> dict:
                  'casino_tie': text[21],
                  'coin_flip_heads': text[22],
                  'coin_flip_middle': text[23],
-                 'coin_flip_tails': text[24]
+                 'coin_flip_tails': text[24],
+                 'shop' : text[25]
                  } 
     return text_dict
 

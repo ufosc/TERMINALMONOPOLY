@@ -1,6 +1,10 @@
 import time
 import random
-from style import get_graphics, set_cursor, set_cursor_str, COLORS
+import sys
+sys.path.insert(0, '/home/haley/TERMINALMONOPOLY')
+from style import get_graphics, set_cursor, set_cursor_str
+
+
 
 class fishing_game():
     """
@@ -46,8 +50,9 @@ class fishing_game():
         return retval
 
 if __name__ == "__main__":
+    
     import os
-    os.system('cls')
+    os.system('cls' if os.name == 'nt' else 'clear')
     graphics = get_graphics()
 
     pictures = []
@@ -62,7 +67,7 @@ if __name__ == "__main__":
     start = int(time.time())
     delay = random.randint(3,10)
     catchtime = start + delay
-
+   
     input()
     set_cursor(0,0)
     print(pictures[1])
@@ -77,6 +82,12 @@ if __name__ == "__main__":
         retval += set_cursor_str(37,9) + fish_graphic[0:3]
         retval += set_cursor_str(37,10) + fish_graphic[3:6]
         retval += set_cursor_str(37,11) + fish_graphic[6:9]
+        
+        
+        
+        
+        
+        
 
         print(retval)
 
