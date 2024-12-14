@@ -1,6 +1,9 @@
 
-import player
-from style import get_graphics, set_cursor, set_cursor_str
+
+import screenspace as ss
+import keyboard
+import os
+from style import get_graphics, set_cursor, set_cursor_str, COLORS
 
 
 class FishInventory():
@@ -20,8 +23,10 @@ class FishInventory():
     
     # need function for viewing inventory
 
+testfishinventory = FishInventory()
 
 class Shop():
+    # TODO : Shop needs to reference the players own inventory
     def __init__(self):
         self.fishprices = {"Carp": 5, "Bass": 8, "Salmon": 12}
         graphics = get_graphics()
@@ -29,41 +34,67 @@ class Shop():
         self.__pictures = []
         self.__pictures.append(self.__shopimages.pop('shop'))
         
-    def shopview(self):
+    def display_shop(self, selected_index):
+        os.system('cls' if os.name == 'nt' else 'clear')
         print(self.__pictures[0])
         retval = ""
         y = 6
-        for price in self.fishprices.keys():
-            retval += set_cursor_str(45, y) + f"{price}: ${self.fishprices[price]}"
-            y +=1
+        retval += set_cursor_str(33, 3) + "=== Welcome to the Shop ==="
+        retval += set_cursor_str(33, 4) + "Use W/S to navigate and Enter to select."
+        for i, price in enumerate(self.fishprices.keys()):
+            if i == selected_index:
+                retval += set_cursor_str(43, y) + f"> {price}: ${self.fishprices[price]}"
+            else:
+                retval += set_cursor_str(43, y) + f"  {price}: ${self.fishprices[price]}"
+            y += 1
         y += 1
-        retval += set_cursor_str(45, y) + "Your inventory: "
         
-        for fish in player.playerfish.caughtfish.keys():
-            if player.playerfish.caughtfish[fish] > 0:
-                retval += set_cursor_str(45, y+1) + f"{fish} x{player.playerfish.caughtfish[fish]} "
+        retval += set_cursor_str(45, y) + "Your inventory: "
+        for fish in testfishinventory.caughtfish.keys():
+            if testfishinventory.caughtfish[fish] > 0:
+                retval += set_cursor_str(45, y+1) + f"{fish} x{testfishinventory.caughtfish[fish]} "
               
         print(retval)
         
     def sellfish(self, fish):
-        player.balance += self.fishprices[fish]
-        FishInventory.removefish(player.playerfish, fish)
-        return player.playerfish
+    # TODO: implement selling properly
     
-    def getinput(self):
-        choice = input("")
-        
-        
-        
-    # need to take input to let player sell the fish
-    
-        
 
+    # TODO: update shop screen in response to input
+    def shop_interface(self):
+        
+          
+        selected_index = 0
+        shopping = True
+        while shopping:
+            self.display_shop(selected_index)
+            key = keyboard.read_event()
+            if key.event_type == "down":
+                if key.name == "w":  # Move up
+                    selected_index = (selected_index - 1) % len(self.fishprices)
+                elif key.name == "up":
+                    selected_index = (selected_index - 1) % len(self.fishprices)
+                elif key.name == "s":  # Move down
+                    selected_index = (selected_index + 1) % len(self.fishprices)
+                elif key.name == "down":
+                    selected_index = (selected_index + 1) % len(self.fishprices)
+                elif key.name == "enter":  # Select item
+                    os.system('cls' if os.name == 'nt' else 'clear')
+                    selected_fish = self.fishprices[list(self.fishprices.keys())[selected_index]]
+                    
+                    
+                    keyboard.read_event()
+                elif key.name == "q":  # Quit shop
+                    shopping = False
+                    
+        os.system('cls' if os.name == 'nt' else 'clear')
+                    
+        
 def main():
-    import os
     os.system('cls' if os.name == 'nt' else 'clear')
     shop = Shop()
-    shop.shopview()
+    shop.shop_interface()
+    
     
     
 if __name__ == '__main__':
