@@ -67,8 +67,17 @@ Shows basic view of deed from core monopoly game, with additional information in
 All your gambling dreams, or nightmares, come true here! Gotta spend money to make money!
 Note that none of the Casino modules can be used as attack modules, because any player must always wager to play. 
 ##### Coin Flip
+You choose a side, either heads or tails. Once you choose, the coin flips. 
+- If it lands on the side you picked, you earn double your wager!
+- If it does not land on your side, you lose your wager.
 
 ##### Blackjack
+The goal of this game is to beat the dealer in getting the highest score without going over 21. The game starts with both of you drawing 2 cards. If you or the dealer draw a natural (total of 21), the game immediately goes to the final stage. If not, you are prompted to either hit and get another card or to stay and keep what you have. If you draw an Ace, it will either be an 11 or 1 based on your current score. If you go over 21, you will bust and lose the game! Once you stay, the dealer will draw until they are at 17 or above. The dealer can also bust and lead to you winning!
+
+If both players are safe, then the game will be decided to 3 outcomes: 
+- If you have a higher score than the dealer, you will win double your wager!
+- If the dealer has a higher score than you, you will lose your wager.
+- If you happen to have the same score as the dealer, the game ends in a stand-off, where you only get your wager back without any extra.
 
 ##### Texas Hold 'Em
 
