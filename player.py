@@ -52,7 +52,7 @@ def initialize():
     print("2. only contains alpha numeric characters or spaces")
     name = input("Player name: ")
     while not name_validated:
-        name_validated = validate_name(name)
+        name_validated = name_validation.validate_name(name)
         if not name_validated:
             print("The input name was not valid")
             name = input("Player name: ")
