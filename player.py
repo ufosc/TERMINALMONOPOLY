@@ -156,11 +156,12 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 gameboard.replace("ENDOFTURN", "")
                 ss.clear_screen()
                 print(gameboard)
-                print("End of turn. Press enter to return to terminal.")
+                # ss.set_cursor(0, ss.INPUTLINE)
+                # print("End of turn. Press enter to return to terminal.")
                 screen = 'terminal'
-                input()
                 ss.initialize_terminals()
                 ss.update_terminal(active_terminal, active_terminal)
+                ss.set_cursor(0, ss.INPUTLINE)
 
 def get_input() -> None:
     """
@@ -172,6 +173,7 @@ def get_input() -> None:
     """
     global active_terminal, screen, player_id
     stdIn = ""
+    skip_initial_input = False
 
     fishing_gamestate = 'start'
 
@@ -180,8 +182,9 @@ def get_input() -> None:
 
             # I turned off my brain while writing this part. The player can essentially send any command here
             # and it is only slightly regulated by the server. Better client-side handling is needed. TODO
-
-            stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
+            if not skip_initial_input:
+                stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
+            skip_initial_input = False
             if stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump back on the console line instead of printing anew
                 ss.overwrite(COLORS.RESET + "\r")
@@ -206,6 +209,7 @@ def get_input() -> None:
         elif screen == 'terminal':
             stdIn = input(COLORS.WHITE+'\r').lower().strip()
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
+                skip_initial_input = True
                 continue
             if stdIn.startswith("help"):
                 if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):

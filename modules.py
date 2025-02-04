@@ -166,6 +166,7 @@ def stocks():
 def ttt_handler(server: Socket, active_terminal: int, player_id: int) -> None:
     net.send_message(server, f'{player_id}ttt,getgamestate')
     time.sleep(0.1)
+    ss.update_quadrant(active_terminal, "Waiting for server...", padding=True)
     game_data = net.receive_message(server)
     game_id = None 
 
@@ -255,7 +256,7 @@ def ttt_handler(server: Socket, active_terminal: int, player_id: int) -> None:
                 break
 
 def battleship_handler(server: Socket, active_terminal: int, player_id: int) -> None:
-    net.send_message(server, f'{player_id}battleship')
+    net.send_message(server, f'{player_id}ships')
     # TODO implement battleship handler
 
 fishing_game_obj = fishing_game() # fishing is played LOCALLY, not over the network

@@ -260,7 +260,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         monopoly_game(current_client, data)
 
     elif data == 'ships':
-        handle_battleship(data, current_client) # tests
+        handle_battleship(data, current_client)
 
     elif data.startswith('ttt'):
         handle_ttt(data, current_client)
@@ -324,7 +324,9 @@ def handle_ttt(cmds: str, current_client: Client) -> None:
         else: 
             print(f"{ttt_location_info}TTT: Player is not in any games. Can create a game.")
             # Ask player first, then create a game if they want to play.
+            sleep(1)
             net.send_message(current_client.socket, "\nYou are not part of any games.\nWould you like to create a new TicTacToe game?\nEnter -1 to create, or 0 to ignore.")
+            net.send_notif(current_client.socket, "You are not part of any games. Would you like to create a new TicTacToe game? Enter -1 to create, or 0 to ignore.")
         return
 
     if cmds.split(',')[1] == 'joingame':
@@ -510,17 +512,18 @@ def monopoly_controller() -> None:
         print("No players in the game. Not attempting to run Monopoly.")
         return
     sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
+    mply.unittest()
     net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.")
-    print("Sent gameboard to player 1.")
+    print("Sent gameboard to player 0.")
     last_turn = 0
     while True:
         sleep(1)
         if mply.turn != last_turn:
-            print(ss.set_cursor_str(0, 20) + f"Player {mply.turn} is up.")
+            ss.set_cursor(0, 20)
             last_turn = mply.turn
             net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.")
             clients[mply.turn].can_roll = True
-            print(f"Sent gameboard to player {mply.turn}.")
+            print(f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
 
 def monopoly_game(client: Client = None, cmd: str = None) -> None:
     """

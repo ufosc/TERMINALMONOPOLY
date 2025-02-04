@@ -350,13 +350,13 @@ def auto_calibrate_screen() -> None:
     minimum requirements are met.
     """
     if os.name == 'nt': # Windows
-        while os.get_terminal_size().lines < HEIGHT or os.get_terminal_size().columns < WIDTH:
+        while os.get_terminal_size().lines - 5 < HEIGHT or os.get_terminal_size().columns - 5 < WIDTH:
             keyboard.press('ctrl')
             keyboard.send('-')
             keyboard.release('ctrl')
             time.sleep(0.1)
 
-        while os.get_terminal_size().lines > HEIGHT + 10 or os.get_terminal_size().columns > WIDTH + 10:
+        while os.get_terminal_size().lines > HEIGHT + 40 or os.get_terminal_size().columns > WIDTH + 40:
             keyboard.press('ctrl')
             keyboard.send('+')
             keyboard.release('ctrl')
