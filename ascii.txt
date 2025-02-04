@@ -161,9 +161,9 @@ BREAK_TEXT
 BREAK_TEXT
 ┼─────────────────────────────────────────┼─
 │                COMMANDS                 │ 
-│ info <number> - display information     │ 
-│   about property                        │ 
-│ bal - display balance information       │ 
+│                                         │ 
+│                                         │ 
+│                                         │ 
 │                                         │ 
 │                                         │ 
 │                                         │ 
