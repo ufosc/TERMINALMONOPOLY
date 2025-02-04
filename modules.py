@@ -288,15 +288,18 @@ class MazeNode:
             '''
             self.neighbors = [(MazeNode, bool)]
 
+#Create data structure
 def maze_array_init() -> list[list[MazeNode]]:
     num_rows = 9
     num_cols = 19
     maze_node_list = [MazeNode]
+    #Make 2D list of maze nodes
     for i in range(0, num_rows):
         for j in range(0, num_cols):
             node = MazeNode(i, j)
             maze_node_list[i][j] = node
 
+    #Link neighbors. Need to ensure maze nodes don't have neighbors out of bounds.
     for i in range(0, num_rows):
         for j in range(0, num_cols):
             neighbors_check = [(i+1,j), (i, j+1), (i-1, j), (i, j-1)]
@@ -312,7 +315,7 @@ def maze_array_init() -> list[list[MazeNode]]:
                     
     return maze_node_list
             
-
+#Maze generation algo
 def maze_generator() -> list[list[MazeNode]]:
         num_rows = 9
         num_cols = 19
@@ -335,8 +338,9 @@ def maze_generator() -> list[list[MazeNode]]:
 
         return mazeNodes
 
+#Use data structure to create string form of maze to print to terminal
 def maze_data_to_string() -> str:
-    
+
     pass
     
     
