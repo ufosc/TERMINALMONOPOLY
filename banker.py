@@ -265,8 +265,34 @@ def handle_data(data: str, client: socket.socket) -> None:
     elif data.startswith('ttt'):
         handle_ttt(data, current_client)
 
-    elif data == 'bal':
-        net.send_message(client, f'Your balance is: {current_client.money}')
+    elif data.startswith('bal '):
+        """
+        Gets and changes client's balance.
+        The second parameter is added to the value of the client's balance.
+        Use 0 to simply get the balance.
+        """
+        command_data = data.split(' ')
+        current_client.money += int(command_data[1])
+        net.send_message(client, str(current_client.money))
+
+    elif data.startswith('ttt'):
+        ttt_game = None
+        ttt_location_info = s.set_cursor_str(random.randint(0, 100), random.randint(0, 40)) + random.choice([s.COLORS.dispBLUE, s.COLORS.dispGREEN, s.COLORS.dispRED]) # just throw the information somewhere on the screen
+        print(ttt_location_info + "TicTacToe data requested!")
+        if data.split(',')[1] == 'getgamestate':
+            # Joining a game logic
+            # Game does not exist
+            if gm.player_in_game('TicTacToe', current_client.name) == True:
+                if len(gm.get_game_by_name('TicTacToe')) >= 1:
+                    print(f"{ttt_location_info}Player is already playing at least one game, need to select a specific game to rejoin.")
+                    net.send_message(client, "\nPlease select a game to join.\n" + gm.display_games(name='TicTacToe', player_name=current_client.name))
+            # Player is not in any games
+            else: 
+                print(f"{ttt_location_info}TTT: Player is not in any games. Can create a game.")
+                # Should not automatically create a game if the player is not in any games.. 
+                # Ask player first, then create a game if they want to play.
+                net.send_message(client, "\nYou are not part of any games.\nWould you like to create a new TicTacToe game?\nEnter -1 to create, or 0 to ignore.")
+            return
     timer = 0
 
 def handle_battleship(cmds: str, current_client: Client) -> None:
@@ -304,34 +330,7 @@ def handle_battleship(cmds: str, current_client: Client) -> None:
         # print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
         # net.send_message(client, battleship_board)
         # s.print_w_dots(f'Gameboard sent to player {client}')
-    elif decoded_data.startswith('bal '):
-        """
-        Gets and changes client's balance.
-        The second parameter is added to the value of the client's balance.
-        Use 0 to simply get the balance.
-        """
-        command_data = decoded_data.split(' ')
-        current_client.money += int(command_data[1])
-        net.send_message(client, str(current_client.money))
-
-    elif decoded_data.startswith('ttt'):
-        ttt_game = None
-        ttt_location_info = s.set_cursor_str(random.randint(0, 100), random.randint(0, 40)) + random.choice([s.COLORS.dispBLUE, s.COLORS.dispGREEN, s.COLORS.dispRED]) # just throw the information somewhere on the screen
-        print(ttt_location_info + "TicTacToe data requested!")
-        if decoded_data.split(',')[1] == 'getgamestate':
-            # Joining a game logic
-            # Game does not exist
-            if gm.player_in_game('TicTacToe', current_client.name) == True:
-                if len(gm.get_game_by_name('TicTacToe')) >= 1:
-                    print(f"{ttt_location_info}Player is already playing at least one game, need to select a specific game to rejoin.")
-                    net.send_message(client, "\nPlease select a game to join.\n" + gm.display_games(name='TicTacToe', player_name=current_client.name))
-            # Player is not in any games
-            else: 
-                print(f"{ttt_location_info}TTT: Player is not in any games. Can create a game.")
-                # Should not automatically create a game if the player is not in any games.. 
-                # Ask player first, then create a game if they want to play.
-                net.send_message(client, "\nYou are not part of any games.\nWould you like to create a new TicTacToe game?\nEnter -1 to create, or 0 to ignore.")
-            return
+    
 def handle_ttt(cmds: str, current_client: Client) -> None:
     """
     Handles all TicTacToe requests from the player.
