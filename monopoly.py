@@ -417,16 +417,8 @@ def unittest():
     players[1].buy(15, board)
     players[1].buy(25, board)
     players[1].buy(35, board)
-    players[2].buy(12, board)
-    players[2].buy(28, board)
-    players[0].buy(1, board)
-    players[0].buy(3, board)
-    players[1].buy(5, board)
-    players[1].buy(15, board)
-    players[1].buy(25, board)
-    players[1].buy(35, board)
-    players[2].buy(12, board)
-    players[2].buy(28, board)
+    # players[3].buy(12, board)
+    # players[3].buy(28, board)
 
 #wipes the bottom of the screen where the player does all of their input
 def bottom_screen_wipe():
@@ -596,9 +588,9 @@ def request_roll() -> str:
     bottom_screen_wipe()
     if(players[turn].order != -1): # If player is not bankrupt
         player_color = COLORS.playerColors[turn]
+        output = get_gameboard()
         update_history(player_color + f"{players[turn].name}'s turn")
         print_commands()
-        output = get_gameboard()
         output += ss.set_cursor_str(0, 36) + "Press enter to roll dice."
         return output
     else:
