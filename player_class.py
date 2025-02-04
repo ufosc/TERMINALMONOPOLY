@@ -1,16 +1,18 @@
-class Player: 
+class MonopolyPlayer: 
     """
     Player class for Monopoly game\n
     Contains player data.\n
     """
-    def __init__(self, cash:int, order:int) -> None:
+    def __init__(self, cash:int, order:int, name: str) -> None:
         self.cash = cash
         self.properties = []
         self.order = order
         self.location = 0
         self.jail = False
-        self.jailcards = 0
-        self.name = "Player " + str(order + 1)
+        self.jail_cards = 0
+        self.name = name if name != "" else "Player " + str(order)
+        self.jail_turns = 0
+        self.repeat_offender = 0
     """
     Player cash\n
     @cash: int\n
@@ -56,17 +58,45 @@ class Player:
         @amount: int\n
         """
         self.cash += amount
-    def jail(self) -> None:
+    def go_to_jail(self) -> None:
         """
         Go to jail\n
         """
         self.location = 10
         self.jail = True
+        self.jail_turns = 0
+        self.repeat_offender += 1
     def leave_jail(self) -> None:
         """
         Leave jail\n
         """
         self.jail = False
+        self.jail_turns = 0
+    def attempt_jail_roll(self, dice: tuple) -> tuple:
+        """
+        Attempt to leave jail by rolling doubles
+        Returns (left_jail: bool, reason: str)
+        """
+        self.jail_turns += 1
+        if dice[0] == dice[1]:
+            self.leave_jail()
+            return True, "doubles"
+        elif self.jail_turns == 3:
+            self.pay_jail_fine()
+            return True, "third_turn"
+        return False, ""
+    def pay_jail_fine(self) -> None:
+        """
+        Pay jail fine of $50
+        """
+        self.pay(50 * self.repeat_offender)
+        self.leave_jail()
+    def use_jail_card(self) -> None:
+        """
+        Use jail card\n
+        """
+        self.jail_cards -= 1
+        self.leave_jail()
 
     def __str__(self) -> str:
-        return f"Player {self.order}"
+        return self.name

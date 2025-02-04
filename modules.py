@@ -7,8 +7,35 @@ import networking as net
 import keyboard
 import time
 
-def calculator() -> str:
-    """A simple calculator module that can perform basic arithmetic operations."""
+calculator_history_queue = []
+calculator_history_current_capacity = 15
+
+def calculator(active_terminal) -> str:
+    # Helper function that contructs terminal printing.
+    def calculator_terminal_response(footer_option: int) -> str:
+        calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
+        footer_options = ["Awaiting an equation...\nPress 'e' to exit the calculator terminal.", 
+                      s.COLORS.BLUE+"Type 'calc' to begin the calculator!", 
+                      s.COLORS.RED+"Equation either malformed or undefined! Try again!\nPress 'e' to exit the calculator terminal"+s.COLORS.RESET]
+        response = calculator_header
+        for i in range(len(calculator_history_queue)-1, -1, -1):
+            response += calculator_history_queue[i][0]
+        response += '\n' + footer_options[footer_option]
+        
+        return response
+    
+    #Helper function to update calculator history
+    def update_history(equation: str) -> None:
+        global calculator_history_current_capacity
+
+        numLines = (len(equation)//75) + 1
+        while(numLines > calculator_history_current_capacity):
+            calculator_history_current_capacity += calculator_history_queue[0][1]
+            calculator_history_queue.pop(0)
+        
+        calculator_history_current_capacity -= numLines
+        calculator_history_queue.append((equation, numLines))
+
     #Uses recursion to calculate.
     def calculate(equation: str) -> float:
         for i in range(0, len(equation)-1):
@@ -53,43 +80,51 @@ def calculator() -> str:
         
         return float(equation)
 
-    response = '\nCALCULATOR TERMINAL\n' 
-    digit_result = 0
-    print("\r", end='')
-    equation = input(s.COLORS.GREEN)
-    if(equation == "e"):
-        return equation
-    
-    #Trims unnecessary spaces and pads operators with spaces
-    equation = equation.replace(" ", "")
-    for op in ['+', '-', '*', '/', '%', '^']:
-        equation = equation.replace(op, " " + op + " ")
-    
-    #Removes spaces from negative number
-    if(len(equation) > 1 and equation[1] == '-'):
-        equation = "-" + equation[3:]
+    # Initial comment in active terminal
+    ss.update_quadrant(active_terminal, calculator_terminal_response(0), padding=True)
+    # All other work is done on the work line (bottom of the screen)
+    while True:
+            
+        response = '\nCALCULATOR TERMINAL\n' 
+        digit_result = 0
+        print("\r", end='')
+        equation = input(s.COLORS.GREEN)
+        print(s.COLORS.RESET, end="")
+        if(equation == "e"):
+            ss.update_quadrant(active_terminal, calculator_terminal_response(1), padding=True)
+            break
 
-    try:
-        digit_result = calculate(equation)
-    except:
-        return "error"
-        
-    responseEQ = f'{equation} = {digit_result}'
+        #Trims unnecessary spaces and pads operators with spaces
+        equation = equation.replace(" ", "")
+        for op in ['+', '-', '*', '/', '%', '^']:
+            equation = equation.replace(op, " " + op + " ")
+        #Removes spaces from negative number
+        if(len(equation) > 1 and equation[1] == '-'):
+            equation = "-" + equation[3:]
 
-    #There are 75 columns for each terminal, making any string longer than 75 characters overflow.
-    numOverflowingChar = len(responseEQ) - 75
-    lineNumber = 0
-    wrappedResponse = ""
-    while(numOverflowingChar > 0):
-        wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1))] + '\n'
-        lineNumber = lineNumber + 1
-        numOverflowingChar = numOverflowingChar - 75
-    
-    wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1)) + numOverflowingChar] + '\n'
-    #response += wrappedResponse
+        try:
+            digit_result = calculate(equation)
+            responseEQ = f'{equation} = {digit_result}'
 
-    print(s.COLORS.RESET, end='')
-    return wrappedResponse
+            #There are 75 columns for each terminal, making any string longer than 75 characters overflow.
+            numOverflowingChar = len(responseEQ) - 75
+            lineNumber = 0
+            wrappedResponse = ""
+            while(numOverflowingChar > 0):
+                wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1))] + '\n'
+                lineNumber = lineNumber + 1
+                numOverflowingChar = numOverflowingChar - 75
+            
+            wrappedResponse += responseEQ[(75*lineNumber):(75*(lineNumber + 1)) + numOverflowingChar] + '\n'
+            #response += wrappedResponse
+
+            player_equation = wrappedResponse
+
+            print(s.COLORS.RESET, end='')
+            update_history(player_equation)
+            ss.update_quadrant(active_terminal, calculator_terminal_response(0))
+        except:
+            ss.update_quadrant(active_terminal, calculator_terminal_response(2), padding=True)
 
 def list_properties() -> str:
     """
@@ -128,9 +163,10 @@ def attack():
 def stocks():
     pass
 
-def ttt_handler(server: Socket, active_terminal: int):
-    net.send_message(server, 'ttt,getgamestate')
+def ttt_handler(server: Socket, active_terminal: int, player_id: int) -> None:
+    net.send_message(server, f'{player_id}ttt,getgamestate')
     time.sleep(0.1)
+    ss.update_quadrant(active_terminal, "Waiting for server...", padding=True)
     game_data = net.receive_message(server)
     game_id = None 
 
@@ -146,7 +182,7 @@ def ttt_handler(server: Socket, active_terminal: int):
                 opponent = ss.get_valid_int(prompt=f"Enter the opponent's ID (1-4), not including your ID): ",
                                             min_val=1, max_val=4)-1 # -1 for zero-indexing
 
-                net.send_message(server, f'ttt,joingame,{game_id},{opponent}')
+                net.send_message(server, f'{player_id}ttt,joingame,{game_id},{opponent}')
                 ss.update_quadrant(active_terminal, "Attempting to join game...", padding=True)
                 game_data = net.receive_message(server)
                 if 'select a game' in game_data or (('X' in game_data and 'O' in game_data and (not '▒' in game_data)) or '▒' in game_data):
@@ -161,7 +197,7 @@ def ttt_handler(server: Socket, active_terminal: int):
         ss.update_quadrant(active_terminal, game_data, padding=True)    
         game_id = ss.get_valid_int(prompt='Enter the game id: ', min_val=-1, max_val=10) # 10 is incorrect! temp for now TODO
         # Send the server the game id to join. Should be validated on server side. 
-        net.send_message(server, f'ttt,joingame,{game_id}')
+        net.send_message(server, f'{player_id}ttt,joingame,{game_id}')
 
         # Wait for server to send back the new board
         game_data = net.receive_message(server)
@@ -205,7 +241,7 @@ def ttt_handler(server: Socket, active_terminal: int):
                     # At this point, the client can be sure that they have the
                     # correct game ID and that the move is valid. Thus, we add
                     # the game ID to the move string.
-                    net.send_message(server, f'ttt,move,{game_id},{x}.{y}')
+                    net.send_message(server, f'{player_id}ttt,move,{game_id},{x}.{y}')
                     # receive new board (for display) from server
                     ss.update_quadrant(active_terminal, "Updated board:\n" + net.receive_message(server), padding=True)
                     ss.update_terminal(active_terminal, active_terminal) # reset terminal to normal
@@ -219,8 +255,9 @@ def ttt_handler(server: Socket, active_terminal: int):
                 keyboard.unhook_all()
                 break
 
-def battleship(server: Socket, gamestate: str) -> str:
-    net.send_message(server, 'battleship')
+def battleship_handler(server: Socket, active_terminal: int, player_id: int) -> None:
+    net.send_message(server, f'{player_id}ships')
+    # TODO implement battleship handler
 
 fishing_game_obj = fishing_game() # fishing is played LOCALLY, not over the network
 def fishing(gamestate: str) -> tuple[str, str]:
