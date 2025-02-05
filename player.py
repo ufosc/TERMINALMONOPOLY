@@ -12,7 +12,6 @@ import modules as m
 import networking as net
 
 game_running = False
-is_banker = False
 text_dict = {}
 screen = 'terminal'
 active_terminal = 1
