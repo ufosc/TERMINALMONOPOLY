@@ -544,7 +544,7 @@ def monopoly_controller() -> None:
         print("No players in the game. Not attempting to run Monopoly.")
         return
     sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
-    mply.unittest()
+    #mply.unittest()
     net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.")
     print("Sent gameboard to player 0.")
     last_turn = 0

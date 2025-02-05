@@ -12,7 +12,6 @@ import modules as m
 import networking as net
 
 game_running = False
-is_banker = False
 text_dict = {}
 screen = 'terminal'
 active_terminal = 1
@@ -28,6 +27,7 @@ def get_graphics():
 
 def banker_check():
     temp = False
+    is_banker = False
     while(temp == False):
         choice = input("If you would like to host a game, press b. If you would like to join a game, press p ")
         if(choice == 'b' or choice == 'p'):
