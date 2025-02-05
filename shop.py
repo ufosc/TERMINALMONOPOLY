@@ -1,10 +1,7 @@
-
-
 import screenspace as ss
 import keyboard
 import os
 from style import get_graphics, set_cursor, set_cursor_str, COLORS
-
 
 class FishInventory():
     def __init__(self):
@@ -58,7 +55,7 @@ class Shop():
         
     def sellfish(self, fish):
     # TODO: implement selling properly
-    
+        pass
 
     # TODO: update shop screen in response to input
     def shop_interface(self):
@@ -94,7 +91,6 @@ def main():
     os.system('cls' if os.name == 'nt' else 'clear')
     shop = Shop()
     shop.shop_interface()
-    
     
     
 if __name__ == '__main__':

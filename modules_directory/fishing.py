@@ -1,10 +1,6 @@
 import time
 import random
-import sys
-sys.path.insert(0, '/home/haley/TERMINALMONOPOLY')
 from style import get_graphics, set_cursor, set_cursor_str
-
-
 
 class fishing_game():
     """
@@ -50,7 +46,6 @@ class fishing_game():
         return retval
 
 if __name__ == "__main__":
-    
     import os
     os.system('cls' if os.name == 'nt' else 'clear')
     graphics = get_graphics()
@@ -82,12 +77,6 @@ if __name__ == "__main__":
         retval += set_cursor_str(37,9) + fish_graphic[0:3]
         retval += set_cursor_str(37,10) + fish_graphic[3:6]
         retval += set_cursor_str(37,11) + fish_graphic[6:9]
-        
-        
-        
-        
-        
-        
 
         print(retval)
 
