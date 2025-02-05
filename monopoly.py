@@ -411,6 +411,7 @@ def log_error(error_message: str) -> None:
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
 def unittest():
+    #TODO
     players[0].buy(1, board)
     players[0].buy(3, board)
     players[1].buy(5, board)
@@ -787,7 +788,7 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
     gameboard = s.get_graphics().get('gameboard')
     os.system('cls' if os.name == 'nt' else 'clear')
     
-    unittest()
+    #unittest()
     
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)
