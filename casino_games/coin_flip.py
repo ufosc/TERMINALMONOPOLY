@@ -9,6 +9,13 @@ game_title = "⛁ Coin Flip"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
 
 def play(player, active_terminal, bet):
+    """
+    Coin Flip
+
+    Initializes a simple coin flip for casino.py
+    A very simple base for a new casino_game
+    Returns the wager to be sent to the player
+    """
     score = [0,0,0,0]
 
     graphics = get_graphics()
