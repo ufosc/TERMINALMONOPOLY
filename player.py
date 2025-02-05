@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import socket
 from time import sleep
@@ -9,6 +10,7 @@ import modules as m
 import networking as net
 
 game_running = False
+is_banker = False
 text_dict = {}
 screen = 'terminal'
 active_terminal = 1
@@ -36,7 +38,20 @@ def initialize():
     Returns: None
     """
     global sockets, ADDRESS, PORT
-    os.system("cls")
+    ss.clear_screen()
+    temp = False
+    while(temp == False):
+        choice = input("If you would like to host a game, press b. If you would like to join a game, press p")
+        if(choice == 'b' or choice == 'p'):
+            temp = True
+            if(choice == 'b'):
+                is_banker = True
+        else:
+            ss.clear_screen()
+            print("Invalid choice, try again.")
+    ss.clear_screen()
+    if(is_banker):
+        subprocess.call('start python banker.py', shell=True)
     print("Welcome to Terminal Monopoly, Player!")
     s.print_w_dots("Initializing client socket connection")     
     client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
