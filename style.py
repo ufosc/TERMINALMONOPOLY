@@ -86,20 +86,13 @@ def get_graphics() -> dict:
     Parameters: None
 
     Returns: 
-    Dictionary with the following keys:
-    - 'help' A page of useful information to the player.
-    - 'properties' List of properties in the game.
-    - 'divider' ASCII graphic used throughout gameplay, i.e. printing deed information.
-    - 'skull' ASCII graphic used on a killed terminal.
-    - 'gameboard' The default gameboard. needs to be decoded  with 'unicode_escape' and 'utf-8' 
-    - 'help 2' Displays additional information. 
-    - 'logo' The game logo.
-    - 'history and status' Information about the game history and status.
+    Dictionary with the key names of the graphics and the value of the graphic itself.
+    The graphics are read from the ascii folder, where the key is the filename and the value is the graphic.
     """
     text_dict = {}
     for dir_name, sub_dirs, files in os.walk("./ascii/"):
         for file in files:
-            with open(os.path.join(dir_name, file)) as ascii_text:
+            with open(os.path.join(dir_name, file), encoding='utf-8') as ascii_text:
                 full_file = ascii_text.read()
                 split_file = full_file.splitlines(True)
                 no_header_ascii = ''.join(split_file[1:])

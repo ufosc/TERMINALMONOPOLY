@@ -32,7 +32,10 @@ class Shop():
         self.__pictures.append(self.__shopimages.pop('shop'))
         
     def display_shop(self, selected_index):
-        os.system('cls' if os.name == 'nt' else 'clear')
+        """
+        Display the shop interface with the current selection highlighted.
+        Only called once at the start of the shop interface.
+        """
         print(self.__pictures[0])
         retval = ""
         y = 6
@@ -59,12 +62,10 @@ class Shop():
 
     # TODO: update shop screen in response to input
     def shop_interface(self):
-        
-          
         selected_index = 0
         shopping = True
+        self.display_shop(selected_index)
         while shopping:
-            self.display_shop(selected_index)
             key = keyboard.read_event()
             if key.event_type == "down":
                 if key.name == "w":  # Move up
@@ -79,10 +80,16 @@ class Shop():
                     os.system('cls' if os.name == 'nt' else 'clear')
                     selected_fish = self.fishprices[list(self.fishprices.keys())[selected_index]]
                     
-                    
                     keyboard.read_event()
                 elif key.name == "q":  # Quit shop
                     shopping = False
+                y = 6
+                for i, price in enumerate(self.fishprices.keys()):
+                    if i == selected_index:
+                        print(set_cursor_str(43, y) + f"> {price}: ${self.fishprices[price]}")
+                    else:
+                        print(set_cursor_str(43, y) + f"  {price}: ${self.fishprices[price]}")
+                    y += 1
                     
         os.system('cls' if os.name == 'nt' else 'clear')
                     
