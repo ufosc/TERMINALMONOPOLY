@@ -43,23 +43,23 @@ BREAK_TEXT
 BREAK_TEXT
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X
-X  X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  X 
+X  X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  X
 X X X X X X X X X X X X X X X X X  ______   X X X X X X X X X X X X X X X X
-X  X X X X X X X X X X X X X X  .-"      "-.   X X X X X X X X X X X X X  X 
+X  X X X X X X X X X X X X X X  .-"      "-.   X X X X X X X X X X X X X  X
 X X X X X X X X X     X X X X  /            \   X X X X X X X X X X X X X X
-X  X X X X X X X   _   X X X  |              | X X X X  _  X X X X X X X  X 
+X  X X X X X X X   _   X X X  |              | X X X X  _  X X X X X X X  X
 X X X X X X X X   ( \   X X   |,  .-.  .-.  ,|  X X    / )  X X X X X X X X
-X  X X X X X X X   > "=._     | )(__/  \__)( |     _.=" <  X X X X X X X  X 
+X  X X X X X X X   > "=._     | )(__/  \__)( |     _.=" <  X X X X X X X  X
 X X X X X X X X   (_/"=._"=._ |/     /\     \| _.="_.="\_)  X X X X X X X X
-X  X X X X X X X         "=._ (_     ^^     _)"_.="        X X X X X X X  X 
+X  X X X X X X X         "=._ (_     ^^     _)"_.="        X X X X X X X  X
 X X X X X X X X X X X X X    "=\__|IIIIII|__/="   X X X X X X X X X X X X X
-X  X X X X X X X X X X X    _.="| \IIIIII/ |"=._   X X X X X X X X X X X  X 
+X  X X X X X X X X X X X    _.="| \IIIIII/ |"=._   X X X X X X X X X X X  X
 X X X X X X X X   _     _.="_.="\          /"=._"=._     _  X X X X X X X X
-X  X X X X X X   ( \_.="_.="     `--------`     "=._"=._/ )  X X X X X X  X 
+X  X X X X X X   ( \_.="_.="     `--------`     "=._"=._/ )  X X X X X X  X
 X X X X X X X X   > _.="      X X X X X X X X X     "=._ <    X X X X X X X
-X  X X X X X X X (_/   X X X X X X X X X X X X X X X X  \_)  X X X X X X  X 
+X  X X X X X X X (_/   X X X X X X X X X X X X X X X X  \_)  X X X X X X  X
 X X X X X X X X     X X X X X X X X X X X X X X X X X X     X X X X X X X X
-X  X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  X 
+X  X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  X
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 BREAK_TEXT
 ┌─────────────────────────────────────────────────────────────────────────────
@@ -161,9 +161,9 @@ BREAK_TEXT
 BREAK_TEXT
 ┼─────────────────────────────────────────┼─
 │                COMMANDS                 │ 
-│                                         │ 
-│                                         │ 
-│                                         │ 
+│ info <number> - display information     │ 
+│   about property                        │ 
+│ bal - display balance information       │ 
 │                                         │ 
 │                                         │ 
 │                                         │ 
@@ -432,4 +432,25 @@ BREAK_TEXT
                    █                                  █                    
                    █                                  █                    
                    █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█                    
+BREAK_TEXT
+         __             __                           __        __
+   _____/ /_____  _____/ /__   ____ ___  ____ ______/ /_____  / /_
+  / ___/ __/ __ \/ ___/ //_/  / __ `__ \/ __ `/ ___/ //_/ _ \/ __/
+ (__  ) /_/ /_/ / /__/ ,<    / / / / / / /_/ / /  / ,< /  __/ /_
+/____/\__/\____/\___/_/|_|  /_/ /_/ /_/\__,_/_/  /_/|_|\___/\__/
+
+			=== HELP (STOCKS) ===
+
+Welcome to the Stock Market Module!
+This help screen will assist you with all the commands
+available in the StockModule interface.
+
+------------------->>>    Command List:    <<<-----------------------
+		help stocks - display help messages for stock market
+		w - move stock selection arrow or # of stocks up
+		s - move stock selection arrow down or # of stocks down
+		shift + b - buy selected stock
+		shift + s - sell selected stock
+		enter - confirm selection
+		g - display selected stock graph
 BREAK_TEXT

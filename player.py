@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import socket
 from time import sleep
@@ -10,6 +11,7 @@ import networking as net
 import name_validation
 
 game_running = False
+is_banker = False
 text_dict = {}
 screen = 'terminal'
 active_terminal = 1
@@ -27,9 +29,6 @@ def initialize():
     """
     Initialize client receiver and sender network sockets, attempts to connect to a Banker by looping, then handshakes banker.
 
-    ### This may be unnecessary: fix as necessary.
-    Creates two sockets, a receiver and sender at the same address.
-
     Updates the ADDRESS and PORT class variables by taking in player input. Calls itself until a successful connection. 
     Then calls handshake() to confirm player is connected to Banker and not some other address. 
 
@@ -37,7 +36,21 @@ def initialize():
     Returns: None
     """
     global sockets, ADDRESS, PORT
-    os.system("cls")
+    ss.clear_screen()
+    has_passed_banker_query = False
+    is_banker = False
+    while(not has_passed_banker_query):
+        choice = input("If you would like to host a game, press b. If you would like to join a game, press p")
+        if(choice == 'b' or choice == 'p'):
+            has_passed_banker_query = True
+            if(choice == 'b'):
+                is_banker = True
+        else:
+            ss.clear_screen()
+            print("Invalid choice, try again.")
+    ss.clear_screen()
+    if(is_banker):
+        subprocess.call('start python banker.py', shell=True)
     print("Welcome to Terminal Monopoly, Player!")
     s.print_w_dots("Initializing client socket connection")     
     client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
@@ -225,7 +238,9 @@ def get_input() -> None:
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
                 skip_initial_input = True
                 continue
-            if stdIn.startswith("help"):
+            if stdIn == "helpstocks" or stdIn == "help stocks":
+                ss.update_quadrant(active_terminal, text_dict.get("helpstocks"), padding=False)
+            elif stdIn.startswith("help"):
                 if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
                     ss.update_quadrant(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
                 else: 
@@ -286,7 +301,7 @@ def get_input() -> None:
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
             elif stdIn == "casino":
                 import casino
-                casino.module(active_terminal)
+                casino.module(active_terminal, sockets[1])
             else:
                 # ss.overwrite('\n' + ' ' * ss.WIDTH)
                 ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
