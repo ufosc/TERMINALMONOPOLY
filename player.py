@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import socket
 from time import sleep
@@ -9,12 +10,14 @@ import modules as m
 import networking as net
 
 game_running = False
+is_banker = False
 text_dict = {}
 screen = 'terminal'
 active_terminal = 1
 sockets = (socket.socket, socket.socket)
 ADDRESS = ""
 PORT = 0
+player_id: int
 
 def get_graphics():
     """Grab text from ascii.txt and split into dictionary"""
@@ -35,7 +38,20 @@ def initialize():
     Returns: None
     """
     global sockets, ADDRESS, PORT
-    os.system("cls")
+    ss.clear_screen()
+    temp = False
+    while(temp == False):
+        choice = input("If you would like to host a game, press b. If you would like to join a game, press p")
+        if(choice == 'b' or choice == 'p'):
+            temp = True
+            if(choice == 'b'):
+                is_banker = True
+        else:
+            ss.clear_screen()
+            print("Invalid choice, try again.")
+    ss.clear_screen()
+    if(is_banker):
+        subprocess.call('start python banker.py', shell=True)
     print("Welcome to Terminal Monopoly, Player!")
     s.print_w_dots("Initializing client socket connection")     
     client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
@@ -68,9 +84,11 @@ def initialize():
             initialize()
 
     sleep(1)
-    confirmation_msg = net.receive_message(sockets[0]) # sometimes gets hung up for player 2 TODO: Fix this
+    confirmation_msg = net.receive_message(sockets[0])
     if 'Game Start!' in confirmation_msg:
-        print(f"You are player {confirmation_msg[-1]}.\nEnter to continue...")
+        global player_id
+        player_id = confirmation_msg[-1]
+        print(f"Your player id is: {player_id}.\nEnter to continue...")
         input()
 
         s.print_w_dots("Attempting to connect to Banker's receiver...")
@@ -153,11 +171,12 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 gameboard.replace("ENDOFTURN", "")
                 ss.clear_screen()
                 print(gameboard)
-                print("End of turn. Press enter to return to terminal.")
+                # ss.set_cursor(0, ss.INPUTLINE)
+                # print("End of turn. Press enter to return to terminal.")
                 screen = 'terminal'
-                input()
                 ss.initialize_terminals()
                 ss.update_terminal(active_terminal, active_terminal)
+                ss.set_cursor(0, ss.INPUTLINE)
 
 def get_input() -> None:
     """
@@ -167,8 +186,9 @@ def get_input() -> None:
     Parameters: None
     Returns: None
     """
-    global active_terminal, screen
+    global active_terminal, screen, player_id
     stdIn = ""
+    skip_initial_input = False
 
     fishing_gamestate = 'start'
 
@@ -177,32 +197,34 @@ def get_input() -> None:
 
             # I turned off my brain while writing this part. The player can essentially send any command here
             # and it is only slightly regulated by the server. Better client-side handling is needed. TODO
-
-            stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
+            if not skip_initial_input:
+                stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
+            skip_initial_input = False
             if stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump back on the console line instead of printing anew
                 ss.overwrite(COLORS.RESET + "\r")
             elif stdIn == "roll":
-                net.send_message(sockets[1], 'mply,roll')
+                net.send_message(sockets[1], f'{player_id}mply,roll')
             elif stdIn == "b":
-                net.send_message(sockets[1], 'mply,trybuy')
+                net.send_message(sockets[1], f'{player_id}mply,trybuy')
             elif stdIn == "p":
-                net.send_message(sockets[1], 'mply,propmgmt')
+                net.send_message(sockets[1], f'{player_id}mply,propmgmt')
                 property_id = ss.get_valid_int("Enter the ID of a property you own: ",1, 40, [0,2,4,7,10,17,20,22,30,33,36,38])
-                net.send_message(sockets[1], f'mply,propmgmt,{property_id}')
+                net.send_message(sockets[1], f'{player_id}mply,propmgmt,{property_id}')
 
             elif stdIn == "d":
-                net.send_message(sockets[1], 'mply,deed')
+                net.send_message(sockets[1], f'{player_id}mply,deed')
                 property_id = ss.get_valid_int("Enter a property ID: ",1, 40, [0,2,4,7,10,17,20,22,30,33,36,38])
-                net.send_message(sockets[1], f'mply,deed,{property_id}')
+                net.send_message(sockets[1], f'{player_id}mply,deed,{property_id}')
             elif stdIn == '':
-                net.send_message(sockets[1], 'mply,continue')
+                net.send_message(sockets[1], f'{player_id}mply,continue')
             elif stdIn == 'e':
-                net.send_message(sockets[1], 'mply,endturn')
+                net.send_message(sockets[1], f'{player_id}mply,endturn')
 
         elif screen == 'terminal':
             stdIn = input(COLORS.WHITE+'\r').lower().strip()
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
+                skip_initial_input = True
                 continue
             if stdIn == "helpstocks" or stdIn == "help stocks":
                 ss.update_quadrant(active_terminal, text_dict.get("helpstocks"), padding=False)
@@ -213,7 +235,7 @@ def get_input() -> None:
                     ss.update_quadrant(active_terminal, text_dict.get('help'), padding=True)
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
             elif stdIn == "game": # Simply displays the game board. Does not give player control.
-                net.send_message(sockets[1], 'request_board')
+                net.send_message(sockets[1], f'{player_id}request_board')
                 board_data = net.receive_message(sockets[1])
                 ss.clear_screen()
                 print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
@@ -223,7 +245,7 @@ def get_input() -> None:
             elif stdIn == "calc":
                 m.calculator(active_terminal)
             elif stdIn == "bal":
-                net.send_message(sockets[1], 'bal')
+                net.send_message(sockets[1], f'{player_id}bal')
                 ss.update_quadrant(active_terminal, net.receive_message(sockets[1]).center(ss.cols), padding=True)
             elif stdIn == "list":
                 ss.update_quadrant(active_terminal, m.list_properties(), padding=False)
@@ -247,17 +269,7 @@ def get_input() -> None:
                 # On empty input make sure to jump up one console line
                 ss.overwrite("\r")
             elif stdIn == "ships":
-                # Access game from banker
-                net.send_message(sockets[1], 'ships')
-                sleep(0.1)
-                board_data = net.receive_message(sockets[1])
-                ss.update_quadrant(active_terminal, board_data, padding=False)
-
-                # Get current gamestate and respond accordingly
-                # gamestate = net.receive_message(sockets[1])
-
-                # if gamestate == f'{name}\'s turn to place ships!':
-                #     pass
+                m.battleship_handler(sockets[1], active_terminal, player_id)
                 
             elif stdIn == "fish":
                 fishing_gamestate = 'start'
@@ -267,7 +279,7 @@ def get_input() -> None:
                 ss.set_cursor(0, ss.INPUTLINE)
 
             elif stdIn == "ttt" or stdIn == "tictactoe":
-                m.ttt_handler(sockets[1], active_terminal)
+                m.ttt_handler(sockets[1], active_terminal, player_id)
 
             elif stdIn.startswith('reset'):
                 ss.calibrate_screen('player')
@@ -277,7 +289,7 @@ def get_input() -> None:
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
             elif stdIn == "casino":
                 import casino
-                casino.module(active_terminal)
+                casino.module(active_terminal, sockets[1])
             else:
                 # ss.overwrite('\n' + ' ' * ss.WIDTH)
                 ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
@@ -296,7 +308,10 @@ if __name__ == "__main__":
     if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
         initialize()
         ss.make_fullscreen()
-        ss.calibrate_screen('player')
+        # ss.calibrate_screen('player')
+    
+    ss.make_fullscreen()
+    ss.auto_calibrate_screen()
 
     ss.clear_screen()
     ss.initialize_terminals()

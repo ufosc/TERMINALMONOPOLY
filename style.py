@@ -2,6 +2,8 @@
 ## Use these in place of colorama's Fore and Back color literals.
 ## Should add a "compatible" color set for terminals that cannot play nice with RGB values.
 ## [https://en.wikipedia.org/wiki/ANSI_escape_code] for more info on ANSI escape codes.
+import os
+
 class COLORS:
     BROWN = "\033[38;2;138;96;25m"
     LIGHTBLUE = "\033[38;2;43;249;255m"
@@ -84,45 +86,31 @@ def get_graphics() -> dict:
     Parameters: None
 
     Returns: 
-    Dictionary with the following keys:
-    - 'help' A page of useful information to the player.
-    - 'properties' List of properties in the game.
-    - 'divider' ASCII graphic used throughout gameplay, i.e. printing deed information.
-    - 'skull' ASCII graphic used on a killed terminal.
-    - 'gameboard' The default gameboard. needs to be decoded  with 'unicode_escape' and 'utf-8' 
-    - 'help 2' Displays additional information. 
-    - 'logo' The game logo.
-    - 'history and status' Information about the game history and status.
+    Dictionary with the key names of the graphics and the value of the graphic itself.
+    The graphics are read from the ascii folder, where the key is the filename and the value is the graphic.
     """
-    with open("ascii.txt", encoding='utf-8') as f:
-        text = f.read().split("BREAK_TEXT")
-    text_dict = {'help': text[0].rstrip(),
-                 'properties': text[1],
-                 'divider': text[2].lstrip(),
-                 'skull': text[3].lstrip(),
-                 'gameboard': bytes(text[4].lstrip(), 'utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8'),
-                 'help 2': center_lines(text[5], 75),
-                 'logo': text[6],
-                 'history and status': text[7],
-                 'commands': text[8],
-                 'chance cards text': text[9].strip(),
-                 'community chest text': text[10].strip(),
-                 'popup 1': text[11].strip(),
-                 'terminals': text[12].strip(),
-                 'fishing 1 idle': text[13].lstrip(),
-                 'fishing 1 win': text[14].lstrip(),
-                 'fishing 1 carp': text[15].replace('\n', ''),
-                 'fishing 1 bass': text[16].replace('\n', ''),
-                 'fishing 1 salmon': text[17].replace('\n', ''),
-                 'popup 2': text[18],
-                 'casino_lose': text[19],
-                 'casino_win': text[20],
-                 'casino_tie': text[21],
-                 'coin_flip_heads': text[22],
-                 'coin_flip_middle': text[23],
-                 'coin_flip_tails': text[24],
-                 'helpstocks':text[25].strip('\n')
-                 } 
+    text_dict = {}
+    for dir_name, sub_dirs, files in os.walk("./ascii/"):
+        for file in files:
+            with open(os.path.join(dir_name, file), encoding='utf-8') as ascii_text:
+                full_file = ascii_text.read()
+                split_file = full_file.splitlines(True)
+                no_header_ascii = ''.join(split_file[1:])
+                match split_file[0].strip():
+                    case "GAMEBD":
+                        text_dict[file] = bytes(no_header_ascii, 'utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8')
+                    case "CENTER":
+                        text_dict[file] = center_lines(no_header_ascii, 75)
+                    case "NWLCUT":
+                        text_dict[file] = no_header_ascii.replace('\n', '')
+                    case "NSTRIP":
+                        text_dict[file] = no_header_ascii.strip()
+                    case "LSTRIP":
+                        text_dict[file] = no_header_ascii.lstrip()
+                    case "RSTRIP":
+                        text_dict[file] = no_header_ascii.rstrip()
+                    case _:
+                        text_dict[file] = '\n' + full_file
     return text_dict
 
 def set_cursor(x: int, y: int) -> None:

@@ -84,7 +84,7 @@ def start_server() -> socket.socket:
     s.print_w_dots("")
     # Send a message to each client that the game is starting, allowing them to see their terminals screen
     for i in range(len(clients)): 
-        net.send_message(clients[i].socket, f"Game Start!{num_players} {i+1}")
+        net.send_message(clients[i].socket, f"Game Start!{num_players} {i}")
         sleep(0.5)
     return server_socket
 
@@ -227,40 +227,72 @@ def set_unittest() -> None:
             print("Skipping unit tests.")
             return
     
-def handle_data(data: bytes, client: socket.socket) -> None:
+def handle_data(data: str, client: socket.socket) -> None:
     """
     Handles all data received from player sockets. 
     
     Parameters:
         data (str): Data received from player sockets. 
+        client (socket.socket): The client socket that sent the data.
     
     Returns:
         None
     """
     global timer
-    current_client = get_client_by_socket(client)
-    decoded_data = data
+    current_client = None
+    try:
+        current_client = clients[int(data[0])] # Assume the data is prefixed by the client number AKA player_id.
+        data = data[1:]
+    except:
+        current_client = get_client_by_socket(client) # This is a backup in case the client data is not prefixed by client.
+        print(f"{ss.set_cursor_str(0, 20)}Failed to get client from data. {s.COLORS.RED}Data was not prefixed by client.{s.COLORS.RESET}: {data}")
 
-    print(f"Received data from {current_client.name}: {data}")
+    print(f"{ss.set_cursor_str(0, random.randint(0, 40))}Received data from {current_client.name}: {data}")
     
-    if decoded_data == 'request_board': 
+    if data == 'request_board': 
         net.send_message(client, mply.get_gameboard())
         s.print_w_dots(f'Gameboard sent to player {client}')
     
-    elif decoded_data.startswith('request_info'):
+    elif data.startswith('request_info'):
         pass
 
-    elif decoded_data.startswith('mply'):
-        monopoly_game(current_client, decoded_data)
+    elif data.startswith('mply'):
+        monopoly_game(current_client, data)
 
-    elif decoded_data == 'ships':
-        handle_battleship(decoded_data, current_client)
+    elif data == 'ships':
+        handle_battleship(data, current_client)
 
-    elif decoded_data.startswith('ttt'):
-        handle_ttt(decoded_data, current_client)
+    elif data.startswith('ttt'):
+        handle_ttt(data, current_client)
 
-    elif decoded_data == 'bal':
-        net.send_message(client, f'Your balance is: {current_client.money}')
+    elif data.startswith('bal '):
+        """
+        Gets and changes client's balance.
+        The second parameter is added to the value of the client's balance.
+        Use 0 to simply get the balance.
+        """
+        command_data = data.split(' ')
+        current_client.money += int(command_data[1])
+        net.send_message(client, str(current_client.money))
+
+    elif data.startswith('ttt'):
+        ttt_game = None
+        ttt_location_info = s.set_cursor_str(random.randint(0, 100), random.randint(0, 40)) + random.choice([s.COLORS.dispBLUE, s.COLORS.dispGREEN, s.COLORS.dispRED]) # just throw the information somewhere on the screen
+        print(ttt_location_info + "TicTacToe data requested!")
+        if data.split(',')[1] == 'getgamestate':
+            # Joining a game logic
+            # Game does not exist
+            if gm.player_in_game('TicTacToe', current_client.name) == True:
+                if len(gm.get_game_by_name('TicTacToe')) >= 1:
+                    print(f"{ttt_location_info}Player is already playing at least one game, need to select a specific game to rejoin.")
+                    net.send_message(client, "\nPlease select a game to join.\n" + gm.display_games(name='TicTacToe', player_name=current_client.name))
+            # Player is not in any games
+            else: 
+                print(f"{ttt_location_info}TTT: Player is not in any games. Can create a game.")
+                # Should not automatically create a game if the player is not in any games.. 
+                # Ask player first, then create a game if they want to play.
+                net.send_message(client, "\nYou are not part of any games.\nWould you like to create a new TicTacToe game?\nEnter -1 to create, or 0 to ignore.")
+            return
     timer = 0
 
 def handle_battleship(cmds: str, current_client: Client) -> None:
@@ -293,6 +325,12 @@ def handle_battleship(cmds: str, current_client: Client) -> None:
     else: # should only appear if player is in multiple games
             net.send_message(current_client.socket, gm.display_games())
 
+        # battleship_board =  + battleship_game.popup("Players: " + str(gm.get_game_by_id(0).other_data.player_names))
+        # print(battleship_board)
+        # print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
+        # net.send_message(client, battleship_board)
+        # s.print_w_dots(f'Gameboard sent to player {client}')
+    
 def handle_ttt(cmds: str, current_client: Client) -> None:
     """
     Handles all TicTacToe requests from the player.
@@ -318,7 +356,9 @@ def handle_ttt(cmds: str, current_client: Client) -> None:
         else: 
             print(f"{ttt_location_info}TTT: Player is not in any games. Can create a game.")
             # Ask player first, then create a game if they want to play.
+            sleep(1)
             net.send_message(current_client.socket, "\nYou are not part of any games.\nWould you like to create a new TicTacToe game?\nEnter -1 to create, or 0 to ignore.")
+            net.send_notif(current_client.socket, "You are not part of any games. Would you like to create a new TicTacToe game? Enter -1 to create, or 0 to ignore.")
         return
 
     if cmds.split(',')[1] == 'joingame':
@@ -504,17 +544,18 @@ def monopoly_controller() -> None:
         print("No players in the game. Not attempting to run Monopoly.")
         return
     sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
+    mply.unittest()
     net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.")
-    print("Sent gameboard to player 1.")
+    print("Sent gameboard to player 0.")
     last_turn = 0
     while True:
         sleep(1)
         if mply.turn != last_turn:
-            print(ss.set_cursor_str(0, 20) + f"Player {mply.turn} is up.")
+            ss.set_cursor(0, 20)
             last_turn = mply.turn
             net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.")
             clients[mply.turn].can_roll = True
-            print(f"Sent gameboard to player {mply.turn}.")
+            print(f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
 
 def monopoly_game(client: Client = None, cmd: str = None) -> None:
     """
@@ -577,7 +618,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
 
 if __name__ == "__main__":
 
-    os.system("cls")
+    os.system('cls' if os.name == 'nt' else 'clear')
     print("Welcome to Terminal Monopoly, Banker!")
 
     set_unittest() 
