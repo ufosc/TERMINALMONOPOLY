@@ -1,7 +1,9 @@
 import os
 import subprocess
+import shlex
 import sys
 import socket
+import platform
 from time import sleep
 import style as s
 from style import COLORS
@@ -11,7 +13,6 @@ import networking as net
 import name_validation
 
 game_running = False
-is_banker = False
 text_dict = {}
 screen = 'terminal'
 active_terminal = 1
@@ -25,9 +26,43 @@ def get_graphics():
     global text_dict
     text_dict = s.get_graphics()
 
+def banker_check():
+    has_passed_banker_query = False
+    is_banker = False
+    while(not has_passed_banker_query):
+        choice = input("If you would like to host a game, press b. If you would like to join a game, press p ")
+        if(choice == 'b' or choice == 'p'):
+            has_passed_banker_query = True
+            if(choice == 'b'):
+                is_banker = True
+        else:
+            ss.clear_screen()
+            print("Invalid choice, try again.")
+    ss.clear_screen()
+    if(is_banker == False):
+        return
+    current_os = platform.system()
+    if(current_os == "Windows"):
+        subprocess.call('start python banker.py', shell=True)
+    elif(current_os == "Darwin"):
+        cmd = "python banker.py"
+        subprocess.run(
+            shlex.split(
+            f"""osascript -e 'tell app "Terminal" to activate' -e 'tell app "Terminal" to do script "{cmd}" '"""
+            )
+        )   
+    elif(current_os == "Linux"):
+        subprocess.call(['gnome-terminal', '-x', 'python banker.py'])
+    else:
+        print("Current OS not supported to open new window, try running 'python banker.py' directly")
+    
+
 def initialize():
     """
     Initialize client receiver and sender network sockets, attempts to connect to a Banker by looping, then handshakes banker.
+
+    ### This may be unnecessary: fix as necessary.
+    Creates two sockets, a receiver and sender at the same address.
 
     Updates the ADDRESS and PORT class variables by taking in player input. Calls itself until a successful connection. 
     Then calls handshake() to confirm player is connected to Banker and not some other address. 
@@ -37,20 +72,7 @@ def initialize():
     """
     global sockets, ADDRESS, PORT
     ss.clear_screen()
-    has_passed_banker_query = False
-    is_banker = False
-    while(not has_passed_banker_query):
-        choice = input("If you would like to host a game, press b. If you would like to join a game, press p")
-        if(choice == 'b' or choice == 'p'):
-            has_passed_banker_query = True
-            if(choice == 'b'):
-                is_banker = True
-        else:
-            ss.clear_screen()
-            print("Invalid choice, try again.")
-    ss.clear_screen()
-    if(is_banker):
-        subprocess.call('start python banker.py', shell=True)
+    banker_check()
     print("Welcome to Terminal Monopoly, Player!")
     s.print_w_dots("Initializing client socket connection")     
     client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
