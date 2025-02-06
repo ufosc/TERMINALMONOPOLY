@@ -8,6 +8,7 @@ from style import COLORS
 import screenspace as ss
 import modules as m
 import networking as net
+import name_validation
 
 game_running = False
 is_banker = False
@@ -58,7 +59,20 @@ def initialize():
     ADDRESS = input("Enter Host IP: ")
     PORT = input("Enter Host Port: ")
 
-    name = input("Enter your name: ")
+    name_validated = False
+    print("Enter a name that meets the following criteria:")
+    print("1. 8 characters or less")
+    print("2. only contains alpha numeric characters or spaces")
+    name = input("Player name: ")
+    while not name_validated:
+        name_validated = name_validation.validate_name(name)
+        if not name_validated:
+            print("The input name was not valid")
+            name = input("Player name: ")
+
+    print(f"Welcome, {name}!")
+
+
 
     s.print_w_dots("Press enter to connect to the server...", end='')
     input()
