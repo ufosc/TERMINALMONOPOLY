@@ -199,33 +199,32 @@ def set_unittest() -> None:
         STARTING_CASH = ss.get_valid_int("Enter the starting cash: ")
         return
     
-    match test:
-        case 1:
-            play_monopoly = True
-            num_players = 1
-            STARTING_CASH = 2000
-            gm.add_game(gm.Game('Fake Game', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
-        case 2:
-            play_monopoly = True
-            num_players = 2
-            STARTING_CASH = 1500
-            gm.add_game(gm.Game('Battleship', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
-            gm.add_game(gm.Game('Battleship', [Client(None, None, 0, [])] * 2, 'board', 'other_data'))
-            gm.add_game(gm.Game('Battleship', [Client(None, "Name", 0, [])] * 3, 'board', 'other_data'))
-            gm.add_game(gm.Game('TicTacToe', [Client(None, "nada", 0, [])] * 2, 'board', None))
-        case 3:
-            play_monopoly = False
-            num_players = 4
-            STARTING_CASH = 100
-        case 4:
-            play_monopoly = False
-            num_players = 1
-            STARTING_CASH = 100
-        case _:
-            play_monopoly = False
-            print("Invalid test number.")
-            print("Skipping unit tests.")
-            return
+    if (test == 1):
+        play_monopoly = True
+        num_players = 1
+        STARTING_CASH = 2000
+        gm.add_game(gm.Game('Fake Game', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
+    elif (test == 2):
+        play_monopoly = True
+        num_players = 2
+        STARTING_CASH = 1500
+        gm.add_game(gm.Game('Battleship', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
+        gm.add_game(gm.Game('Battleship', [Client(None, None, 0, [])] * 2, 'board', 'other_data'))
+        gm.add_game(gm.Game('Battleship', [Client(None, "Name", 0, [])] * 3, 'board', 'other_data'))
+        gm.add_game(gm.Game('TicTacToe', [Client(None, "nada", 0, [])] * 2, 'board', None))
+    elif (test == 3):
+        play_monopoly = False
+        num_players = 4
+        STARTING_CASH = 100
+    elif (test == 4):
+        play_monopoly = False
+        num_players = 1
+        STARTING_CASH = 100 
+    else:
+        play_monopoly = False
+        print("Invalid test number.")
+        print("Skipping unit tests.")
+        return
     
 def handle_data(data: str, client: socket.socket) -> None:
     """

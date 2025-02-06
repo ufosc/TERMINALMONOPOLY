@@ -164,15 +164,14 @@ def play(player, active_terminal, bet):
     outcome = turn(player, active_terminal, 1)
 
     graphics = get_graphics()
-    match outcome:
-        case "WIN":
-            ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_win']}")
-            bet *= 2
-        case "BUST":
-            ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_lose']}")
-            bet = 0
-        case "TIE":
-            ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_tie']}")
+    if (outcome == "WIN"):
+        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_win']}")
+        bet *= 2
+    elif (outcome == "BUST"):
+        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_lose']}")
+        bet = 0
+    elif (outcome == "TIE"):
+        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_tie']}")
     
     input("\r")
     ss.overwrite("\r" + " " * 40)
