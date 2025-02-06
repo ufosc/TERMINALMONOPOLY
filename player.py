@@ -226,7 +226,9 @@ def get_input() -> None:
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
                 skip_initial_input = True
                 continue
-            if stdIn.startswith("help"):
+            if stdIn == "helpstocks" or stdIn == "help stocks":
+                ss.update_quadrant(active_terminal, text_dict.get("helpstocks"), padding=False)
+            elif stdIn.startswith("help"):
                 if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
                     ss.update_quadrant(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
                 else: 

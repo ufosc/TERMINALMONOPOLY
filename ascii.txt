@@ -1,0 +1,456 @@
+   ___         
+ _|\  \__                          === HELP (1) ===
+|\   ____\      Welcome to Terminal Monopoly!                           
+\ \  \___|_         
+ \ \_____  \    This help screen will assist you with all the commands
+  \|____|\  \   available in the TerminalMonopoly interface. 
+    ____\_\  \  
+   |\___    __\
+   \|___|\__\_|             Command List:                          
+        \|__|   help <num> - display help messages (num = 1 by default)
+                game - switches ALL terminals to gameboard view___
+                term <num> - switch active terminal          _|\  \__
+                  to num                                    |\   ____\
+                list - print a list of all property titles  \ \  \___|_
+                calc - calculator module for basic           \ \_____  \ 
+                  arithmetic                                  \|____|\  \
+                deed <name> - access a property by name         ____\_\  \
+                  (accepts partial names)                      |\___    __\
+                                                               \|___|\__\_|
+                                                                    \|__| 
+BREAK_TEXT
+=== PROPERTY LIST ===
+
+BROWN SET: Mediterranean Avenue, Baltic Avenue
+LIGHTBLUE SET: Oriental Avenue, Vermont Avenue, Conneticut Avenue
+
+ROUGE SET: St. Charles Place, States Avenue, Virginia Avenue
+ORANGE SET: St. James Place, Tennessee Avenue, New York Avenue
+
+RED SET: Kentucky Avenue, Indiana Avenue, Illinois Avenue 
+YELLOW SET: Atlantic Avenue, Ventnor Avenue, Marvin Gardens
+
+GREEN SET: Pacific Avenue, North Carolina Avenue, Pennsylvania Avenue
+BLUE SET: Park Place, Boardwalk
+
+RAILROADS: Reading Railroad, Pennsylvania Railroad, 
+B&O Railroad, Short Line
+
+UTILITIES: Electric Company, Water Works
+BREAK_TEXT
+ ______ ______ ______ ______ ______
+|______|______|______|______|______|
+BREAK_TEXT
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X
+X  X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  X
+X X X X X X X X X X X X X X X X X  ______   X X X X X X X X X X X X X X X X
+X  X X X X X X X X X X X X X X  .-"      "-.   X X X X X X X X X X X X X  X
+X X X X X X X X X     X X X X  /            \   X X X X X X X X X X X X X X
+X  X X X X X X X   _   X X X  |              | X X X X  _  X X X X X X X  X
+X X X X X X X X   ( \   X X   |,  .-.  .-.  ,|  X X    / )  X X X X X X X X
+X  X X X X X X X   > "=._     | )(__/  \__)( |     _.=" <  X X X X X X X  X
+X X X X X X X X   (_/"=._"=._ |/     /\     \| _.="_.="\_)  X X X X X X X X
+X  X X X X X X X         "=._ (_     ^^     _)"_.="        X X X X X X X  X
+X X X X X X X X X X X X X    "=\__|IIIIII|__/="   X X X X X X X X X X X X X
+X  X X X X X X X X X X X    _.="| \IIIIII/ |"=._   X X X X X X X X X X X  X
+X X X X X X X X   _     _.="_.="\          /"=._"=._     _  X X X X X X X X
+X  X X X X X X   ( \_.="_.="     `--------`     "=._"=._/ )  X X X X X X  X
+X X X X X X X X   > _.="      X X X X X X X X X     "=._ <    X X X X X X X
+X  X X X X X X X (_/   X X X X X X X X X X X X X X X X  \_)  X X X X X X  X
+X X X X X X X X     X X X X X X X X X X X X X X X X X X     X X X X X X X X
+X  X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+BREAK_TEXT
+┌─────────────────────────────────────────────────────────────────────────────
+│20████ 21████ 22████ 23████ 24████ 25████ 26████ 27████ 28████ 29████ 30████ 
+│██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ 
+│▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ 
+│19████                                                                31████ 
+│██████                                                                ██████ 
+│▀▀▀▀▀▀                                                                ▀▀▀▀▀▀ 
+│18████                                                                32████ 
+│██████                                                                ██████ 
+│▀▀▀▀▀▀                                                                ▀▀▀▀▀▀ 
+│17████             ____ ____ ____ ____ ____ ____ ____ ____            33████ 
+│██████            ||T |||E |||R |||M |||I |||N |||A |||L ||           ██████ 
+│▀▀▀▀▀▀            ||__|||__|||__|||__|||__|||__|||__|||__||           ▀▀▀▀▀▀ 
+│16████            |/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|           34████ 
+│██████                                                                ██████ 
+│▀▀▀▀▀▀                                                                ▀▀▀▀▀▀ 
+│15████                                                                35████ 
+│██████                                                                ██████ 
+│▀▀▀▀▀▀                                                                ▀▀▀▀▀▀ 
+│14████             ____ ____ ____ ____ ____ ____ ____ ____            36████ 
+│██████            ||M |||O |||N |||O |||P |||O |||L |||Y ||           ██████ 
+│▀▀▀▀▀▀            ||__|||__|||__|||__|||__|||__|||__|||__||           ▀▀▀▀▀▀ 
+│13████            |/__\|/__\|/__\|/__\|/__\|/__\|/__\|/__\|           37████ 
+│██████                                                                ██████ 
+│▀▀▀▀▀▀                                                                ▀▀▀▀▀▀ 
+│12████                                                                38████ 
+│██████                                                                ██████ 
+│▀▀▀▀▀▀                                                                ▀▀▀▀▀▀ 
+│11████                                                                39████ 
+│██████                                                                ██████ 
+│▀▀▀▀▀▀                                                                ▀▀▀▀▀▀ 
+│10████ 9█████ 8█████ 7█████ 6█████ 5█████ 4█████ 3█████ 2█████ 1█████ 0█████ 
+│██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ ██████ 
+│▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ ▀▀▀▀▀▀ 
+└─────────────────────────────────────────────────────────────────────────────
+BREAK_TEXT
+=== HELP (2) ===
+
+back - returns to terminal screens
+fish - opens fish minigame. Press enter to catch a fish!
+
+
+BREAK_TEXT
+$$$$$$$$\ $$$$$$$$\ $$$$$$$\  $$\      $$\ $$$$$$\ $$\   $$\  $$$$$$\  $$\         ┌┼┐    
+\__$$  __|$$  _____|$$  __$$\ $$$\    $$$ |\_$$  _|$$$\  $$ |$$  __$$\ $$ |        └┼┐    
+   $$ |   $$ |      $$ |  $$ |$$$$\  $$$$ |  $$ |  $$$$\ $$ |$$ /  $$ |$$ |        └┼┘                 ┌┼┐
+   $$ |   $$$$$\    $$$$$$$  |$$\$$\$$ $$ |  $$ |  $$ $$\$$ |$$$$$$$$ |$$ |                            └┼┐
+   $$ |   $$  __|   $$  __$$< $$ \$$$  $$ |  $$ |  $$ \$$$$ |$$  __$$ |$$ |                ┌┼┐         └┼┘
+   $$ |   $$ |      $$ |  $$ |$$ |\$  /$$ |  $$ |  $$ |\$$$ |$$ |  $$ |$$ |                └┼┐
+   $$ |   $$$$$$$$\ $$ |  $$ |$$ | \_/ $$ |$$$$$$\ $$ | \$$ |$$ |  $$ |$$$$$$$$\           └┼┘
+   \__|   \________|\__|  \__|\__|     \__|\______|\__|  \__|\__|  \__|\________|      
+                                                                                                     
+                                $$\      $$\  $$$$$$\  $$\   $$\  $$$$$$\  $$$$$$$\   $$$$$$\  $$\       $$\     $$\   
+         ┌┼┐                    $$$\    $$$ |$$  __$$\ $$$\  $$ |$$  __$$\ $$  __$$\ $$  __$$\ $$ |      \$$\   $$  |  
+         └┼┐                    $$$$\  $$$$ |$$ /  $$ |$$$$\ $$ |$$ /  $$ |$$ |  $$ |$$ /  $$ |$$ |       \$$\ $$  /   
+         └┼┘                    $$\$$\$$ $$ |$$ |  $$ |$$ $$\$$ |$$ |  $$ |$$$$$$$  |$$ |  $$ |$$ |        \$$$$  /    
+                   ┌┼┐          $$ \$$$  $$ |$$ |  $$ |$$ \$$$$ |$$ |  $$ |$$  ____/ $$ |  $$ |$$ |         \$$  /     
+                   └┼┐          $$ |\$  /$$ |$$ |  $$ |$$ |\$$$ |$$ |  $$ |$$ |      $$ |  $$ |$$ |          $$ |      
+                   └┼┘          $$ | \_/ $$ | $$$$$$  |$$ | \$$ | $$$$$$  |$$ |       $$$$$$  |$$$$$$$$\     $$ |      
+                                \__|     \__| \______/ \__|  \__| \______/ \__|       \______/ \________|    \__|      
+BREAK_TEXT
+┬─────────────────────────────────────────┬──────────────────────────────────┐
+│                 HISTORY                 │              STATUS              │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+│                                         │                                  │
+┼─────────────────────────────────────────┼──────────────────────────────────┘
+BREAK_TEXT
+┼─────────────────────────────────────────┼─
+│                COMMANDS                 │ 
+│ info <number> - display information     │ 
+│   about property                        │ 
+│ bal - display balance information       │ 
+│                                         │ 
+│                                         │ 
+│                                         │ 
+│                                         │ 
+│                                         │ 
+│                                         │ 
+│                                         │ 
+┴─────────────────────────────────────────┴─
+BREAK_TEXT
+1. Advance to Boardwalk!
+2. Advance to Go! (Collect $200).
+3. Advance to Illinois Avenue. If you pass Go, collect $200.
+4. Advance to St. Charles Place. If you pass Go, collect $200.
+5. Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled. 
+6. Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled. 
+7. Advance to the nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown. 
+8. Bank pays you dividend of $50.
+9. Get Out of Jail Free!
+10. Go back 3 spaces. 
+11. Go to Jail. Go directly to Jail, do not pass Go, do not collect $200.
+12. Make general repairs on all your property. For each house pay $25. For each hotel pay $100.
+13. Speeding fine $15. 
+14. Take a trip to Reading Railroad. If you pass Go, collect $200. 
+15. You have been elected Chairman of the Board. Pay each player $50. 
+16. Your building loan matures. Collect $150. 
+BREAK_TEXT
+1. Advance to Go (Collect $200).
+2. Bank error in your favor. Collect $200.
+3. Doctor's fee. Pay $50. 
+4. From sale of stock you get $50. 
+5. Get Out of Jail Free!
+6. Go to Jail. Go directly to Jail, do not pass Go, do not collect $200.
+7. Holiday fund matures. Receive $100.
+8. Income tax refund. Collect $20.
+9. It is your birthday. Collect $10 from every player. 
+10. Life insurance matures. Collect $100.
+11. Pay hospital fees of $100. 
+12. Pay school fees of $50.
+13. Receive $25 consultancy fee. 
+14. You are assessed for street repair. $40 per house. $115 per hotel. 
+15. You have won second prize in beauty contest. Collect $10.
+16. You inherit $100. 
+BREAK_TEXT
+╔════════════════════════════╗
+║                            ║
+║                            ║
+║                            ║
+╚════════════════════════════╝
+BREAK_TEXT
+╔═══════════════════════════════════════════════════════════════════════════╦═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+╠═══════════════════════════════════════════════════════════════════════════╬═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+║                                                                           ║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╩═══════════════════════════════════════════════════════════════════════════╝
+BREAK_TEXT
+┌─────────────────────────────────────────────────────────────────────────┐
+│             Press enter when you want to reel in the fish!              │
+│                                                                         │
+│                               e to exit...                              │
+│                                                                         │
+│                                /^`--                                    │
+│                               /    ---                                  │
+│                              /        ---                               │
+│                      _      /            ----                           │
+│                     / \    /                 ----                       │
+│                     \_/___/                      ----                   │
+│                     ||___/                           ---                │
+│                     ||                                  ---             │
+│═════════════════════\╗\                                    --           │
+│                     |_ |_                                    `v         │
+│                      ║^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^O^^^^^^^^^│
+│                      ║  ^^                             vvv        ^^    │
+│                      ║         ^^^                                      │
+│                      ║                           ^^           vv        │
+└─────────────────────────────────────────────────────────────────────────┘
+BREAK_TEXT
+┌─────────────────────────────────────────────────────────────────────────┐
+│                               Game over!                                │
+│                   ____                              .                   │
+│                  /    ----                                              │
+│                 /         ---                                           │
+│                │            ---            .      :                     │
+│                 \               --_                                     │
+│                  \                 v             .   .                  │
+│                  >`<  _                                                 │
+│                  \ \ / \                           .                    │
+│                   \_\\_/                         .         .            │
+│                      ||                            ..  . :  :           │
+│                     ||                .        .        :  ..: .   .    │
+│═════════════════════\╗\             .                  . .::   : .:     │
+│                     |_ |_         ..    .                .   .:  .      │
+│                      ║^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^│
+│                      ║     vv              ^^            vvv            │
+│                      ║                                              ^^^ │
+│                      ║        ^^^                            vv         │
+└─────────────────────────────────────────────────────────────────────────┘
+BREAK_TEXT
+ A 
+|_|
+/ \
+BREAK_TEXT
+ A 
+|Y|
+ A 
+BREAK_TEXT
+ A 
+/V\
+/|\
+BREAK_TEXT
+╔══════════════════════════════════════════════╗
+║                                              ║
+║                                              ║
+║                                              ║
+║                                              ║
+║                                              ║
+║                                              ║
+╚══════════════════════════════════════════════╝
+BREAK_TEXT
+                                                                                                                                     
+     ██████           █████████████ ███████████████ ██████████████████     
+     ██████           █████████████ ███████████████ ██████████████████     
+     ██████           █████████████ ███████████████ ██████████████████     
+     ██████           ████     ████ ████            ████                   
+     ██████           ████     ████ ████            ████                   
+     ██████           ████     ████ ████            ████                   
+     ██████           ████     ████ ████            ██████████████████     
+     ██████           ████     ████ ███████████████ ██████████████████     
+     ██████           ████     ████ ███████████████ ██████████████████     
+     ██████           ████     ████ ███████████████ ████                   
+     ██████           ████     ████            ████ ████                   
+     ██████           ████     ████            ████ ████                   
+     ████████████████ ████     ████            ████ ████                   
+     ████████████████ █████████████ ███████████████ ██████████████████     
+     ████████████████ █████████████ ███████████████ ██████████████████     
+     ████████████████ █████████████ ███████████████ ██████████████████                                                                                                                                           
+BREAK_TEXT
+
+        ██████     █████      ██████ ████████ █████████████████████        
+        ██████     █████      ██████ ████████ █████████████████████        
+        ██████     █████      ██████ ████████ █████████████████████        
+        ██████     █████      ██████ ████████ █████████████████████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ██████     █████      ██████ ████████ ███████       ███████        
+        ████████████████████████████ ████████ ███████       ███████        
+        ████████████████████████████ ████████ ███████       ███████        
+        ████████████████████████████ ████████ ███████       ███████        
+        ████████████████████████████ ████████ ███████       ███████                                                                              
+BREAK_TEXT
+                                                                           
+      ████████████████████████████ ████████ █████████████████████████      
+      ████████████████████████████ ████████ █████████████████████████      
+      ████████████████████████████ ████████ █████████████████████████      
+      ████████████████████████████ ████████ █████████████████████████      
+               ██████████          ████████ █████████                      
+               ██████████          ████████ █████████                      
+               ██████████          ████████ █████████                      
+               ██████████          ████████ █████████████████████████      
+               ██████████          ████████ █████████████████████████      
+               ██████████          ████████ █████████████████████████      
+               ██████████          ████████ █████████████████████████      
+               ██████████          ████████ █████████                      
+               ██████████          ████████ █████████                      
+               ██████████          ████████ █████████                      
+               ██████████          ████████ █████████████████████████      
+               ██████████          ████████ █████████████████████████      
+               ██████████          ████████ █████████████████████████      
+               ██████████          ████████ █████████████████████████                                                                  
+BREAK_TEXT                                                                
+                    █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█                   
+                    █                                  █                   
+                    █                                  █                   
+                    █        █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█        █                   
+                    █        █                █        █                   
+                    █        █                █        █                   
+                    █        █    █      █    █        █                   
+                    █        █    █      █    █        █                   
+                    █        █                █        █                   
+                    █        █                █        █                   
+                    █        █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█        █                   
+                    █             ▉      ▉             █                   
+                    █             ▉      ▉             █                   
+                    █       █▀▀▀▀▀▀      ▀▀▀▀▀▀█       █                   
+                    █      █                    █      █                   
+                    █     █                      █     █                   
+                    █    █                        █    █                   
+                    █▄▄▄█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█▄▄▄█                   
+BREAK_TEXT                                                                   
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+                   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄                    
+                   █                                  █                    
+                   █                                  █                    
+                   █                                  █                    
+                   █                                  █                    
+                   █                                  █                    
+                   █                                  █                    
+                   █                                  █                    
+                   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀                    
+                                                                           
+                                                                           
+                                                                           
+                                                                           
+BREAK_TEXT                                                                         
+                   █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█                    
+                   █                                  █                    
+                   █                                  █                    
+                   █                                  █                    
+                   █      ██████████████████████      █                    
+                   █     ▀▀▀█▀▀▀█▀▀▀██▀▀▀█▀▀▀█▀▀▀     █                    
+                   █        █   █   ██   █   █        █                    
+                   █        █   █   ██   █   █        █                    
+                   █        █   █   ██   █   █        █                    
+                   █        █   █   ██   █   █        █                    
+                   █        █   █   ██   █   █        █                    
+                   █        █   █   ██   █   █        █                    
+                   █        █   █   ██   █   █        █                    
+                   █    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    █                    
+                   █                                  █                    
+                   █                                  █                    
+                   █                                  █                    
+                   █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█                    
+BREAK_TEXT
+         __             __                           __        __
+   _____/ /_____  _____/ /__   ____ ___  ____ ______/ /_____  / /_
+  / ___/ __/ __ \/ ___/ //_/  / __ `__ \/ __ `/ ___/ //_/ _ \/ __/
+ (__  ) /_/ /_/ / /__/ ,<    / / / / / / /_/ / /  / ,< /  __/ /_
+/____/\__/\____/\___/_/|_|  /_/ /_/ /_/\__,_/_/  /_/|_|\___/\__/
+
+			=== HELP (STOCKS) ===
+
+Welcome to the Stock Market Module!
+This help screen will assist you with all the commands
+available in the StockModule interface.
+
+------------------->>>    Command List:    <<<-----------------------
+		help stocks - display help messages for stock market
+		w - move stock selection arrow or # of stocks up
+		s - move stock selection arrow down or # of stocks down
+		shift + b - buy selected stock
+		shift + s - sell selected stock
+		enter - confirm selection
+		g - display selected stock graph
+BREAK_TEXT
