@@ -60,6 +60,9 @@ def initialize():
     """
     Initialize client receiver and sender network sockets, attempts to connect to a Banker by looping, then handshakes banker.
 
+    ### This may be unnecessary: fix as necessary.
+    Creates two sockets, a receiver and sender at the same address.
+
     Updates the ADDRESS and PORT class variables by taking in player input. Calls itself until a successful connection. 
     Then calls handshake() to confirm player is connected to Banker and not some other address. 
 
