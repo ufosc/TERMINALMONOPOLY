@@ -28,9 +28,6 @@ def initialize():
     """
     Initialize client receiver and sender network sockets, attempts to connect to a Banker by looping, then handshakes banker.
 
-    ### This may be unnecessary: fix as necessary.
-    Creates two sockets, a receiver and sender at the same address.
-
     Updates the ADDRESS and PORT class variables by taking in player input. Calls itself until a successful connection. 
     Then calls handshake() to confirm player is connected to Banker and not some other address. 
 
@@ -39,11 +36,12 @@ def initialize():
     """
     global sockets, ADDRESS, PORT
     ss.clear_screen()
-    temp = False
-    while(temp == False):
+    has_passed_banker_query = False
+    is_banker = False
+    while(not has_passed_banker_query):
         choice = input("If you would like to host a game, press b. If you would like to join a game, press p")
         if(choice == 'b' or choice == 'p'):
-            temp = True
+            has_passed_banker_query = True
             if(choice == 'b'):
                 is_banker = True
         else:
