@@ -6,12 +6,6 @@ import threading
 import keyboard
 import heapq
 
-
-# hello
-# hi
-
-#Testing VSCode
-
 # Seed the random number generator with the current time
 random.seed(time.time())
 
@@ -46,11 +40,9 @@ class portfolio:
                 self.gain_loss_dict[stock_ticker] = []
             self.gain_loss_dict[stock_ticker].append([num_shares, self.stock_market.get_stock_price(stock_ticker)])
 
-
     def sell_stock(self, stock_ticker, num_shares):
         if stock_ticker in self.owned_stocks and self.owned_stocks[stock_ticker] >= num_shares:
             self.owned_stocks[stock_ticker] -= num_shares
-
 
     def display_portfolio(self):
         sum_of_prices = 0
@@ -173,9 +165,6 @@ class stock_market:
 
         return stock_lines
 
-
-
-
     def update_time(self, seconds_passed):
         # increment time by minutes. 5 real-world seconds = 1 hour (60 minutes in-game)
         self.current_time += timedelta(minutes=12)
@@ -183,7 +172,6 @@ class stock_market:
     def display_time(self):
         # display current time in "Day HH:MM AM/PM" format
         return f"Current time: {self.current_time.strftime('%A %I:%M %p')}"
-
 
 # general functions outside of classes
 # function to clear the console
@@ -249,10 +237,6 @@ def display_stock_prices(market, players_portfolio):
         print("\033[?25h", end="")
 
 
-
-
-
-
 def build_graph(players_portfolio, market):
     width, height = 35, 10  # adjusted for terminal size
     data = [random.randint(0, 100) for _ in range(50)]
@@ -262,8 +246,6 @@ def build_graph(players_portfolio, market):
         draw_graph(market.stocks[players_portfolio.graph_selected_stock].historical_prices, width, height, players_portfolio, market)  # draws graph
         print(f"\033[20;1H{market.stocks[players_portfolio.graph_selected_stock].historical_prices}")
         time.sleep(0.5)  # pauses for 0.5 seconds
-
-
 
 def draw_graph(data, width, height, players_portfolio, market):
     max_value = max(data)
@@ -454,9 +436,6 @@ def top_movers(market):
         #prints out the green arrow with the percent change in green
         print(f"\033[{13 + counter};15H \033[32m▲ +{change:.2f}%\033[0m")
         counter += 1
-
-
-
 
 if __name__ == '__main__':
     clear_console()
