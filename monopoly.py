@@ -523,42 +523,41 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
         while not done_moving_around:
             done_moving_around = True
             if board.locations[players[turn].location].owner < 0:
-                match board.locations[players[turn].location].owner:
-                    case -1: #unowned
-                        buy_logic()
-                    case -2: #mortgaged
-                        pass
-                    case -3: #community chest
-                        old_loc = players[turn].location
-                        card = decks.draw_community_chest(players[turn], board, players)
-                        new_loc = players[turn].location
-                        update_history(f"{players[turn].name} drew a Community Chest card! {card}")
-                        if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                            update_history(f"{players[turn]} passed Go and received $200")
-                    case -4: #chance
-                        old_loc = players[turn].location
-                        card = decks.draw_chance(players[turn], board, players)
-                        new_loc = players[turn].location
-                        update_history(f"{players[turn].name} drew a Chance card! {card}")
-                        if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                            update_history(f"{players[turn]} passed Go and received $200")
-                        if (board.locations[players[turn].location].owner != -4):
-                            done_moving_around = False  # only case where loop is needed
-                    case -5: #income tax
-                        players[turn].pay(200)
-                        update_history(f"{players[turn].name} paid income tax ($200)")
-                    case -6:  # jail
-                        pass
-                    case -7:  # go to jail
-                        players[turn].go_to_jail()
-                        board.locations[10].players.append(turn)
-                    case -8:  # free parking
-                        pass
-                    case -9:  # luxury tax
-                        players[turn].pay(100)
-                        update_history(f"{players[turn].name} paid luxury tax ($100)")
-                    case -10:  # go
-                        pass
+                if (board.locations[players[turn].location].owner == -1): #unowned
+                    buy_logic()
+                elif (board.locations[players[turn].location].owner == -2): #mortgaged
+                    pass
+                elif (board.locations[players[turn].location].owner == -3): #community chest
+                    old_loc = players[turn].location
+                    card = decks.draw_community_chest(players[turn], board, players)
+                    new_loc = players[turn].location
+                    update_history(f"{players[turn].name} drew a Community Chest card! {card}")
+                    if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
+                        update_history(f"{players[turn]} passed Go and received $200")
+                elif (board.locations[players[turn].location].owner == -4): #chance
+                    old_loc = players[turn].location
+                    card = decks.draw_chance(players[turn], board, players)
+                    new_loc = players[turn].location
+                    update_history(f"{players[turn].name} drew a Chance card! {card}")
+                    if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
+                        update_history(f"{players[turn]} passed Go and received $200")
+                    if (board.locations[players[turn].location].owner != -4):
+                        done_moving_around = False  # only case where loop is needed
+                elif (board.locations[players[turn].location].owner == -5): #income tax
+                    players[turn].pay(200)
+                    update_history(f"{players[turn].name} paid income tax ($200)")
+                elif (board.locations[players[turn].location].owner == -6):  # jail
+                    pass
+                elif (board.locations[players[turn].location].owner == -7):  # go to jail
+                    players[turn].go_to_jail()
+                    board.locations[10].players.append(turn)
+                elif (board.locations[players[turn].location].owner == -8):  # free parking
+                    pass
+                elif (board.locations[players[turn].location].owner == -9):  # luxury tax
+                    players[turn].pay(100)
+                    update_history(f"{players[turn].name} paid luxury tax ($100)")
+                elif (board.locations[players[turn].location].owner == -10):  # go
+                    pass
             elif board.locations[players[turn].location].owner != players[turn].order:
                 # Pay another player rent
                 cl = players[turn].location
@@ -639,41 +638,40 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
     while not done_moving_around:
         done_moving_around = True
         if board.locations[players[turn].location].owner < 0:
-            match board.locations[players[turn].location].owner:
-                case -1: #unowned
-                    return get_gameboard() + ss.set_cursor_str(0, 37) + "b to buy, enter to continue?"
-                case -2: #mortgaged
-                    pass
-                case -3: #community chest
-                    old_loc = players[turn].location
-                    card = decks.draw_community_chest(players[turn], board, players)
-                    new_loc = players[turn].location
-                    update_history(f"{players[turn].name} drew a Community Chest card! {card}")
-                    if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                        update_history(f"{players[turn]} passed Go and received $200")
-                case -4: #chance
-                    old_loc = players[turn].location
-                    card = decks.draw_chance(players[turn], board, players)
-                    new_loc = players[turn].location
-                    update_history(f"{players[turn].name} drew a Chance card! {card}")
-                    if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
-                        update_history(f"{players[turn]} passed Go and received $200")
-                    if (board.locations[players[turn].location].owner != -4):
-                        done_moving_around = False  # only case where loop is needed
-                case -5: #income tax
-                    players[turn].pay(200)
-                    update_history(f"{players[turn].name} paid income tax ($200)")
-                case -6: #jail
-                    update_history("Just visiting!")
-                case -7:  # go to jail
-                    players[turn].go_to_jail()
-                case -8:  # free parking
-                    pass
-                case -9:  # luxury tax
-                    players[turn].pay(100)
-                    update_history(f"{players[turn].name} paid luxury tax ($100)")
-                case -10:  # go
-                    pass
+            if (board.locations[players[turn].location].owner == -1): #unowned
+                return get_gameboard() + ss.set_cursor_str(0, 37) + "b to buy, enter to continue?"
+            elif (board.locations[players[turn].location].owner == -2): #mortgaged
+                pass
+            elif (board.locations[players[turn].location].owner == -3): #community chest
+                old_loc = players[turn].location
+                card = decks.draw_community_chest(players[turn], board, players)
+                new_loc = players[turn].location
+                update_history(f"{players[turn].name} drew a Community Chest card! {card}")
+                if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
+                    update_history(f"{players[turn]} passed Go and received $200")
+            elif (board.locations[players[turn].location].owner == -4): #chance
+                old_loc = players[turn].location
+                card = decks.draw_chance(players[turn], board, players)
+                new_loc = players[turn].location
+                update_history(f"{players[turn].name} drew a Chance card! {card}")
+                if old_loc > new_loc and new_loc != 10 and new_loc != players[turn].location - 3:  #check if chance card made player pass go
+                    update_history(f"{players[turn]} passed Go and received $200")
+                if (board.locations[players[turn].location].owner != -4):
+                    done_moving_around = False  # only case where loop is needed
+            elif (board.locations[players[turn].location].owner == -5): #income tax
+                players[turn].pay(200)
+                update_history(f"{players[turn].name} paid income tax ($200)")
+            elif (board.locations[players[turn].location].owner == -6): #jail
+                update_history("Just visiting!")
+            elif (board.locations[players[turn].location].owner == -7):  # go to jail
+                players[turn].go_to_jail()
+            elif (board.locations[players[turn].location].owner == -8):  # free parking
+                pass
+            elif (board.locations[players[turn].location].owner == -9):  # luxury tax
+                players[turn].pay(100)
+                update_history(f"{players[turn].name} paid luxury tax ($100)")
+            elif (board.locations[players[turn].location].owner == -10):  # go
+                pass
         elif board.locations[players[turn].location].owner != players[turn].order:
             # Pay another player rent
             cl = players[turn].location

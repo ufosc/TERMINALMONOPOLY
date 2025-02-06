@@ -36,17 +36,16 @@ def notification(message: str, n: int, color: str) -> str:
     # Max 78 character popup for messaging the player.
     x,y = -1,-1
     writeto = ""
-    match n:
-        case 1:
-            x,y = 2+10,2+5
-        case 2:
-            x,y = cols+3+10, 2+5
-        case 3:
-            x,y = 2+10, rows+3+5
-        case 4:
-            x,y = cols+3+10, rows+3+5
-        case -1:
-            x,y = cols - 20, rows - 5
+    if (n == 1):
+        x,y = 2+10,2+5
+    elif (n == 2):
+        x,y = cols+3+10, 2+5
+    elif (n == 3):
+        x,y = 2+10, rows+3+5
+    elif (n == 4):
+        x,y = cols+3+10, rows+3+5
+    elif (n == -1):
+        x,y = cols - 20, rows - 5
 
     p = color + set_cursor_str(x, y)
     outline = get_graphics()["popup 1"].split("\n")
@@ -98,15 +97,14 @@ def update_quadrant(n: int, data: str, padding: bool = True) -> None:
             padding = True
 
     # Sets the x and y coordinates based on the quadrant number corresponding to the top left corner of the quadrant plus border padding.
-    match n:
-        case 1:
-            x,y = 2,2
-        case 2:
-            x,y = cols+3, 2
-        case 3:
-            x,y = 2, rows+3
-        case 4:
-            x,y = cols+3, rows+3
+    if (n == 1):
+        x,y = 2,2
+    elif (n == 2):
+        x,y = cols+3, 2
+    elif (n == 3):
+        x,y = 2, rows+3
+    elif (n == 4):
+        x,y = cols+3, rows+3
 
     if data:
 
@@ -154,15 +152,14 @@ def update_terminal(n: int, o: int):
                     ('╠','╬','╚','╩'),
                     ('╬','╣','╩','╝')]
     
-    match o: 
-        case 1:
-            x,y = 0,1
-        case 2:
-            x,y = cols+2, 1
-        case 3:
-            x,y = 0, rows+2
-        case 4:
-            x,y = cols+2, rows+2
+    if (o == 1):
+        x,y = 0,1
+    elif(o == 2):
+        x,y = cols+2, 1
+    elif(o == 3):
+        x,y = 0, rows+2
+    elif(o == 4):
+        x,y = cols+2, rows+2
     o = o - 1 # 0-indexed
     c = COLORS.LIGHTGRAY
     set_cursor(x,y)
@@ -176,15 +173,14 @@ def update_terminal(n: int, o: int):
         set_cursor(x+cols + (1 if (o + 1) % 2 == 0 else 2), i+1)
         print('║')
 
-    match n:
-        case 1:
-            x,y = 0,1
-        case 2:
-            x,y = cols+2, 1
-        case 3:
-            x,y = 0, rows+2
-        case 4:
-            x,y = cols+2, rows+2
+    if (n == 1):
+        x,y = 0,1
+    elif (n == 2):
+        x,y = cols+2, 1
+    elif (n == 3):
+        x,y = 0, rows+2
+    elif (n == 4):
+        x,y = cols+2, rows+2
     n = n - 1 # 0-indexed
     c = COLORS.GREEN
 
@@ -214,15 +210,14 @@ def indicate_keyboard_hook(t: int):
                     ('╠','╬','╚','╩'),
                     ('╬','╣','╩','╝')]
     
-    match t: 
-        case 1:
-            x,y = 0,1
-        case 2:
-            x,y = cols+2, 1
-        case 3:
-            x,y = 0, rows+2
-        case 4:
-            x,y = cols+2, rows+2
+    if (t == 1):
+        x,y = 0,1
+    elif (t == 2):
+        x,y = cols+2, 1
+    elif (t == 3):
+        x,y = 0, rows+2
+    elif (t == 4):
+        x,y = cols+2, rows+2
     t = t - 1 # 0-indexed
     c = COLORS.LIGHTBLUE
     set_cursor(x,y)
