@@ -265,16 +265,15 @@ def fishing(gamestate: str) -> tuple[str, str]:
     Fishing module handler for player.py. Returns tuple of [visual data, gamestate] both as strings.
     """
     stdIn = ''
-    match gamestate:
-        case 'start':
-            return fishing_game_obj.start(), 'playing'
-        case 'playing':
-            stdIn = fishing_game_obj.get_input()
-            if stdIn == 'e':
-                return '', 'e'
-            return fishing_game_obj.results(), 'e'  
-        case 'e':
-            return '', 'start'  
+    if (gamestate == 'start'):
+        return fishing_game_obj.start(), 'playing'
+    elif (gamestate == 'playing'):
+        stdIn = fishing_game_obj.get_input()
+        if stdIn == 'e':
+            return '', 'e'
+        return fishing_game_obj.results(), 'e'  
+    elif (gamestate == 'e'):
+        return '', 'start'  
 
 def kill() -> str:
     return s.get_graphics()['skull']

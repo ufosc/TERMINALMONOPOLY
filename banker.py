@@ -65,7 +65,7 @@ def start_server() -> socket.socket:
     s.print_w_dots(f"Server started on {ip_address} port {port}")
     server_socket.listen()
 
-    s.print_w_dots("Waiting for clients...")
+    s.print_w_dots(f"Waiting for {num_players} clients...")
     
     handshakes = [False] * num_players
 
@@ -188,10 +188,12 @@ def set_unittest() -> None:
     - STARTING_CASH = 1500
     - No games added to the game manager.
           """)
-
-    if sys.argv[1] != "": # If a test number is provided as a command line argument
-        test = int(sys.argv[1])
-    else: 
+    if len(sys.argv) > 1:
+        if sys.argv[1].isdigit(): # If a test number is provided as a command line argument
+            test = int(sys.argv[1])
+        else: # If a non-digit is provided, skip unit tests
+            test = ""
+    else: # If no command line argument is provided, ask for a test number
         test = ss.get_valid_int("Enter a test number: ", allowed=[' '])
     if test == "":
         play_monopoly = False
@@ -205,33 +207,32 @@ def set_unittest() -> None:
         STARTING_CASH = ss.get_valid_int("Enter the starting cash: ")
         return
     
-    match test:
-        case 1:
-            play_monopoly = True
-            num_players = 1
-            STARTING_CASH = 2000
-            gm.add_game(gm.Game('Fake Game', [Client(None, -1, "Null", 0, [])] * 4, 'board', 'other_data'))
-        case 2:
-            play_monopoly = True
-            num_players = 2
-            STARTING_CASH = 1500
-            gm.add_game(gm.Game('Battleship', [Client(None, -99, "Null", 0, [])] * 4, 'board', 'other_data'))
-            gm.add_game(gm.Game('Battleship', [Client(None, -98, None, 0, [])] * 2, 'board', 'other_data'))
-            gm.add_game(gm.Game('Battleship', [Client(None, -97, "Name", 0, [])] * 3, 'board', 'other_data'))
-            gm.add_game(gm.Game('TicTacToe', [Client(None, -96, "nada", 0, [])] * 2, 'board', None))
-        case 3:
-            play_monopoly = False
-            num_players = 4
-            STARTING_CASH = 100
-        case 4:
-            play_monopoly = False
-            num_players = 1
-            STARTING_CASH = 100
-        case _:
-            play_monopoly = False
-            print("Invalid test number.")
-            print("Skipping unit tests.")
-            return
+    if (test == 1):
+        play_monopoly = True
+        num_players = 1
+        STARTING_CASH = 2000
+        gm.add_game(gm.Game('Fake Game', [Client(None, -1, "Null", 0, [])] * 4, 'board', 'other_data'))
+    elif (test == 2):
+        play_monopoly = True
+        num_players = 2
+        STARTING_CASH = 1500
+        gm.add_game(gm.Game('Battleship', [Client(None, -99, "Null", 0, [])] * 4, 'board', 'other_data'))
+        gm.add_game(gm.Game('Battleship', [Client(None, -98, None, 0, [])] * 2, 'board', 'other_data'))
+        gm.add_game(gm.Game('Battleship', [Client(None, -97, "Name", 0, [])] * 3, 'board', 'other_data'))
+        gm.add_game(gm.Game('TicTacToe', [Client(None, -96, "nada", 0, [])] * 2, 'board', None))
+    elif (test == 3):
+        play_monopoly = False
+        num_players = 4
+        STARTING_CASH = 100
+    elif (test == 4):
+        play_monopoly = False
+        num_players = 1
+        STARTING_CASH = 100 
+    else:
+        play_monopoly = False
+        print("Invalid test number.")
+        print("Skipping unit tests.")
+        return
 
 def change_balance(id: int, delta: int):
     clients[id].money += delta
