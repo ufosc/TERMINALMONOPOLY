@@ -12,7 +12,6 @@ import platform
 import ctypes
 import shutil
 import re
-import sys
 import keyboard
 import time
 
@@ -20,6 +19,7 @@ import time
 global rows, cols
 rows = HEIGHT//2
 cols = WIDTH//2
+DEBUG = False
 
 def notification(message: str, n: int, color: str) -> str:
     """
@@ -141,6 +141,8 @@ def update_quadrant(n: int, data: str, padding: bool = True) -> None:
 
         set_cursor(x=x-12 + cols//2, y= y-0+rows//2)
         print('╚══════════════════════╝')
+    
+    debug_note()
 
 def update_terminal(n: int, o: int):
     """
@@ -197,6 +199,15 @@ def update_terminal(n: int, o: int):
     
     set_cursor(0,INPUTLINE)
     print(COLORS.RESET, end='')
+
+    debug_note()
+
+def debug_note():
+    if DEBUG:
+        message = 'DEBUG MODE'
+        set_cursor(cols-len(message),0)
+        print(f'{COLORS.GREEN}{message}{COLORS.RESET}')
+        set_cursor(0,INPUTLINE)
 
 def indicate_keyboard_hook(t: int):
     """

@@ -1,36 +1,37 @@
 from time import sleep
-import player
+from style import COLORS as c
 import screenspace as ss
 import os
 import networking as net
+from socket import socket
 
 module_name = "Casino"
 module_command = "casino"
 module_description = "Gamble your money at the casino!"
 
-def module(active_terminal, socket):
+def module(socket: socket, active_terminal, pid: int):
     """
     Casino Module
     Author: Jordan Brotherton (github.com/jordanbrotherton)
-    Version: 1.0
+    Version: 1.1 - Revised to better use network commands to modify balance.
     Gamble your money away!
     A basic menu loader for casino_games.
     """
     wrong = 0
     while True:
-        net.send_message(socket, "bal 0")
+        net.send_message(socket, f"{pid}bal")
         sleep(0.1)
         balance = int(net.receive_message(socket))
-        ss.overwrite(player.COLORS.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
+        ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
         ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {balance} $\nSelect a game by typing the command and wager." + get_submodules() + "\n☒ Exit (e)")
         if(wrong == 1):
-            ss.overwrite(player.COLORS.RESET + player.COLORS.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
+            ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
         elif(wrong == 2):
-            ss.overwrite(player.COLORS.RESET + player.COLORS.RED + "\rInvalid input. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
+            ss.overwrite(c.RESET + c.RED + "\rInvalid input. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
         elif(wrong == 3):
-            ss.overwrite(player.COLORS.RESET + player.COLORS.RED + "\rWager has to be an integer greater than 0. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
-        game = input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\r").lower().split(" ")
-        ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
+            ss.overwrite(c.RESET + c.RED + "\rWager has to be an integer greater than 0. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
+        game = input(c.backYELLOW+c.BLACK+f"\r").lower().split(" ")
+        ss.overwrite(c.RESET+"\r" + " " * 40)
         if(game[0] == ""):
             wrong = 2
         elif(game[0] == "e"):
@@ -52,14 +53,13 @@ def module(active_terminal, socket):
                 wager = int(game[1])
                 if(wager == 0): continue
 
-                #player.balance -= bet
-                net.send_message(socket, "bal -" + str(wager))
+                net.send_message(socket, f"{pid}casino lose {wager}")
                 sleep(0.1)
                 balance = int(net.receive_message(socket))
 
-                ss.overwrite(player.COLORS.RESET+"\r" + " " * 40)
-                net_change = i.play(player,active_terminal,wager)
-                net.send_message(socket, "bal " + str(net_change))
+                ss.overwrite(c.RESET+"\r" + " " * 40)
+                winnings = i.play(active_terminal,wager)
+                net.send_message(socket, f"{pid}casino win {winnings}")
                 sleep(0.1)
                 balance = int(net.receive_message(socket))
             except ImportError:
