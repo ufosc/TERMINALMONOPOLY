@@ -1,6 +1,7 @@
 import socket
 import threading
 import os
+import sys
 import random
 
 import style as s
@@ -26,8 +27,9 @@ play_monopoly = True
 timer = 0
 
 class Client:
-    def __init__(self, socket: socket.socket, name: str, money: int, properties: list):
+    def __init__(self, socket: socket.socket, id: int, name: str, money: int, properties: list):
         self.socket = socket
+        self.id = id
         self.name = name
         self.money = money
         self.properties = properties
@@ -84,6 +86,7 @@ def start_server() -> socket.socket:
     s.print_w_dots("")
     # Send a message to each client that the game is starting, allowing them to see their terminals screen
     for i in range(len(clients)): 
+        clients[i].id = i
         net.send_message(clients[i].socket, f"Game Start!{num_players} {i}")
         sleep(0.5)
     return server_socket
@@ -186,7 +189,10 @@ def set_unittest() -> None:
     - No games added to the game manager.
           """)
 
-    test = ss.get_valid_int("Enter a test number: ", allowed=[' '])
+    if sys.argv[1] != "": # If a test number is provided as a command line argument
+        test = int(sys.argv[1])
+    else: 
+        test = ss.get_valid_int("Enter a test number: ", allowed=[' '])
     if test == "":
         play_monopoly = False
         STARTING_CASH = 1500
@@ -204,15 +210,15 @@ def set_unittest() -> None:
             play_monopoly = True
             num_players = 1
             STARTING_CASH = 2000
-            gm.add_game(gm.Game('Fake Game', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
+            gm.add_game(gm.Game('Fake Game', [Client(None, -1, "Null", 0, [])] * 4, 'board', 'other_data'))
         case 2:
             play_monopoly = True
             num_players = 2
             STARTING_CASH = 1500
-            gm.add_game(gm.Game('Battleship', [Client(None, "Null", 0, [])] * 4, 'board', 'other_data'))
-            gm.add_game(gm.Game('Battleship', [Client(None, None, 0, [])] * 2, 'board', 'other_data'))
-            gm.add_game(gm.Game('Battleship', [Client(None, "Name", 0, [])] * 3, 'board', 'other_data'))
-            gm.add_game(gm.Game('TicTacToe', [Client(None, "nada", 0, [])] * 2, 'board', None))
+            gm.add_game(gm.Game('Battleship', [Client(None, -99, "Null", 0, [])] * 4, 'board', 'other_data'))
+            gm.add_game(gm.Game('Battleship', [Client(None, -98, None, 0, [])] * 2, 'board', 'other_data'))
+            gm.add_game(gm.Game('Battleship', [Client(None, -97, "Name", 0, [])] * 3, 'board', 'other_data'))
+            gm.add_game(gm.Game('TicTacToe', [Client(None, -96, "nada", 0, [])] * 2, 'board', None))
         case 3:
             play_monopoly = False
             num_players = 4
@@ -226,7 +232,10 @@ def set_unittest() -> None:
             print("Invalid test number.")
             print("Skipping unit tests.")
             return
-    
+
+def change_balance(id: int, delta: int):
+    clients[id].money += delta
+
 def handle_data(data: str, client: socket.socket) -> None:
     """
     Handles all data received from player sockets. 
@@ -265,35 +274,41 @@ def handle_data(data: str, client: socket.socket) -> None:
     elif data.startswith('ttt'):
         handle_ttt(data, current_client)
 
-    elif data.startswith('bal '):
+    elif data.startswith('bal'):
         """
-        Gets and changes client's balance.
-        The second parameter is added to the value of the client's balance.
-        Use 0 to simply get the balance.
+        Return the client's balance.
         """
-        command_data = data.split(' ')
-        current_client.money += int(command_data[1])
         net.send_message(client, str(current_client.money))
 
-    elif data.startswith('ttt'):
-        ttt_game = None
-        ttt_location_info = s.set_cursor_str(random.randint(0, 100), random.randint(0, 40)) + random.choice([s.COLORS.dispBLUE, s.COLORS.dispGREEN, s.COLORS.dispRED]) # just throw the information somewhere on the screen
-        print(ttt_location_info + "TicTacToe data requested!")
-        if data.split(',')[1] == 'getgamestate':
-            # Joining a game logic
-            # Game does not exist
-            if gm.player_in_game('TicTacToe', current_client.name) == True:
-                if len(gm.get_game_by_name('TicTacToe')) >= 1:
-                    print(f"{ttt_location_info}Player is already playing at least one game, need to select a specific game to rejoin.")
-                    net.send_message(client, "\nPlease select a game to join.\n" + gm.display_games(name='TicTacToe', player_name=current_client.name))
-            # Player is not in any games
-            else: 
-                print(f"{ttt_location_info}TTT: Player is not in any games. Can create a game.")
-                # Should not automatically create a game if the player is not in any games.. 
-                # Ask player first, then create a game if they want to play.
-                net.send_message(client, "\nYou are not part of any games.\nWould you like to create a new TicTacToe game?\nEnter -1 to create, or 0 to ignore.")
-            return
+    elif data.startswith('casino'):
+        handle_casino(data, current_client)
+        net.send_message(client, str(current_client.money))
+
     timer = 0
+
+def handle_casino(cmds: str, current_client: Client) -> None:
+    """
+    Handles casino-related commands for a client by updating their balance.
+
+    Args:
+        cmds (str): The command string containing the casino operation details.
+                    Expected format: "casino [casino_id] [change_balance]"
+                    - [delta] (str): The player's win or loss string.
+                    - [change_balance] (int): The amount to change the client's balance by.
+        current_client (Client): The client whose balance is to be updated.
+
+    Returns:
+        None
+
+    Example:
+        handle_casino("casino win 100", client)
+        This will add 100 to the client's balance.
+    """
+    command_data = cmds.split(' ')
+    delta = 1 if command_data[1] == 'win' else -1
+    amount = int(command_data[2])
+    change_balance(current_client.id, delta * amount)
+    print(f"{s.COLORS.CYAN}[CASINO] Updated {current_client.name}'s balance by {delta * amount}. New balance: {current_client.money}")
 
 def handle_battleship(cmds: str, current_client: Client) -> None:
     """
@@ -330,7 +345,7 @@ def handle_battleship(cmds: str, current_client: Client) -> None:
         # print("Current size of Battleship board (if over 10^10, broken): ", len(battleship_board))
         # net.send_message(client, battleship_board)
         # s.print_w_dots(f'Gameboard sent to player {client}')
-    
+
 def handle_ttt(cmds: str, current_client: Client) -> None:
     """
     Handles all TicTacToe requests from the player.
@@ -484,7 +499,7 @@ def handshake(client_socket: socket.socket, handshakes: list) -> None:
 
         name = validate_name(message.split(',')[1])
         
-        clients.append(Client(client_socket, name, 2000, []))
+        clients.append(Client(client_socket, None, name, 2000, [])) # Append the client to the list of clients with a temporary id of None
 
     else: 
         handshakes[len(clients)-1] = False
@@ -575,7 +590,8 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
         have to preface the messages with cash, properties, etc. 
     """
     dice = (0, -1)
-    if mply.players[mply.turn].name == client.name: # Check if the client who sent data is the current player
+    if mply.players[mply.turn].name == client.name: # Check if the client who sent data is the current player 
+                                                    #TODO restrict name values so identical names are disallowed
         action = cmd.split(',')[1]
         if action == None or action == '':
             ret_val = mply.request_roll()

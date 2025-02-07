@@ -235,7 +235,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
             exit_flag = True
         else:
             propertyid =  int(propertyid)
-    except ValueError: ###AHHHHHHHH clean me please
+    except ValueError:
         add_to_output(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {p.properties}" + COLORS.RESET)
         flag = False
     if flag and not exit_flag:
@@ -696,7 +696,6 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
         num_rolls += 1
         request_roll()
     return "player_choice" + ss.set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
-    return "player_choice" + ss.set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
 
 def end_turn():
     global turn
@@ -707,13 +706,10 @@ def player_choice():
     if(players[turn].cash > 0):
         print("\033[36;0H" + ' ' * 70)
         choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
-        print("\033[36;0H" + ' ' * 70)
-        choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
         while(choice != 'e'): 
             if choice == "e":
                 pass
             elif choice == "p":
-                manage_properties(players[turn])
                 manage_properties(players[turn])
             elif choice == "d":
                 update_status(players[turn], "deed")
@@ -729,7 +725,6 @@ def player_choice():
             update_history(f"{players[turn]} declared bankruptcy.")
             players[turn].order = -1
         elif(option == "m"): # Mortgage properties
-            mortgage_logic()
             mortgage_logic()
         elif(option == "s"): # Sell houses/hotels
             housing_logic()
@@ -783,7 +778,6 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
 
     board = Board(num_players)
     decks = Cards()
-
 
     gameboard = s.get_graphics().get('gameboard')
     os.system('cls' if os.name == 'nt' else 'clear')

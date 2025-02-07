@@ -1,14 +1,14 @@
 # COIN FLIP
-import os
 import random
 from time import sleep
 import screenspace as ss
 from style import get_graphics
+from style import COLORS as c
 
 game_title = "⛁ Coin Flip"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
 
-def play(player, active_terminal, bet):
+def play(active_terminal, bet):
     """
     Coin Flip
 
@@ -19,8 +19,9 @@ def play(player, active_terminal, bet):
     score = [0,0,0,0]
 
     graphics = get_graphics()
-
-    choice = input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\rPlayer {1}: Heads or Tails? (h/T) ")
+    ss.update_quadrant(active_terminal, header + "\n" + graphics['coin_flip_heads'])
+    
+    choice = input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: Heads or Tails? (h/T) ")
     ss.overwrite("\r" + " " * 40)
     flip = random.choice(['heads', 'tails'])
     
@@ -36,17 +37,17 @@ def play(player, active_terminal, bet):
     ss.update_quadrant(active_terminal,header + "\n" + graphics['coin_flip_heads' if flip == 'heads' else 'coin_flip_tails'])
 
     if(choice.lower() == "h" and flip == 'heads'):
-        input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\rPlayer {1}: You got heads!")
+        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got heads!")
         ss.overwrite("\r" + " " * 40)
         score[0] += 1
     elif(choice.lower() == "h" and flip == 'tails'):
-        input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\rPlayer {1}: You got tails...")
+        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got tails...")
         ss.overwrite("\r" + " " * 40)
     elif(flip == 'heads'):
-        input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\rPlayer {1}: You got heads...")
+        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got heads...")
         ss.overwrite("\r" + " " * 40)
     else:
-        input(player.COLORS.backYELLOW+player.COLORS.BLACK+f"\rPlayer {1}: You got tails!")
+        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got tails!")
         ss.overwrite("\r" + " " * 40)
         score[0] += 1
 
