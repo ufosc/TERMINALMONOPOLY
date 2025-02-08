@@ -97,7 +97,7 @@ def start_server() -> socket.socket:
         # Accepts connections while there are less than <num_players> players
         if len(clients) < num_players:
             client_socket, addr = server_socket.accept()
-            print(f"Got a connection from {addr}")
+            print(f"Got a connection from {addr}." if ss.VERBOSE else "Got a connection.")
             client_handler = threading.Thread(target=handshake, args=(client_socket,handshakes))
             client_handler.start()
         else: 
@@ -628,7 +628,7 @@ if __name__ == "__main__":
     set_unittest() 
     # set_gamerules()
     start_server()
-    game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)])
     ss.print_banker_frames()
+    game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)])
     threading.Thread(target=monopoly_controller, daemon=True).start()
     start_receiver()

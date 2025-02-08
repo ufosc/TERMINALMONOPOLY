@@ -45,8 +45,9 @@ class OutputArea:
             for line in msg:
                 self.output_list.insert(0, line)
                 self.color_list.insert(0, color)
-            if len(self.output_list) > self.max_lines:
+            while len(self.output_list) > self.max_lines:
                 self.output_list.pop()
+                self.color_list.pop()
             for i, line in enumerate(self.output_list):
                 print(self.color_list[i], end="")
                 if self.name == "Main": # Main output area is special, it doesn't have a border
