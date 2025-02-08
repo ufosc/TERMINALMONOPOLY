@@ -22,6 +22,7 @@ ADDRESS = ""
 PORT = 0
 player_id: int
 DEBUG = False
+NET_COMMANDS_ENABLED = False
 
 def get_graphics():
     """Grab text from ascii.txt and split into dictionary"""
@@ -328,7 +329,7 @@ def get_input() -> None:
             else:
                 ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
-            if not ss.DEBUG:
+            if NET_COMMANDS_ENABLED or not ss.DEBUG:
                 ## Network commands, not available in DEBUG mode. 
                 if stdIn == "game": # Simply displays the game board. Does not give player control.
                     net.send_message(sockets[1], f'{player_id}request_board')
@@ -374,7 +375,10 @@ if __name__ == "__main__":
     elif sys.argv[1] == "-debug":
         ss.DEBUG = True
 
-    if(len(sys.argv) == 5): # Debug mode, with args (name, ip, port)
+    if "-withnet" in sys.argv:
+        NET_COMMANDS_ENABLED = True
+
+    if(len(sys.argv) >= 5): # Debug mode, with args (name, ip, port)
         if sys.argv[3].count('.') == 3 and all(part.isdigit() and 0 <= int(part) <= 255 for part in sys.argv[3].split('.')):
             initialize(True, [sys.argv[2], sys.argv[3], sys.argv[4]])
             ss.DEBUG = True
@@ -382,8 +386,9 @@ if __name__ == "__main__":
             print("Invalid IP address format. Please use the format xxx.xxx.xxx.xxx")
             sys.exit(1)
 
-    ss.make_fullscreen()
-    ss.auto_calibrate_screen()
+    if not ss.DEBUG:
+        ss.make_fullscreen()
+        ss.auto_calibrate_screen()
 
     ss.clear_screen()
     ss.initialize_terminals()

@@ -1,6 +1,7 @@
 # This file contains the logic for the terminal screen
 
-# Terminal total width and height: 150x40
+# Player Terminal total width and height: 150x40
+# Banker total width and height is 200x60
 WIDTH = 150
 HEIGHT = 40
 INPUTLINE = 45
@@ -14,12 +15,48 @@ import shutil
 import re
 import keyboard
 import time
+import textwrap
 
 # Each quadrant is half the width and height of the screen 
 global rows, cols
 rows = HEIGHT//2
 cols = WIDTH//2
 DEBUG = False
+VERBOSE = True # Set to True to see all output in the output areas. If the user does not need to see the output (any privacy concerns or in a tournament game), set to False via -silent sys.argv.
+
+MONOPOLY_OUTPUT_COORDINATES = (1, 47) # (0, 47) is the top left corner of the monopoly output frame. Add 1 to x and y to print within in the frame.
+TTT_OUTPUT_COORDINATES = (157, 13) # (157, 11) is the top left corner of the ttt output frame. Add 1 to x and y to print within in the frame.
+CASINO_OUTPUT_COORDINATES = (157, 0) # (157, 0) is the top left corner of the casino output frame. Add 1 to x and y to print within in the frame.
+MAIN_OUTPUT_COORDINATES = (0, 36) # (0, 0) is the top left corner of the main output frame. Add 1 to x and y to print within in the frame.
+
+class OutputArea:
+    def __init__(self, name: str, coordinates: tuple, max_length: int, max_lines: int):
+        self.name = name
+        self.coordinates = coordinates
+        self.output_list = []
+        self.color_list = []
+        self.max_length = max_length
+        self.max_lines = max_lines
+
+    def add_output(self, output: str, color):
+        if VERBOSE:
+            msg = textwrap.wrap(output, self.max_length, initial_indent=">> ")
+            msg.reverse() # reverse so we can pop from the end and extra wrapped lines are at the end            
+            for line in msg:
+                self.output_list.insert(0, line)
+                self.color_list.insert(0, color)
+            while len(self.output_list) > self.max_lines:
+                self.output_list.pop()
+                self.color_list.pop()
+            for i, line in enumerate(self.output_list):
+                print(self.color_list[i], end="")
+                if self.name == "Main": # Main output area is special, it doesn't have a border
+                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + i)
+                    print(line + " " * (self.max_length - len(line) - 2), end="") # print line and clear extra old text
+                else:
+                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 2 + i)
+                    print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
+                print(COLORS.RESET, end="", flush=True) # reset color
 
 def notification(message: str, n: int, color: str) -> str:
     """
@@ -349,32 +386,91 @@ def calibrate_print_commands():
         for j in range(len(commandsinfo[i])):
             print(f"\033[{34+i};79H" + commandsinfo[i][:j], end="")
 
-def auto_calibrate_screen() -> None:
+def print_banker_frames():
+    """
+    Prints the banker frames.
+    
+    Parameters: None
+    Returns: None
+    """
+    gameboard = get_graphics().get('gameboard')
+    border = get_graphics().get('history and status').split('\n')
+    history = []
+    set_cursor(0,0)
+    print(gameboard)
+    for i in range(len(border)):
+        set_cursor(79,i)
+        if(len(history) - i<= 0):
+            for j in range(len(border[i])):
+                print(border[i][j], end="")
+    calibrate_print_commands()        
+    casino_frame = get_graphics().get('casino_output_frame')
+    i = 0
+    for line in casino_frame.split('\n'):
+        set_cursor(CASINO_OUTPUT_COORDINATES[0], CASINO_OUTPUT_COORDINATES[1]+i)
+        print(line, end="")
+        i += 1
+    i -= 1
+    ttt_frame = get_graphics().get('ttt_output_frame')
+    for line in ttt_frame.split('\n'):
+        set_cursor(TTT_OUTPUT_COORDINATES[0], i)
+        print(line, end="")
+        i += 1
+    monopoly_output_frame = get_graphics().get('monopoly_output_frame')
+    i = 0
+    for line in monopoly_output_frame.split('\n'):
+        set_cursor(MONOPOLY_OUTPUT_COORDINATES[0], MONOPOLY_OUTPUT_COORDINATES[1]+i)
+        print(line, end="")
+        i += 1
+
+def auto_calibrate_screen(mode: str = "player") -> None:
     """
     Automatically calibrates the screen. The player doesn't really know what screen size is 
     optimal, but we do. This function will automatically adjust the screen size to the ensure 
     minimum requirements are met.
     """
-    if os.name == 'nt': # Windows
-        while os.get_terminal_size().lines - 5 < HEIGHT or os.get_terminal_size().columns - 5 < WIDTH:
-            keyboard.press('ctrl')
-            keyboard.send('-')
-            keyboard.release('ctrl')
-            time.sleep(0.1)
+    if mode == "player":
+        if os.name == 'nt': # Windows
+            while os.get_terminal_size().lines - 5 < HEIGHT or os.get_terminal_size().columns - 5 < WIDTH:
+                keyboard.press('ctrl')
+                keyboard.send('-')
+                keyboard.release('ctrl')
+                time.sleep(0.1)
 
-        while os.get_terminal_size().lines > HEIGHT + 40 or os.get_terminal_size().columns > WIDTH + 40:
-            keyboard.press('ctrl')
-            keyboard.send('+')
-            keyboard.release('ctrl')
-            time.sleep(0.1)
-    elif os.name == 'posix': # Linux/macOS
-        while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
-            os.system("printf '\033[1;1t'")
-            time.sleep(0.1)
+            while os.get_terminal_size().lines > HEIGHT + 40 or os.get_terminal_size().columns > WIDTH + 40:
+                keyboard.press('ctrl')
+                keyboard.send('+')
+                keyboard.release('ctrl')
+                time.sleep(0.1)
+        elif os.name == 'posix': # Linux/macOS
+            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
+                os.system("printf '\033[1;1t'")
+                time.sleep(0.1)
 
-        while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
-            os.system("printf '\033[1;1t'")
-            time.sleep(0.1)
+            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
+                os.system("printf '\033[1;1t'")
+                time.sleep(0.1)
+    elif mode == "banker":
+        if os.name == 'nt': # Windows
+            while os.get_terminal_size().lines - 5 < 60 or os.get_terminal_size().columns - 5 < 200:
+                keyboard.press('ctrl')
+                keyboard.send('-')
+                keyboard.release('ctrl')
+                time.sleep(0.1)
+
+            while os.get_terminal_size().lines > 60 + 20 or os.get_terminal_size().columns > 200 + 20:
+                keyboard.press('ctrl')
+                keyboard.send('+')
+                keyboard.release('ctrl')
+                time.sleep(0.1)
+        elif os.name == 'posix': # Linux/macOS
+            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
+                os.system("printf '\033[1;1t'")
+                time.sleep(0.1)
+
+            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
+                os.system("printf '\033[1;1t'")
+                time.sleep(0.1)
 
 def calibrate_screen(type: str) -> None:
     terminal_size = shutil.get_terminal_size()
@@ -382,7 +478,7 @@ def calibrate_screen(type: str) -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
     current_os = platform.system()
 
-    ## add color calibration here too
+    ## TODO add color calibration here too 
 
     if current_os == "Darwin":
         # Print out instructions for macOS users
@@ -448,5 +544,24 @@ def calibrate_screen(type: str) -> None:
             print(f"\033[44;0H" + "Press enter to play or enter r to reset the display.", end="")
             scaling_test = input()
         os.system('cls' if os.name == 'nt' else 'clear')
+    elif type == "banker": # gameboard is least 156 characters, but we need extra space for additional output for debugging purposes (40 chars)
+        # Total banker display is 60 rows x 200 columns. Default screen size usually will not accomodate, so use calibration here
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
+        def print_xs():
+            print_with_wrap("X", 0, 0)
+            print_with_wrap("X", 0, 200)
+            print_with_wrap("X", 59, 0)
+            print_with_wrap("X", 59, 200)
+            print(f"\033[60;0H" + "Press enter to play or enter r to reset the display.", end="")
 
-    # auto_calibrate_screen("player")
+        print_banker_frames()
+        auto_calibrate_screen("banker")
+        print_xs()
+        scaling_test = input()
+        while scaling_test != "":
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print_banker_frames()
+            print_xs()
+            scaling_test = input()
+        os.system('cls' if os.name == 'nt' else 'clear')
