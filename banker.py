@@ -25,7 +25,7 @@ play_monopoly = True
 
 TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
 Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
-Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES, 191, 5)
+Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES, 191, 6)
 Main_Output = ss.OutputArea("Main", ss.MAIN_OUTPUT_COORDINATES, 79, 12)
 
 class Client:
@@ -212,8 +212,8 @@ def set_unittest() -> None:
     if len(sys.argv) > 1:
         if sys.argv[1].isdigit(): # If a test number is provided as a command line argument
             test = int(sys.argv[1])
-        else: # If a non-digit is provided, skip unit tests
-            test = ""
+        else:
+            test = ss.get_valid_int("Enter a test number: ", allowed=[' '])
     else: # If no command line argument is provided, ask for a test number
         test = ss.get_valid_int("Enter a test number: ", allowed=[' '])
     if test == "":
