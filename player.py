@@ -272,7 +272,7 @@ def get_input() -> None:
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
             
             elif stdIn == "calc":
-                m.calculator(active_terminal.index)
+                m.calculator(active_terminal)
             
             elif stdIn == "list":
                 active_terminal.update(m.list_properties(), padding=False)
@@ -339,10 +339,10 @@ def get_input() -> None:
                     active_terminal.update(net.receive_message(sockets[1]).center(ss.cols), padding=True)
             
                 elif stdIn == "ttt" or stdIn == "tictactoe":
-                    m.ttt_handler(sockets[1], active_terminal.index, player_id)
+                    m.ttt_handler(sockets[1], active_terminal, player_id)
 
                 elif stdIn == "casino":
-                    casino.module(sockets[1], active_terminal.index, player_id)
+                    casino.module(sockets[1], active_terminal, player_id)
 
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")

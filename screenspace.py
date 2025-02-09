@@ -259,7 +259,7 @@ def update_terminal(n: int, o: int): # TODO not working at the moment
 def debug_note():
     if DEBUG:
         message = 'DEBUG MODE'
-        set_cursor(cols-len(message),0)
+        set_cursor(WIDTH-10-len(message),0)
         print(f'{COLORS.GREEN}{message}{COLORS.RESET}')
         set_cursor(0,INPUTLINE)
 
