@@ -7,6 +7,7 @@ import platform
 from time import sleep
 import style as s
 from style import COLORS
+from style import graphics as g
 import screenspace as ss
 import modules as m
 import casino
@@ -14,20 +15,15 @@ import networking as net
 import name_validation
 
 game_running = False
-text_dict = {}
 screen = 'terminal'
-active_terminal = 1
 sockets = (socket.socket(socket.AF_INET, socket.SOCK_STREAM), socket.socket(socket.AF_INET, socket.SOCK_STREAM))
 ADDRESS = ""
 PORT = 0
 player_id: int
 DEBUG = False
 NET_COMMANDS_ENABLED = False
-
-def get_graphics():
-    """Grab text from ascii.txt and split into dictionary"""
-    global text_dict
-    text_dict = s.get_graphics()
+TERMINALS = [ss.Terminal(1, (2, 2)), ss.Terminal(2, (ss.cols+3, 2)), ss.Terminal(3, (2, ss.rows+3)), ss.Terminal(4, (ss.cols+3, ss.rows+3))]
+active_terminal = TERMINALS[0]
 
 def banker_check():
     has_passed_banker_query = False
@@ -196,8 +192,8 @@ def start_notification_listener(my_socket: socket.socket) -> None:
             notif = notif[5:]
             notif_list.append(notif)
             # Display notifications in the player's interface. Places the notification in the next available terminal.
-            print(ss.notification(notif_list.pop(0), (current_pos) if current_pos != active_terminal else (current_pos + 1) if current_pos + 1 <= 4 else 1
-                                if active_terminal != 1 else 2, s.COLORS.RED)) # this is probably an overly defined ternary operator(s)
+            print(ss.notification(notif_list.pop(0), (current_pos) if current_pos != active_terminal.index else (current_pos + 1) if current_pos + 1 <= 4 else 1
+                                if active_terminal.index != 1 else 2, s.COLORS.RED)) # this is probably an overly defined ternary operator(s)
             current_pos = (current_pos + 1) if current_pos + 1 <= 4 else 1
             print(s.COLORS.RESET)
             ss.set_cursor(0, ss.INPUTLINE)
@@ -214,8 +210,8 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 # ss.set_cursor(0, ss.INPUTLINE)
                 # print("End of turn. Press enter to return to terminal.")
                 screen = 'terminal'
-                ss.initialize_terminals()
-                ss.update_terminal(active_terminal, active_terminal)
+                # ss.initialize_terminals()
+                ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.set_cursor(0, ss.INPUTLINE)
 
 def get_input() -> None:
@@ -267,39 +263,42 @@ def get_input() -> None:
                 skip_initial_input = True
                 continue
             if stdIn == "helpstocks" or stdIn == "help stocks":
-                ss.update_quadrant(active_terminal, text_dict.get("helpstocks"), padding=False)
+                active_terminal.update(g.get("helpstocks"), padding=False)
             elif stdIn.startswith("help"):
                 if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
-                    ss.update_quadrant(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
+                    active_terminal.update(g.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
                 else: 
-                    ss.update_quadrant(active_terminal, text_dict.get('help'), padding=True)
+                    active_terminal.update(g.get('help'), padding=True)
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
             
             elif stdIn == "calc":
-                m.calculator(active_terminal)
+                m.calculator(active_terminal.index)
             
             elif stdIn == "list":
-                ss.update_quadrant(active_terminal, m.list_properties(), padding=False)
+                active_terminal.update(m.list_properties(), padding=False)
             
             elif stdIn.startswith("term "):
                 if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                     n = int(stdIn.strip().split(" ")[1])
-                    ss.update_terminal(n = n, o = active_terminal)
-                    active_terminal = n
+                    ss.update_terminal(n = n, o = active_terminal.index)
+                    active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
                     ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             
             elif stdIn.startswith("deed"):
                 if(len(stdIn) > 4):
-                   pass  # ss.update_quadrant(active_terminal, m.deed(stdIn[5:]), padding=True)
+                   pass  # ss.update_quadrant(active_terminal.index, m.deed(stdIn[5:]), padding=True)
             
             elif stdIn == "fish":
                 fishing_gamestate = 'start'
                 while(fishing_gamestate != 'e'):
                     game_data, fishing_gamestate = m.fishing(fishing_gamestate)
-                    ss.update_quadrant(active_terminal, game_data, padding=False)
+                    active_terminal.update(game_data, padding=False)
                 ss.set_cursor(0, ss.INPUTLINE)
+
+            elif stdIn == "shop":
+                pass
             
             elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
@@ -308,23 +307,18 @@ def get_input() -> None:
             elif stdIn.startswith('reset'):
                 ss.calibrate_screen('player')
                 ss.clear_screen()
-                ss.initialize_terminals()
-                ss.update_terminal(active_terminal, active_terminal)
+                print(g.get('terminals'))
+                for t in TERMINALS:
+                    t.display()
+                ss.set_cursor(0, 0)
+                ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
-
-            # Temporary commands - to be removed later. TODO
-            elif stdIn == "disable":
-                ss.update_quadrant(active_terminal, m.disable())
             
-            elif stdIn == "kill":
-                print(COLORS.RED)
-                ss.update_quadrant(active_terminal, m.kill())
-            
-            elif ss.DEBUG and stdIn in ["game", "bal", "ships", "ttt", "tictactoe", "casino"]:
+            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino"]:
                 ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode.")
 
             elif stdIn == "exit":
-                continue
+                break
 
             else:
                 ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
@@ -338,20 +332,17 @@ def get_input() -> None:
                     print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
                     input()
                     ss.initialize_terminals() # Reinitialize terminals to clear the screen. TODO restore previous terminals state
-                    ss.update_terminal(active_terminal, active_terminal)
+                    ss.update_terminal(active_terminal.index, active_terminal.index)
                 
                 elif stdIn == "bal":
                     net.send_message(sockets[1], f'{player_id}bal')
-                    ss.update_quadrant(active_terminal, net.receive_message(sockets[1]).center(ss.cols), padding=True)
-                
-                elif stdIn == "ships":
-                    m.battleship_handler(sockets[1], active_terminal, player_id)     
+                    active_terminal.update(net.receive_message(sockets[1]).center(ss.cols), padding=True)
             
                 elif stdIn == "ttt" or stdIn == "tictactoe":
-                    m.ttt_handler(sockets[1], active_terminal, player_id)
+                    m.ttt_handler(sockets[1], active_terminal.index, player_id)
 
                 elif stdIn == "casino":
-                    casino.module(sockets[1], active_terminal, player_id)
+                    casino.module(sockets[1], active_terminal.index, player_id)
 
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
@@ -365,13 +356,10 @@ if __name__ == "__main__":
     """
     Main driver function for player.
     """
-    get_graphics()
 
-    # Feel free to comment out the 3 following lines for testing purposes.
     if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
         initialize()
         ss.make_fullscreen()
-        # ss.calibrate_screen('player')
     elif sys.argv[1] == "-debug":
         ss.DEBUG = True
 
@@ -391,11 +379,11 @@ if __name__ == "__main__":
         ss.auto_calibrate_screen()
 
     ss.clear_screen()
-    ss.initialize_terminals()
-    ss.update_terminal(active_terminal, active_terminal)
+    ss.initialize_terminals(TERMINALS)
+    ss.update_terminal(active_terminal.index, active_terminal.index)
     
     # Prints help in quadrant 2 to orient player.
-    ss.update_quadrant(2, text_dict.get('help'), padding=True)
+    TERMINALS[1].update(g.get('help'), padding=True)
     get_input()
     # s.print_w_dots("Goodbye!")
 

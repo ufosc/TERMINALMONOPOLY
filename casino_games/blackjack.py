@@ -1,7 +1,7 @@
 # BLACKJACK
 import random
 import screenspace as ss
-from style import get_graphics
+from style import graphics as g
 from style import COLORS
 
 game_title = "🃑 Blackjack"
@@ -163,15 +163,14 @@ def play(active_terminal, bet):
     """
     render_hand(active_terminal, [], [])
     outcome = turn(active_terminal, 1)
-    graphics = get_graphics()
     if (outcome == "WIN"):
-        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_win']}")
+        ss.update_quadrant(active_terminal, header + f"\n{g.get('casino_win')}")
         bet *= 2
     elif (outcome == "BUST"):
-        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_lose']}")
+        ss.update_quadrant(active_terminal, header + f"\n{g.get('casino_lose')}")
         bet = 0
     elif (outcome == "TIE"):
-        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_tie']}")
+        ss.update_quadrant(active_terminal, header + f"\n{g.get('casino_tie')}")
     
     input("\r")
     ss.overwrite("\r" + " " * 40)

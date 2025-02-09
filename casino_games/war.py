@@ -2,7 +2,7 @@ import player
 import random
 import screenspace as ss
 import time
-from style import get_graphics
+from style import graphics as g
 
 suits = ["♥", "♦", "♣", "♠"]
 numbers = ["J", "Q", "K", "A"]
@@ -73,9 +73,8 @@ def end(wins, losses, total_rounds, active_terminal):
     card = None
     render(banker_card, card, wins, losses, total_rounds, active_terminal)
 
-    graphics = get_graphics()
-    win_gfx = graphics["casino_win"]
-    lose_gfx = graphics["casino_lose"]
+    win_gfx = g["casino_win"]
+    lose_gfx = g["casino_lose"]
 
     if wins > total_rounds//2:
         ss.update_quadrant(active_terminal, win_gfx)

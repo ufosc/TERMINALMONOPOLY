@@ -1,5 +1,6 @@
 import screenspace as ss
 import style as s
+from style import graphics as g
 from modules_directory.fishing import fishing_game
 from modules_directory.tictactoe import destruct_board, construct_board
 from socket import socket as Socket
@@ -134,7 +135,7 @@ def list_properties() -> str:
     Returns: None
     """
     ret_val = ""
-    props = s.get_graphics().get('properties').split('\n')
+    props = g.get('properties').split('\n')
     for prop in props:
         if prop == '': 
             ret_val += ' '.center(75) + '\n' 
@@ -178,7 +179,7 @@ def ttt_handler(server: Socket, active_terminal: int, player_id: int) -> None:
         game_id = ss.get_valid_int(prompt='Enter the game id: ', min_val=-1, max_val=0)
         if game_id == -1: # If creating a new game, ask who else is playing.
             while True:
-                ss.update_quadrant(active_terminal, "1: Player 1\n2: Player 2\n3: Player 3\n4: Player 4", padding=True)  # @ TODO: This is hardcoded for now, but should be dynamic
+                ss.update_quadrant(active_terminal, "1: Player 1\n2: Player 2\n3: Player 3\n4: Player 4", padding=True)  # TODO: This is hardcoded for now, but should be dynamic
                 opponent = ss.get_valid_int(prompt=f"Enter the opponent's ID (1-4), not including your ID): ",
                                             min_val=1, max_val=4)-1 # -1 for zero-indexing
 
@@ -255,10 +256,6 @@ def ttt_handler(server: Socket, active_terminal: int, player_id: int) -> None:
                 keyboard.unhook_all()
                 break
 
-def battleship_handler(server: Socket, active_terminal: int, player_id: int) -> None:
-    net.send_message(server, f'{player_id}ships')
-    # TODO implement battleship handler
-
 fishing_game_obj = fishing_game() # fishing is played LOCALLY, not over the network
 def fishing(gamestate: str) -> tuple[str, str]:
     """
@@ -276,7 +273,7 @@ def fishing(gamestate: str) -> tuple[str, str]:
         return '', 'start'  
 
 def kill() -> str:
-    return s.get_graphics()['skull']
+    return g.get('skull')
 
 def disable() -> str:
     result = ('X ' * round(ss.cols/2+0.5) + '\n' + 

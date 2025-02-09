@@ -10,6 +10,7 @@ from board import Board
 from player_class import MonopolyPlayer
 import screenspace as ss
 import style as s
+from style import graphics as g
 
 mode = "normal"
 output = ""
@@ -21,7 +22,7 @@ CASH = 2000
 num_players = 4
 bankrupts = 0
 players = []
-border = s.get_graphics().get('history and status')
+border = g.get('history and status')
 border = border.split("\n")
 turn = 0
 
@@ -100,7 +101,7 @@ def print_commands():
     """
     Print commands\n
     """
-    commandsinfo = s.get_graphics().get('commands').split("\n")
+    commandsinfo = g.get('commands').split("\n")
     for i in range(len(commandsinfo)):
         add_to_output(f"\033[{34+i};79H" + commandsinfo[i])
 
@@ -742,7 +743,7 @@ def start_game(cash: int, num_p: int, names: list[str]) -> str:
     global CASH, num_players, players, gameboard, board, decks, mode
     ss.clear_screen()
     mode = "banker"
-    gameboard = s.get_graphics().get('gameboard')
+    gameboard = g.get('gameboard')
     num_players = num_p
     CASH = cash
     board = Board(num_players)
@@ -777,7 +778,7 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
     board = Board(num_players)
     decks = Cards()
 
-    gameboard = s.get_graphics().get('gameboard')
+    gameboard = g.get('gameboard')
     os.system('cls' if os.name == 'nt' else 'clear')
     
     #unittest()
