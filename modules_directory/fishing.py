@@ -1,6 +1,6 @@
 import time
 import random
-from style import get_graphics, set_cursor, set_cursor_str, COLORS
+from style import get_graphics, set_cursor, set_cursor_str
 
 class fishing_game():
     """
@@ -47,7 +47,7 @@ class fishing_game():
 
 if __name__ == "__main__":
     import os
-    os.system('cls')
+    os.system('cls' if os.name == 'nt' else 'clear')
     graphics = get_graphics()
 
     pictures = []
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     start = int(time.time())
     delay = random.randint(3,10)
     catchtime = start + delay
-
+   
     input()
     set_cursor(0,0)
     print(pictures[1])
