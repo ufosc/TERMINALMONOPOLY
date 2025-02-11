@@ -55,7 +55,31 @@ def banker_check():
             )
         )   
     elif(current_os == "Linux"):
-        subprocess.call(['gnome-terminal', '-x', 'python banker.py'])
+        # We use a list of existing Linux terminals to run banker.
+        list_of_terms = [("gnome-terminal", "--"), ("kgx", "-x"), ("ptyxis", "--"),
+                         ("konsole", "-e"), ("xfce4-terminal", "-e"), ("mate-terminal", "-e"),
+                         ("tilix", "-e"), ("xterm", "-e")]
+        
+        launched = False
+        for term in list_of_terms:
+            try:
+                subprocess.Popen([term[0], term[1], "python banker.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                launched = True
+                break
+            except FileNotFoundError:
+                pass
+
+        if(not launched):
+            print("Your terminal was not detected!\nYou can either type in your terminal's start command (ex: 'gnome-terminal -x') or press enter and directly run 'python banker.py'.")
+            term = input("Terminal Command (default: none): ")
+            if(term != "" and ' ' in term):
+                try:
+                    term = term.split(" ")
+                    subprocess.Popen([term[0], term[1], "python banker.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except:
+                    print("Invalid command! Try running 'python banker.py' directly")
+            else:
+                print("Make sure you start 'python banker.py' directly")
     else:
         print("Current OS not supported to open new window, try running 'python banker.py' directly")
 
