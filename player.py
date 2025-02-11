@@ -12,6 +12,7 @@ import modules as m
 import casino
 import networking as net
 import name_validation
+from test_get_port import select_open_port_and_address
 
 game_running = False
 text_dict = {}
@@ -78,8 +79,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
         client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
         client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockets = (client_receiver, client_sender)
-        ADDRESS = input("Enter Host IP: ")
-        PORT = input("Enter Host Port: ")
+        ADDRESS, PORT = select_open_port_and_address()
 
         name_validated = False
         print("Enter a name that meets the following criteria:")
