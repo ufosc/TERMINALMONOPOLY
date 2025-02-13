@@ -1,8 +1,9 @@
 import player
 import random
 import screenspace as ss
+from screenspace import Terminal
 import time
-from style import get_graphics
+from style import graphics as g
 
 suits = ["♥", "♦", "♣", "♠"]
 numbers = ["J", "Q", "K", "A"]
@@ -30,7 +31,7 @@ def card_to_str(card):
 
     return card_str
 
-def render(card1, card2, wins, losses, total_rounds, active_terminal):
+def render(card1, card2, wins, losses, total_rounds, active_terminal: Terminal):
     str_to_render = "─" * 36 + "War" + "─" * 36 + "\n"
     str_to_render += f"You: {wins}" + " " * 23 + f"Best of {total_rounds} battles" + " " * 17 + f"Opponent: {losses}" + "\n" * 2
     str_to_render += card_to_str(card1)
@@ -38,9 +39,9 @@ def render(card1, card2, wins, losses, total_rounds, active_terminal):
     str_to_render += card_to_str(card2)
     str_to_render += " " * 33 + "Your card" + " " * 33 + "\n"
 
-    ss.update_quadrant(active_terminal, str_to_render)
+    active_terminal.update(str_to_render)
 
-def draw_cards(wins, losses, total_rounds, active_terminal):
+def draw_cards(wins, losses, total_rounds, active_terminal: Terminal):
     banker_card = None
     card = None
     render(banker_card, card, wins, losses, total_rounds, active_terminal)
@@ -68,23 +69,22 @@ def draw_cards(wins, losses, total_rounds, active_terminal):
         time.sleep(1)
         return draw_cards(wins, losses, total_rounds, active_terminal)
 
-def end(wins, losses, total_rounds, active_terminal):
+def end(wins, losses, total_rounds, active_terminal: Terminal):
     banker_card = None
     card = None
     render(banker_card, card, wins, losses, total_rounds, active_terminal)
 
-    graphics = get_graphics()
-    win_gfx = graphics["casino_win"]
-    lose_gfx = graphics["casino_lose"]
+    win_gfx = g["casino_win"]
+    lose_gfx = g["casino_lose"]
 
     if wins > total_rounds//2:
-        ss.update_quadrant(active_terminal, win_gfx)
+        active_terminal.update(win_gfx)
         ss.overwrite("\r" + " " * 40)
     else:
-        ss.update_quadrant(active_terminal, lose_gfx)
+        active_terminal.update(lose_gfx)
         ss.overwrite("\r" + " " * 40)
 
-def play(active_terminal):
+def play(active_terminal: Terminal):
     n = 3  # number of rounds (must be odd)
 
     wins = 0
@@ -99,7 +99,7 @@ def play(active_terminal):
 
     end(wins, losses, n, active_terminal)
     time.sleep(1.5)
-    ss.update_quadrant(active_terminal, data=None)
+    active_terminal.update(data=None)
     ss.overwrite("\r")
 
 

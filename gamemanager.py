@@ -1,6 +1,4 @@
-import style as s
 import screenspace as ss
-graphics = s.get_graphics()
 class Game:
     def __init__(self, name: str, players: list, board: str, other_data):
         self.name = name

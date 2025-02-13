@@ -112,6 +112,9 @@ def get_graphics() -> dict:
                     text_dict[file] = '\n' + full_file
     return text_dict
 
+# Use this object to access all graphics, instead of calling get_graphics() every time.
+graphics = get_graphics()
+
 def set_cursor(x: int, y: int) -> None:
     print(f"\033[{y};{x}H",end="")
 
