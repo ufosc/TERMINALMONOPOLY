@@ -460,7 +460,7 @@ def auto_calibrate_screen(mode: str = "player") -> None:
                 keyboard.release('ctrl')
                 time.sleep(0.1)
         elif os.name == 'posix': # Linux/macOS
-            print("\033[8;43;153t")
+            print("\033[8;50;160t")
     elif mode == "banker":
         if os.name == 'nt': # Windows
             while os.get_terminal_size().lines - 5 < 60 or os.get_terminal_size().columns - 5 < 200:
