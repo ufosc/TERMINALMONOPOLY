@@ -36,6 +36,7 @@ def calculator(active_terminal) -> str:
         calculator_history_current_capacity -= numLines
         calculator_history_queue.append((equation, numLines))
 
+
     #Uses recursion to calculate.
     def calculate(equation: str) -> float:
         for i in range(0, len(equation)-1):
