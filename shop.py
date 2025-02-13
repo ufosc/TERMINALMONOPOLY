@@ -24,7 +24,7 @@ testfishinventory = FishInventory()
 
 class Shop():
     # TODO : Shop needs to reference the players own inventory
-    def __init__(self):
+    def __init__(self): #pass in an inventory object that shop can access
         self.fishprices = {"Carp": 5, "Bass": 8, "Salmon": 12}
         graphics = get_graphics()
         self.__shopimages = graphics.copy()
