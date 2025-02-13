@@ -460,13 +460,7 @@ def auto_calibrate_screen(mode: str = "player") -> None:
                 keyboard.release('ctrl')
                 time.sleep(0.1)
         elif os.name == 'posix': # Linux/macOS
-            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-
-            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
+            print("\033[8;43;153t")
     elif mode == "banker":
         if os.name == 'nt': # Windows
             while os.get_terminal_size().lines - 5 < 60 or os.get_terminal_size().columns - 5 < 200:
@@ -481,13 +475,7 @@ def auto_calibrate_screen(mode: str = "player") -> None:
                 keyboard.release('ctrl')
                 time.sleep(0.1)
         elif os.name == 'posix': # Linux/macOS
-            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-
-            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
+            print("\033[8;60;200t")
 
 def calibrate_screen(type: str) -> None:
     terminal_size = shutil.get_terminal_size()
