@@ -341,7 +341,7 @@ def handle_ttt(cmds: str, current_client: Client) -> None:
         None
     """
     ttt_game = None
-    TTT_Output.add_output("TicTacToe data requested!")
+    add_to_output_area("TicTacToe", "TicTacToe data requested!")
     if cmds.split(',')[1] == 'getgamestate':
         # Joining a game logic
         # Game does not exist
