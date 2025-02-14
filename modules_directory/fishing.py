@@ -1,6 +1,6 @@
 import time
 import random
-from style import get_graphics, set_cursor, set_cursor_str
+from style import graphics as g, set_cursor, set_cursor_str
 
 class fishing_game():
     """
@@ -12,8 +12,7 @@ class fishing_game():
     If you want to playtest the game you can run the file by itself.
     """
     def __init__(self) -> None:
-        graphics = get_graphics()
-        self.__fishies = graphics.copy()
+        self.__fishies = g.copy()
         self.__pictures = []
         self.__pictures.append(self.__fishies.pop('fishing 1 idle'))
         self.__pictures.append(self.__fishies.pop('fishing 1 win'))
@@ -53,11 +52,10 @@ class fishing_game():
 if __name__ == "__main__":
     import os
     os.system('cls' if os.name == 'nt' else 'clear')
-    graphics = get_graphics()
 
     pictures = []
 
-    fishies = graphics.copy()
+    fishies = g.copy()
 
     pictures.append(fishies.pop('fishing 1 idle'))
     pictures.append(fishies.pop('fishing 1 win'))

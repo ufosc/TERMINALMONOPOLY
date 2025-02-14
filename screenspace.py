@@ -1,6 +1,6 @@
 # This file contains the logic for the terminal screen
 
-# Player Terminal total width and height: 150x40
+# Player Terminal total width and height: 153x43. There is 3 extra characters for the border.
 # Banker total width and height is 200x60
 WIDTH = 150
 HEIGHT = 40
@@ -8,7 +8,7 @@ INPUTLINE = 45
 import os
 from style import COLORS
 from style import set_cursor, set_cursor_str
-from style import get_graphics
+from style import graphics as g
 import platform
 import ctypes
 import shutil
@@ -58,7 +58,89 @@ class OutputArea:
                     print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
                 print(COLORS.RESET, end="", flush=True) # reset color
 
-def notification(message: str, n: int, color: str) -> str:
+class Terminal:
+    def __init__(self, index: int, coordinates: tuple):
+        self.index = index
+        self.x = coordinates[0] # top left corner of the terminal
+        self.y = coordinates[1] # top left corner of the terminal
+        self.data = []
+        self.padded_data = False
+
+    def update(self, data, padding: bool = True) -> None:
+        """
+        Description:
+            Better quadrant update function.
+            This exceeds others because it immediately updates a single quadrant with the new data.
+            Previously, the screen would not update until print_screen() was called.
+            Furthermore, print_screen() would overwrite the entire screen, which is not ideal and slower.\n
+            Set padding = True if you're not sure whether your module needs padding.
+        
+        Parameters: 
+            n (int): Number (1-4) of the terminal to change data. 
+            data (str): The string (with newlines to separate lines) to populate the quadrant with.
+            data (function): A function that populates the quadrant manually. Useful for modules that need 
+                to print with colors or other formatting
+            padding (bool): (default True) a flag whether or not your module needs extra padding 
+                    (blank spaces) to fill in any missing lines
+        Returns: 
+            None
+        """
+
+        self.padded_data = padding
+        # If you're really desparate to add padding, for some edge case you can add it to the data string.
+        if not padding:
+            if not callable(data) and 'PAD ME PLEASE!' in data:
+                data = data.replace('PAD ME PLEASE!', '')
+                self.padded_data = True
+
+        # These lines are taking any additional string fragments that use "set_cursor_string()" from 
+        # style.py and update the x,y coordinates to the current quadrant.
+        pattern = r'\033\[(\d+);(\d+)H'
+        data = re.sub(pattern, lambda m: replace_sequence(m, self.x, self.y), data)
+        self.data = data
+        self.display()
+        
+    def display(self) -> None:
+        """
+        Description:
+            Prints the terminal data with a border and a title.
+        
+        Parameters: 
+            None
+        Returns: 
+            None
+        """
+        if self.data and not callable(self.data):
+            if self.data:
+                line_list = self.data.split('\n')
+                if len(line_list) > rows and self.padded_data:
+                    line_list = line_list[:rows] # Truncate if necessary bc someone might send a long string
+                for i in range(len(line_list)):
+                    set_cursor(self.x,self.y+i)
+                    if self.padded_data:
+                        line_list[i] = line_list[i] + " " * (cols - len(line_list[i]))
+
+                    print(line_list[i][:cols] if len(line_list[i]) > cols and self.padded_data else line_list[i]) # Truncate if necessary bc someone might send a long string
+                for i in range(len(line_list), rows):
+                    set_cursor(self.x,self.y+i)
+                    print(" " * cols)
+        elif callable(self.data):
+            self.data()
+        else:
+            set_cursor(x=self.x + 10, y= self.y + 4)
+            print(f'╔══════Terminal {self.index}══════╗')
+            
+            set_cursor(x=self.x + 10, y= self.y + 5)
+            print('║ Awaiting commands... ║')
+
+            set_cursor(x=self.x + 10, y= self.y + 6)
+            print('╚══════════════════════╝')
+
+        debug_note()
+        print(COLORS.RESET, end='')
+        set_cursor(0,INPUTLINE)
+
+def notification(message: str, n: int, color: str, custom_x: int, custom_y: int) -> str:
     """
     Generates a notification popup message for the player.
     Parameters:
@@ -69,8 +151,9 @@ def notification(message: str, n: int, color: str) -> str:
     Returns:
         str: The formatted string with the notification message and its position.
     """
-    message = message + " " * max(0, (78 - len(message)))
     # Max 78 character popup for messaging the player.
+    message = message + " " * max(0, (78 - len(message)))
+    lines = textwrap.wrap(message, 78/3)
     x,y = -1,-1
     writeto = ""
     if (n == 1):
@@ -83,9 +166,12 @@ def notification(message: str, n: int, color: str) -> str:
         x,y = cols+3+10, rows+3+5
     elif (n == -1):
         x,y = cols - 20, rows - 5
+        if custom_x and custom_y:
+            x = custom_x
+            y = custom_y
 
     p = color + set_cursor_str(x, y)
-    outline = get_graphics()["popup 1"].split("\n")
+    outline = g["popup 1"].split("\n")
     for i in range(len(outline)):
         p += set_cursor_str(x, y+i) + outline[i]
         if 0 < i < 4:
@@ -110,78 +196,7 @@ def replace_sequence(match, x, y):
     # Return the new sequence
     return f"\033[{new_y};{new_x}H"
 
-def update_quadrant(n: int, data: str, padding: bool = True) -> None:
-    """
-    Better quadrant update function.
-    This exceeds others because it immediately updates a single quadrant with the new data.
-    Previously, the screen would not update until print_screen() was called.
-    Furthermore, print_screen() would overwrite the entire screen, which is not ideal and slower.\n
-    Set padding = True if you're not sure whether your module needs padding.
-    
-    Parameters: 
-        n (int): Number (1-4) of the terminal to change data. 
-        data (str): The string (with newlines to separate lines) to populate the quadrant with.
-        padding (bool): (default True) a flag whether or not your module needs extra padding 
-                (blank spaces) to fill in any missing lines
-    Returns: 
-        None
-    """
-
-    # If you're really desparate to add padding, for some edge case you can add it to the data string.
-    if not padding:
-        if 'PAD ME PLEASE!' in data:
-            data = data.replace('PAD ME PLEASE!', '')
-            padding = True
-
-    # Sets the x and y coordinates based on the quadrant number corresponding to the top left corner of the quadrant plus border padding.
-    if (n == 1):
-        x,y = 2,2
-    elif (n == 2):
-        x,y = cols+3, 2
-    elif (n == 3):
-        x,y = 2, rows+3
-    elif (n == 4):
-        x,y = cols+3, rows+3
-
-    if data:
-
-        # These lines are taking any additional string fragments that use "set_cursor_string()" from 
-        # style.py and update the x,y coordinates to 
-
-        pattern = r'\033\[(\d+);(\d+)H'
-        data = re.sub(pattern, lambda m: replace_sequence(m, x, y), data)
-        
-        line_list = data.split('\n')
-        if len(line_list) > rows and padding:
-            line_list = line_list[:rows] # Truncate if necessary bc someone might send a long string
-        for i in range(len(line_list)):
-            set_cursor(x,y+i)
-            if padding:
-                line_list[i] = line_list[i] + " " * (cols - len(line_list[i]))
-
-            print(line_list[i][:cols] if len(line_list[i]) > cols and padding else line_list[i]) # Truncate if necessary bc someone might send a long string
-        for i in range(len(line_list), rows):
-            set_cursor(x,y+i)
-            print(" " * cols)
-
-        print(COLORS.RESET, end='')
-        set_cursor(0,INPUTLINE)
-    else:
-        for i in range(rows):
-            set_cursor(x,y+i)
-            print(f'{n}' * cols)
-        set_cursor(x=x-12 + cols//2, y= y-2+rows//2)
-        print('╔══════════════════════╗')
-        
-        set_cursor(x=x-12 + cols//2, y= y-1+rows//2)
-        print('║ Awaiting commands... ║')
-
-        set_cursor(x=x-12 + cols//2, y= y-0+rows//2)
-        print('╚══════════════════════╝')
-    
-    debug_note()
-
-def update_terminal(n: int, o: int):
+def update_terminal(n: int, o: int): # TODO not working at the moment
     """
     Updates the terminal border to indicate the active terminal. Turns off the border for the inactive terminal.
     """
@@ -190,7 +205,9 @@ def update_terminal(n: int, o: int):
                     ('╦','╗','╬','╣'),
                     ('╠','╬','╚','╩'),
                     ('╬','╣','╩','╝')]
-    
+    if type(o) == Terminal:
+        o = o.index    
+
     if (o == 1):
         x,y = 0,1
     elif(o == 2):
@@ -242,7 +259,7 @@ def update_terminal(n: int, o: int):
 def debug_note():
     if DEBUG:
         message = 'DEBUG MODE'
-        set_cursor(cols-len(message),0)
+        set_cursor(WIDTH-10-len(message),0)
         print(f'{COLORS.GREEN}{message}{COLORS.RESET}')
         set_cursor(0,INPUTLINE)
 
@@ -336,14 +353,14 @@ def clear_screen():
     print(COLORS.RESET,end='')
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def initialize_terminals():
+def initialize_terminals(terminals: list[Terminal]):
     """
     Initializes the terminal screen with the default number displays and terminal borders.
     """
     clear_screen()
-    print(get_graphics()['terminals'])
+    print(g.get('terminals'))
     for i in range(4):
-        update_quadrant(i+1, data=None)
+        terminals[i].update('')
     set_cursor(0,INPUTLINE)
 
 def make_fullscreen():
@@ -381,7 +398,7 @@ def calibrate_print_commands():
     """
     Print commands, used in calibration screen.\n
     """
-    commandsinfo = get_graphics().get('commands').split("\n")
+    commandsinfo = g.get('commands').split("\n")
     for i in range(len(commandsinfo)):
         for j in range(len(commandsinfo[i])):
             print(f"\033[{34+i};79H" + commandsinfo[i][:j], end="")
@@ -393,8 +410,8 @@ def print_banker_frames():
     Parameters: None
     Returns: None
     """
-    gameboard = get_graphics().get('gameboard')
-    border = get_graphics().get('history and status').split('\n')
+    gameboard = g.get('gameboard')
+    border = g.get('history and status').split('\n')
     history = []
     set_cursor(0,0)
     print(gameboard)
@@ -404,19 +421,19 @@ def print_banker_frames():
             for j in range(len(border[i])):
                 print(border[i][j], end="")
     calibrate_print_commands()        
-    casino_frame = get_graphics().get('casino_output_frame')
+    casino_frame = g.get('casino_output_frame')
     i = 0
     for line in casino_frame.split('\n'):
         set_cursor(CASINO_OUTPUT_COORDINATES[0], CASINO_OUTPUT_COORDINATES[1]+i)
         print(line, end="")
         i += 1
     i -= 1
-    ttt_frame = get_graphics().get('ttt_output_frame')
+    ttt_frame = g.get('ttt_output_frame')
     for line in ttt_frame.split('\n'):
         set_cursor(TTT_OUTPUT_COORDINATES[0], i)
         print(line, end="")
         i += 1
-    monopoly_output_frame = get_graphics().get('monopoly_output_frame')
+    monopoly_output_frame = g.get('monopoly_output_frame')
     i = 0
     for line in monopoly_output_frame.split('\n'):
         set_cursor(MONOPOLY_OUTPUT_COORDINATES[0], MONOPOLY_OUTPUT_COORDINATES[1]+i)
@@ -443,13 +460,7 @@ def auto_calibrate_screen(mode: str = "player") -> None:
                 keyboard.release('ctrl')
                 time.sleep(0.1)
         elif os.name == 'posix': # Linux/macOS
-            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-
-            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
+            print("\033[8;50;160t")
     elif mode == "banker":
         if os.name == 'nt': # Windows
             while os.get_terminal_size().lines - 5 < 60 or os.get_terminal_size().columns - 5 < 200:
@@ -464,13 +475,7 @@ def auto_calibrate_screen(mode: str = "player") -> None:
                 keyboard.release('ctrl')
                 time.sleep(0.1)
         elif os.name == 'posix': # Linux/macOS
-            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-
-            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
+            print("\033[8;60;200t")
 
 def calibrate_screen(type: str) -> None:
     terminal_size = shutil.get_terminal_size()
@@ -492,8 +497,8 @@ def calibrate_screen(type: str) -> None:
     scaling_test = input()
     os.system('cls' if os.name == 'nt' else 'clear')
     if type == "gameboard":
-        gameboard = get_graphics().get('gameboard')
-        border = get_graphics().get('history and status').split('\n')
+        gameboard = g.get('gameboard')
+        border = g.get('history and status').split('\n')
         history = []
         print(f"\033[0;0H" + gameboard, end="")
         for i in range(len(border)):
@@ -526,8 +531,8 @@ def calibrate_screen(type: str) -> None:
             scaling_test = input()
     elif type == "player":
         os.system('cls' if os.name == 'nt' else 'clear')
-        initialize_terminals()
-
+        set_cursor(0,0)
+        print(g.get('terminals'))
         print_with_wrap("X", 0, 0)
         print_with_wrap("X", 0, 153)
         print_with_wrap("X", 43, 153)
@@ -536,7 +541,8 @@ def calibrate_screen(type: str) -> None:
         scaling_test = input()
         while scaling_test != "":
             os.system('cls' if os.name == 'nt' else 'clear')
-            initialize_terminals()
+            set_cursor(0,0)
+            print(g.get('terminals'))
             print_with_wrap("X", 0, 0)
             print_with_wrap("X", 0, 153)
             print_with_wrap("X", 43, 153)
