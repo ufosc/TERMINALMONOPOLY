@@ -12,7 +12,7 @@ import screenspace as ss
 import modules as m
 import casino
 import networking as net
-import name_validation
+import validation
 
 game_running = False
 screen = 'terminal'
@@ -100,6 +100,21 @@ def initialize(debug: bool = False, args: list = None) -> None:
         sockets = (client_receiver, client_sender)
         ADDRESS = input("Enter Host IP: ")
         PORT = input("Enter Host Port: ")
+        port_validated = False
+        address_validated = False
+        while not port_validated:
+            port_validated = validation.validate_port(PORT)
+            if not port_validated:
+                print("The input port was not valid")
+                PORT = input("Enter Host Port: ")
+
+        while not address_validated:
+            address_validated = validation.validate_address(ADDRESS)
+            if not address_validated:
+                print("The input address was not valid")
+                ADDRESS = input("Enter Host IP: ")
+
+
 
         name_validated = False
         print("Enter a name that meets the following criteria:")
@@ -107,7 +122,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
         print("2. only contains alpha numeric characters or spaces")
         name = input("Player name: ")
         while not name_validated:
-            name_validated = name_validation.validate_name(name)
+            name_validated = validation.validate_name(name)
             if not name_validated:
                 print("The input name was not valid")
                 name = input("Player name: ")
