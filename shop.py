@@ -2,6 +2,7 @@ import screenspace as ss
 import keyboard
 import os
 from style import get_graphics, set_cursor, set_cursor_str, COLORS
+from fishing import fishing_game
 
 class FishInventory():
     def __init__(self):
@@ -24,7 +25,8 @@ testfishinventory = FishInventory()
 
 class Shop():
     # TODO : Shop needs to reference the players own inventory
-    def __init__(self): #pass in an inventory object that shop can access
+    def __init__(self, inventory): #pass in an inventory object that shop can access
+        self.inventory = inventory
         self.fishprices = {"Carp": 5, "Bass": 8, "Salmon": 12}
         graphics = get_graphics()
         self.__shopimages = graphics.copy()
@@ -57,8 +59,11 @@ class Shop():
         print(retval)
         
     def sellfish(self, fish):
-    # TODO: implement selling properly
-        pass
+        if self.inventory.getinventory()[fish] > 0:
+            self.inventory.removefish(fish)
+            print(f"Sold {fish} for ${self.fishprices[fish]}")
+        else:
+            print(f"No {fish} to sell")
 
     # TODO: update shop screen in response to input
     def shop_interface(self):
