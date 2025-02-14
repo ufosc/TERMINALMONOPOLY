@@ -130,7 +130,7 @@ def calculator(active_terminal: Terminal) -> str:
 
 def list_properties() -> str:
     """
-    Lists all properties on the board by calling the property list stored in ascii.txt.
+    Lists all properties on the board by calling the property list stored in graphics.
     
     Parameters: None
     Returns: None
