@@ -388,7 +388,7 @@ if __name__ == "__main__":
 
     if not ss.DEBUG:
         ss.make_fullscreen()
-        #ss.auto_calibrate_screen()
+        ss.auto_calibrate_screen()
 
     ss.clear_screen()
     ss.initialize_terminals()
