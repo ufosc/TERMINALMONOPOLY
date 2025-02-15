@@ -556,7 +556,7 @@ def calibrate_screen(type: str) -> None:
             print(f"\033[60;0H" + "Press enter to play or enter r to reset the display.", end="")
 
         print_banker_frames()
-        auto_calibrate_screen("banker")
+        #auto_calibrate_screen("banker")
         print_xs()
         scaling_test = input()
         while scaling_test != "":
