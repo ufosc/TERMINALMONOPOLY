@@ -501,9 +501,14 @@ def get_client_by_socket(socket: socket.socket) -> Client:
         # Only checking the IP address for now. This will not work if two clients are on the same IP address.
         # Think: locally testing. This has proven to be an issue while testing tic tac toe on the same machine.
         # While this should work in a real-world scenario, it's not ideal for testing and is currently being 
-        # ignored. TODO fix this. Not as simple as client.socket.getpeername()[1] == socket.getpeername()[1]
-        if client.socket.getpeername()[0] == socket.getpeername()[0]:
+        # ignored.
+
+        # possible solution: since both connections are on the same IP address, must check port
+        if (client.socket.getpeername()[0] == socket.getpeername()[0] and
+                client.socket.getpeername()[1] == socket.getpeername()[1]):
             return client
+
+
 
 def set_gamerules() -> None:
     """
