@@ -117,7 +117,7 @@ def start_server() -> socket.socket:
 def start_receiver() -> None:
     """
     This function handles all client-to-server requests (not the other way around).
-    Function binds an independent receiving socket at the same IP address, one port above. 
+    Function binds an independent receiving socket at the same IP address, one port above. 7
     For example, if the opened port was 3131, the receiver will open on 3132.  
     
     Parameters: None

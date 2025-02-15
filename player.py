@@ -98,34 +98,37 @@ def initialize(debug: bool = False, args: list = None) -> None:
         client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
         client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockets = (client_receiver, client_sender)
+
+        #Address Validation
         ADDRESS = input("Enter Host IP: ")
+        address_validated = False
+        while not address_validated:
+            address_validated = validation.validate_address(ADDRESS)
+            if not address_validated:
+                print("The input address was not valid")
+                ADDRESS = input("Enter Host IP: ")
+        
+        #Port Validation
         PORT = input("Enter Host Port: ")
         port_validated = False
-        address_validated = False
         while not port_validated:
             port_validated = validation.validate_port(PORT)
             if not port_validated:
                 print("The input port was not valid")
                 PORT = input("Enter Host Port: ")
 
-        while not address_validated:
-            address_validated = validation.validate_address(ADDRESS)
-            if not address_validated:
-                print("The input address was not valid")
-                ADDRESS = input("Enter Host IP: ")
-
-
-
-        name_validated = False
+        #Name Validation
         print("Enter a name that meets the following criteria:")
         print("1. 8 characters or less")
         print("2. only contains alpha numeric characters or spaces")
         name = input("Player name: ")
+        name_validated = False
         while not name_validated:
             name_validated = validation.validate_name(name)
             if not name_validated:
                 print("The input name was not valid")
                 name = input("Player name: ")
+
 
         print(f"Welcome, {name}!")
 
@@ -139,23 +142,23 @@ def initialize(debug: bool = False, args: list = None) -> None:
             if n == "exit":
                 quit()
             else:
-                initialize()
-        try:
-            handshake(client_receiver, name)
-        except Exception as e:
-            print(e)
-            n = input(COLORS.RED+"Handshake failed. Type 'exit' to quit or press enter to try again.\n"+COLORS.RESET)
-            if n == "exit":
-                quit()
-            else:
-                initialize()
-
+                return False
+            try:
+                handshake(client_receiver, name)
+            except Exception as e:
+                print(e)
+                n = input(COLORS.RED+"Handshake failed. Type 'exit' to quit or press enter to try again.\n"+COLORS.RESET)
+                if n == "exit":
+                    quit()
+                else:
+                    return False
+    
     if debug:
         name = args[0]
         ADDRESS = args[1]
         PORT = int(args[2])
-        sockets[0].connect((ADDRESS, int(PORT)))
-        handshake(sockets[0], name)
+        sockets[0].connect((ADDRESS, int(PORT + 1)))
+        handshake(sockets[1], name)
 
     sleep(1)
     confirmation_msg = net.receive_message(sockets[0])
@@ -175,6 +178,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
             with open ("error_log.txt", "a") as f:
                 f.write(f"Failed to connect to Banker's receiver. {e}\n")
             s.print_w_dots("Failed connecting. ")
+    return True
 
 def handshake(sock: socket.socket, name: str) -> str:
     """
@@ -397,7 +401,9 @@ if __name__ == "__main__":
     """
 
     if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
-        initialize()
+        redo = initialize()
+        while not redo:
+           redo = initialize()
         ss.make_fullscreen()
     elif sys.argv[1] == "-debug":
         ss.DEBUG = True
