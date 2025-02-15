@@ -1,7 +1,8 @@
 # BLACKJACK
 import random
 import screenspace as ss
-from style import get_graphics
+from screenspace import Terminal
+from style import graphics as g
 from style import COLORS
 
 game_title = "🃑 Blackjack"
@@ -12,7 +13,7 @@ cards = {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
 
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
 
-def render_hand(active_terminal, hand, dealer_hand):
+def render_hand(active_terminal: Terminal, hand, dealer_hand):
     hand_str = "═" * ((75 - 9) // 2) + "Your Hand" + "═" * ((75 - 9) // 2) +"\n"
     for i in range(0,4):
         hand_str += " " * ((75 - (len(hand) * 6)) // 2)
@@ -49,7 +50,7 @@ def render_hand(active_terminal, hand, dealer_hand):
                 dealer_hand_str += card_temp[i] + " "
         dealer_hand_str += "\n"
     
-    ss.update_quadrant(active_terminal, header + f"\n\n{dealer_hand_str}" + '\n' * 5 + f"{hand_str}")
+    active_terminal.update(header + f"\n\n{dealer_hand_str}" + '\n' * 5 + f"{hand_str}")
 
 def draw(dealer, hidden,score):
     card_type, card_value = random.choice(list(cards.items()))
@@ -58,7 +59,7 @@ def draw(dealer, hidden,score):
         card_type = "1"
     return [card_value, card_type, hidden]
 
-def turn(active_terminal, turn):
+def turn(active_terminal: Terminal, turn):
     hand = []
     dealer_hand = []
     score = [0,0,0,0]
@@ -154,7 +155,7 @@ def turn(active_terminal, turn):
         ss.overwrite("\r" + " " * 40)
         return "TIE"
 
-def play(active_terminal, bet):
+def play(active_terminal: Terminal, bet):
     """
     Blackjack
     
@@ -163,15 +164,14 @@ def play(active_terminal, bet):
     """
     render_hand(active_terminal, [], [])
     outcome = turn(active_terminal, 1)
-    graphics = get_graphics()
     if (outcome == "WIN"):
-        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_win']}")
+        active_terminal.update(header + f"\n{g.get('casino_win')}")
         bet *= 2
     elif (outcome == "BUST"):
-        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_lose']}")
+        active_terminal.update(header + f"\n{g.get('casino_lose')}")
         bet = 0
     elif (outcome == "TIE"):
-        ss.update_quadrant(active_terminal, header + f"\n{graphics['casino_tie']}")
+        active_terminal.update(header + f"\n{g.get('casino_tie')}")
     
     input("\r")
     ss.overwrite("\r" + " " * 40)
