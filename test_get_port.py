@@ -1,7 +1,8 @@
 import subprocess
 import random
-def select_open_port_and_address():
-    addresses = []
+import socket
+def get_open_ports():
+    host = socket.gethostname()
     ports = []
     #get all the ports
     result = subprocess.run(['netstat', '-an'], capture_output=True, text=True)
@@ -12,11 +13,11 @@ def select_open_port_and_address():
             address = line.split()[1].split(':')[0]
             port = line.split()[1].split(":")[-1]
             #if within the free use range and not a duplicate address (has the [::]) or offline (0.0.0.0)
-            if int(port) > 49151 and '[' not in address and '0.0.0.0' not in address:
-                addresses.append(address)
+            if 49151 < int(port) and '[' not in address and not '0.0.0.0' in address:
                 ports.append(port)
     #random select
-    rolled_index = random.randint(0, len(addresses)-1)
-    return addresses[rolled_index], ports[rolled_index]
-#if __name__ == '__main__':
- #   print(select_open_port_and_address())
+    #rolled_index = random.randint(0, len(addresses)-1)
+    return ports
+if __name__ == '__main__':
+    print(get_open_ports())
+

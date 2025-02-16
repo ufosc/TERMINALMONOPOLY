@@ -12,7 +12,7 @@ import modules as m
 import casino
 import networking as net
 import name_validation
-from test_get_port import select_open_port_and_address
+from test_get_port import get_open_ports
 
 game_running = False
 text_dict = {}
@@ -75,11 +75,12 @@ def initialize(debug: bool = False, args: list = None) -> None:
     if not debug:
         banker_check()
         print("Welcome to Terminal Monopoly, Player!")
-        s.print_w_dots("Initializing client socket connection")     
+        s.print_w_dots("Initializing client socket connection")
         client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
         client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockets = (client_receiver, client_sender)
-        ADDRESS, PORT = select_open_port_and_address()
+        ADDRESS = input("Please enter the ip address")
+        PORT = input("Please enter a port")
 
         name_validated = False
         print("Enter a name that meets the following criteria:")
@@ -388,7 +389,7 @@ if __name__ == "__main__":
 
     if not ss.DEBUG:
         ss.make_fullscreen()
-        ss.auto_calibrate_screen()
+        #ss.auto_calibrate_screen()
 
     ss.clear_screen()
     ss.initialize_terminals()

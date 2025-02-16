@@ -17,9 +17,15 @@ import monopoly as mply
 import select
 from time import sleep
 
+from test_get_port import get_open_ports
+
 STARTING_CASH = 1500
 clients = []
-port = 3131
+ports = get_open_ports()
+print("Available ports:")
+for i in range(len(ports)):
+    print(str(ports[i]))
+port = int(input("Please enter a port"))
 num_players = 0
 play_monopoly = True
 
@@ -81,7 +87,6 @@ def start_server() -> socket.socket:
 
     # Choose a port that is free
     # port = int(input("Choose a port, such as 3131: "))
-    port = 3131
 
     # Bind to the port
     server_socket.bind((host, port))
@@ -464,6 +469,7 @@ def handshake(client_socket: socket.socket, handshakes: list) -> None:
     """
     global clients
     # Attempt handshake
+    print(1)
     net.send_message(client_socket, "Welcome to the game!")
     message = net.receive_message(client_socket)
     if message.startswith("Connected!"):
@@ -618,9 +624,9 @@ if __name__ == "__main__":
 
     os.system('cls' if os.name == 'nt' else 'clear')
     print("Welcome to Terminal Monopoly, Banker!")
-
-    if "-skipcalib" not in sys.argv:
-        ss.calibrate_screen('banker')
+    print("Available ports and addresses")
+    #if "-skipcalib" not in sys.argv:
+        #ss.calibrate_screen('banker')
 
     if "-silent" in sys.argv:
         ss.VERBOSE = False
