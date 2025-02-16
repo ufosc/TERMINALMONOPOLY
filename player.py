@@ -87,7 +87,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
     Then calls handshake() to confirm player is connected to Banker and not some other address. 
 
     Parameters: None
-    Returns: None
+    Returns: Boolean to check if function was fully initialized or not
     """
     global sockets, ADDRESS, PORT
     ss.clear_screen()
