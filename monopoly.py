@@ -122,11 +122,8 @@ def update_history(message: str):
                 history.append(message[:40] + " " * (40 - len(message)))
                 message = message[40:]
         history.append(message + " " * (40 - len(message)))
-        #if len(history) > 30:
-        #    while(len(history) > 30):
-        #        history.pop(0)
     while(len(history) > 30):
-        del history[0]
+        history.pop(0)
     refresh_h_and_s()
 
 def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: str = "normal", property_id: str = ""):
