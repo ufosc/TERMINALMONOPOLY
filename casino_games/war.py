@@ -91,11 +91,13 @@ def end(wins, losses, total_rounds, active_terminal: Terminal):
     if wins > total_rounds//2:
         active_terminal.update(win_gfx)
         ss.overwrite("\r" + " " * 40)
+        return "WIN"
     else:
         active_terminal.update(lose_gfx)
         ss.overwrite("\r" + " " * 40)
+        return "LOSE"
 
-def play(active_terminal: Terminal):
+def play(active_terminal: Terminal, bet: int) -> int:
     n = 3  # number of rounds (must be odd)
 
     wins = 0
@@ -108,10 +110,15 @@ def play(active_terminal: Terminal):
         elif match == "LOSE":
             losses += 1
 
-    end(wins, losses, n, active_terminal)
+    outcome = end(wins, losses, n, active_terminal)
+    if outcome == "WIN":
+        bet *= 2
+    else:
+        bet = 0
     time.sleep(1.5)
-    active_terminal.update(data=None)
+    # active_terminal.update(data=None)
     ss.overwrite("\r")
+    return bet
 
 
 if __name__ == "__main__":
