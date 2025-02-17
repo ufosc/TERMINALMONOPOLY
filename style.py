@@ -45,8 +45,45 @@ class COLORS:
     backBLACK = BLACK.replace("38", "48")
     
     # TODO add default compatible colors for terminals that cannot handle RGB values (see issue #11). 
-    cBROWN = ""
-    cbBROWN = ""
+    cBROWN = "\033[38;5;94m"
+    cLIGHTBLUE = "\033[38;5;81m"
+    cROUGE = "\033[38;5;201m"
+    cORANGE = "\033[38;5;208m"
+    cRED = "\033[38;5;196m"
+    cYELLOW = "\033[38;5;226m"
+    cGREEN = "\033[38;5;34m"
+    cBLUE = "\033[38;5;21m"
+    cWHITE = "\033[38;5;15m"
+    cCYAN = "\033[38;5;51m"
+    cLIGHTGRAY = "\033[38;5;250m"
+    cLIGHTBLACK = "\033[38;5;240m"
+    cCHANCE = "\033[38;5;215m"
+    cCOMMUNITY = "\033[38;5;33m"
+    cBLACK = "\033[38;5;0m"
+    cPlayerColors = ["\033[38;5;9m", "\033[38;5;10m", "\033[38;5;11m", "\033[38;5;12m"]
+    cDispGREEN = "\033[38;5;10m"
+    cDispRED = "\033[38;5;9m"
+
+    @classmethod
+    def use_compatible_colors(cls):
+        cls.BROWN = cls.cBROWN
+        cls.LIGHTBLUE = cls.cLIGHTBLUE
+        cls.ROUGE = cls.cROUGE
+        cls.ORANGE = cls.cORANGE
+        cls.RED = cls.cRED
+        cls.YELLOW = cls.cYELLOW
+        cls.GREEN = cls.cGREEN
+        cls.BLUE = cls.cBLUE
+        cls.WHITE = cls.cWHITE
+        cls.CYAN = cls.cCYAN
+        cls.LIGHTGRAY = cls.cLIGHTGRAY
+        cls.LIGHTBLACK = cls.cLIGHTBLACK
+        cls.CHANCE = cls.cCHANCE
+        cls.COMMUNITY = cls.cCOMMUNITY
+        cls.BLACK = cls.cBLACK
+        cls.playerColors = cls.cPlayerColors
+        cls.dispGREEN = cls.cDispGREEN
+        cls.dispRED = cls.cDispRED
 
 def colortest():
     """
@@ -54,8 +91,8 @@ def colortest():
     """
     i = 0
     for color in dir(COLORS):
-        if not color.startswith('__'):
-            print(str(i) + ": " + getattr(COLORS, color) + color + COLORS.RESET)
+        if not color.startswith('__') and not callable(getattr(COLORS, color)):
+            print(f"{i}: {getattr(COLORS, color)}{color}{COLORS.RESET}")
             i += 1
 
 def print_w_dots(text: str, size: int=50, end: str='\n') -> None:
