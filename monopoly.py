@@ -18,8 +18,8 @@ gameboard = ""
 board = None
 history = []
 status = []
-CASH = 2000
-num_players = 4
+CASH = 100
+num_players = 2
 bankrupts = 0
 players = []
 border = g.get('history and status')
@@ -719,21 +719,15 @@ def player_choice():
         update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"{players[turn]} is in debt. Resolve debts before ending turn.")
-        option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
-        if(option == "b"): # Declare bankruptcy
-            update_history(f"{players[turn]} declared bankruptcy.")
-            players[turn].order = -1
-        elif(option == "m"): # Mortgage properties
-            mortgage_logic()
-        elif(option == "s"): # Sell houses/hotels
-            housing_logic()
-
-        # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
-
-        else:
-            update_history(f"{players[turn].name} declared bankruptcy.")
-            players[turn].order = -1
-        # Need to fix all this sometime erghhghh
+        option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
+        while option != 'b': # Loop until bankruptcy is declared
+                if option == "m": # Mortgage properties
+                    mortgage_logic(players[turn])
+                elif option == "s": # Sell houses/hotels
+                    housing_logic(players[turn])
+                option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
+        update_history(f"{players[turn]} declared bankruptcy.")
+        players[turn].order = -1
         bankrupts += 1
 
     # Wipe the bottom of the screen (input area)
