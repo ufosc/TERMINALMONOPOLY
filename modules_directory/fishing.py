@@ -19,10 +19,11 @@ class fishing_game():
         self.__catchtime = 0
         self.__inventory = []
 
-    def start(self):
+    def start(self, inventory) -> str:
         start = int(time.time())
         delay = random.randint(3,10)
         self.__catchtime = start + delay
+        self.__inventory = inventory
         return self.__pictures[0]
 
     def get_input(self) -> str:

@@ -1,7 +1,6 @@
 import keyboard
 import os
-from style import get_graphics, set_cursor, set_cursor_str, COLORS
-from fishing import fishing_game
+from style import get_graphics, set_cursor, set_cursor_str, COLORS, graphics as g
 
 class FishInventory():
     def __init__(self):
@@ -19,9 +18,6 @@ class FishInventory():
         return self.caughtfish
     
     # need function for viewing inventory
-
-testfishinventory = FishInventory()
-
 class Shop():
     # TODO : Shop needs to reference the players own inventory
     def __init__(self, inventory): #pass in an inventory object that shop can access
@@ -95,9 +91,11 @@ class Shop():
         os.system('cls' if os.name == 'nt' else 'clear')
                     
         
+testfishinventory = FishInventory()
+
 def main():
     os.system('cls' if os.name == 'nt' else 'clear')
-    shop = Shop()
+    shop = Shop([testfishinventory])
     shop.shop_interface()
     
     
