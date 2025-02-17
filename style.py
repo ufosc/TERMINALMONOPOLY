@@ -6,23 +6,24 @@ import os
 
 # class for compatible colors for terminals that cannot utilize RGB values outside of the 8-bit ANSI colors
 class COMPAT_COLORS:
-    BROWN = "\033[38;5;94m"
-    LIGHTBLUE = "\033[38;5;33m"
-    ROUGE = "\033[38;5;13m"
-    ORANGE = "\033[38;5;208m"
+    cBROWN = "\033[38;5;94m"
+    cLIGHTBLUE = "\033[38;5;33m"
+    cROUGE = "\033[38;5;13m"
+    cORANGE = "\033[38;5;208m"
+    
     # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit 
     # Uses Standard colors (0-7) and High-Intensity colors (8-15) from 8-bit ANSI escape codes 
-    RED = "\033[38;5;1m"
-    GREEN = "\033[38;5;10m"
-    YELLOW = "\033[38;5;11m"
-    BLUE = "\033[38;5;4m"
-    CYAN = "\033[38;5;14m"
-    WHITE = "\033[38;5;15m"
-    LIGHTGRAY = "\033[38;5;247m"
-    LIGHTBLACK = "\033[38;5;8m"
-    CHANCE = "\033[38;5;214m"
-    COMMUNITY = "\033[38;5;45m"
-    BLACK = "\033[38;5;0m"
+    cRED = "\033[38;5;1m"
+    cGREEN = "\033[38;5;10m"
+    cYELLOW = "\033[38;5;11m"
+    cBLUE = "\033[38;5;4m"
+    cCYAN = "\033[38;5;14m"
+    cWHITE = "\033[38;5;15m"
+    cLIGHTGRAY = "\033[38;5;247m"
+    cLIGHTBLACK = "\033[38;5;8m"
+    cCHANCE = "\033[38;5;214m"
+    cCOMMUNITY = "\033[38;5;45m"
+    cBLACK = "\033[38;5;0m"
 
     # Reset color[
     RESET = "\033[0m"
@@ -33,22 +34,21 @@ class COMPAT_COLORS:
     dispRED = "\033[38;5;9m"
     dispBLUE = "\033[38;5;12m"
 
-    backBROWN = BROWN.replace("38", "48")
-    backLIGHTBLUE = LIGHTBLUE.replace("38", "48")
-    backROUGE = ROUGE.replace("38", "48")
-    backORANGE = ORANGE.replace("38", "48")
-    backRED = RED.replace("38", "48")
-    backYELLOW = YELLOW.replace("38", "48")
-    backGREEN = GREEN.replace("38", "48")
-    backBLUE = BLUE.replace("38", "48")
-    backWHITE = WHITE.replace("38", "48")
-    backCYAN = CYAN.replace("38", "48")
-    backLIGHTGRAY = LIGHTGRAY.replace("38", "48")
-    backLIGHTBLACK = LIGHTBLACK.replace("38", "48")
-    backCHANCE = CHANCE.replace("38", "48")
-    backCOMMUNITY = COMMUNITY.replace("38", "48")
-    backBLACK = BLACK.replace("38", "48")
-
+    backCompatBROWN = cBROWN.replace("38", "48")
+    backCompatLIGHTBLUE = cLIGHTBLUE.replace("38", "48")
+    backCompatROUGE = cROUGE.replace("38", "48")
+    backCompatORANGE = cORANGE.replace("38", "48")
+    backCompatRED = cRED.replace("38", "48")
+    backCompatYELLOW = cYELLOW.replace("38", "48")
+    backCompatGREEN = cGREEN.replace("38", "48")
+    backCompatBLUE = cBLUE.replace("38", "48")
+    backCompatWHITE = cWHITE.replace("38", "48")
+    backCompatCYAN = cCYAN.replace("38", "48")
+    backCompatLIGHTGRAY = cLIGHTGRAY.replace("38", "48")
+    backCompatLIGHTBLACK = cLIGHTBLACK.replace("38", "48")
+    backCompatCHANCE = cCHANCE.replace("38", "48")
+    backCompatCOMMUNITY = cCOMMUNITY.replace("38", "48")
+    backCompatBLACK = cBLACK.replace("38", "48")
 
 class COLORS:
     BROWN = "\033[38;2;138;96;25m"
