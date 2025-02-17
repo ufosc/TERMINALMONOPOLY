@@ -5,6 +5,17 @@ from screenspace import Terminal
 import time
 from style import graphics as g
 
+"""
+    war Module
+    Author:  https://github.com/RunDMC2
+    Added war game.
+"""
+"""
+    war Module
+    Author: Haneen Mustafa (https://github.com/haneenmustafa03)
+    Version: 1.1 - added a game_title to war.py so casino.py properly reads in the file
+"""
+game_title = "WAR"
 suits = ["♥", "♦", "♣", "♠"]
 numbers = ["J", "Q", "K", "A"]
 cards = []
