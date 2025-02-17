@@ -4,6 +4,52 @@
 ## [https://en.wikipedia.org/wiki/ANSI_escape_code] for more info on ANSI escape codes.
 import os
 
+# class for compatible colors for terminals that cannot utilize RGB values outside of the 8-bit ANSI colors
+class COMPAT_COLORS:
+    BROWN = "\033[38;5;94m"
+    LIGHTBLUE = "\033[38;5;33m"
+    ROUGE = "\033[38;5;13m"
+    ORANGE = "\033[38;5;208m"
+    # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit 
+    # Uses Standard colors (0-7) and High-Intensity colors (8-15) from 8-bit ANSI escape codes 
+    RED = "\033[38;5;1m"
+    GREEN = "\033[38;5;10m"
+    YELLOW = "\033[38;5;11m"
+    BLUE = "\033[38;5;4m"
+    CYAN = "\033[38;5;14m"
+    WHITE = "\033[38;5;15m"
+    LIGHTGRAY = "\033[38;5;247m"
+    LIGHTBLACK = "\033[38;5;8m"
+    CHANCE = "\033[38;5;214m"
+    COMMUNITY = "\033[38;5;45m"
+    BLACK = "\033[38;5;0m"
+
+    # Reset color[
+    RESET = "\033[0m"
+    # Player colors: red, green, yellow, blue, respectively
+    playerColors = ["\033[38;5;1m", "\033[38;5;2m", "\033[38;5;3m", "\033[38;5;4m"]
+    # display colors are used for printing text in Terminal, like error messages, etc. Not to be used on gameboard.
+    dispGREEN = "\033[38;5;2m"
+    dispRED = "\033[38;5;9m"
+    dispBLUE = "\033[38;5;12m"
+
+    backBROWN = BROWN.replace("38", "48")
+    backLIGHTBLUE = LIGHTBLUE.replace("38", "48")
+    backROUGE = ROUGE.replace("38", "48")
+    backORANGE = ORANGE.replace("38", "48")
+    backRED = RED.replace("38", "48")
+    backYELLOW = YELLOW.replace("38", "48")
+    backGREEN = GREEN.replace("38", "48")
+    backBLUE = BLUE.replace("38", "48")
+    backWHITE = WHITE.replace("38", "48")
+    backCYAN = CYAN.replace("38", "48")
+    backLIGHTGRAY = LIGHTGRAY.replace("38", "48")
+    backLIGHTBLACK = LIGHTBLACK.replace("38", "48")
+    backCHANCE = CHANCE.replace("38", "48")
+    backCOMMUNITY = COMMUNITY.replace("38", "48")
+    backBLACK = BLACK.replace("38", "48")
+
+
 class COLORS:
     BROWN = "\033[38;2;138;96;25m"
     LIGHTBLUE = "\033[38;2;43;249;255m"
@@ -20,13 +66,15 @@ class COLORS:
     CHANCE = "\033[38;2;255;191;105m"
     COMMUNITY = "\033[38;2;0;137;255m"
     BLACK = "\033[38;5;0m"
+
+    # Reset color
+    RESET = "\033[0m"
     # Player colors: red, green, yellow, blue, respectively
     playerColors = ["\033[38;5;1m", "\033[38;5;2m", "\033[38;5;3m", "\033[38;5;4m"]
     # display colors are used for printing text in Terminal, like error messages, etc. Not to be used on gameboard.
     dispGREEN = "\033[38;5;2m"
     dispRED = "\033[38;5;9m"
     dispBLUE = "\033[38;5;12m"
-    RESET = "\033[0m" # Reset color
 
     backBROWN = BROWN.replace("38", "48")
     backLIGHTBLUE = LIGHTBLUE.replace("38", "48")
@@ -52,6 +100,21 @@ def colortest():
     """
     Prints a test of all colors defined in the COLORS class.
     """
+    # print("Testing foreground colors:")
+    # for color in dir(COMPAT_COLORS):
+    #     if not color.startswith('__') and not color.startswith('back') and color != "RESET":
+    #         value = getattr(COMPAT_COLORS, color)
+    #         if isinstance(value, list):  # Skip lists to avoid TypeError
+    #             continue
+    #         print(value + f"{color}" + COMPAT_COLORS.RESET)
+
+    # print("\nTesting background colors:")
+    # for color in dir(COMPAT_COLORS):
+    #     if color.startswith('back'):
+    #         value = getattr(COMPAT_COLORS, color)
+    #         if isinstance(value, list):  # Skip lists to avoid TypeError
+    #             continue
+    #         print(value + f"{color}" + COMPAT_COLORS.RESET)
     i = 0
     for color in dir(COLORS):
         if not color.startswith('__'):
@@ -117,3 +180,6 @@ def set_cursor(x: int, y: int) -> None:
 
 def set_cursor_str(x:int ,y:int) -> str:
     return f"\033[{y};{x}H"
+
+# if __name__ == "__main__":
+#     colortest()
