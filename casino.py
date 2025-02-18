@@ -1,6 +1,7 @@
 from time import sleep
 from style import COLORS as c
 import screenspace as ss
+from screenspace import Terminal
 import os
 import networking as net
 from socket import socket
@@ -9,7 +10,7 @@ module_name = "Casino"
 module_command = "casino"
 module_description = "Gamble your money at the casino!"
 
-def module(socket: socket, active_terminal, pid: int):
+def module(socket: socket, active_terminal: Terminal, pid: int):
     """
     Casino Module
     Author: Jordan Brotherton (github.com/jordanbrotherton)
@@ -23,7 +24,7 @@ def module(socket: socket, active_terminal, pid: int):
         sleep(0.1)
         balance = int(net.receive_message(socket))
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
-        ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {balance} $\nSelect a game by typing the command and wager." + get_submodules() + "\n☒ Exit (e)")
+        active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {balance} $\nSelect a game by typing the command and wager." + get_submodules() + "\n☒ Exit (e)")
         if(wrong == 1):
             ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
         elif(wrong == 2):
@@ -35,7 +36,7 @@ def module(socket: socket, active_terminal, pid: int):
         if(game[0] == ""):
             wrong = 2
         elif(game[0] == "e"):
-            ss.update_quadrant(active_terminal, "─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
+            active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
             break
         elif(len(game) == 1):
             wrong = 2
