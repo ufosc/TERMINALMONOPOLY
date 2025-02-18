@@ -1,3 +1,4 @@
+import os
 import screenspace as ss
 from screenspace import Terminal
 import style as s
@@ -24,7 +25,7 @@ def calculator(active_terminal: Terminal) -> str:
         for i in range(len(calculator_history_queue)-1, -1, -1):
             response += calculator_history_queue[i][0]
         response += '\n' + footer_options[footer_option]
-        
+        os.system('cls')
         return response
     
     #Helper function to update calculator history
@@ -146,6 +147,7 @@ def list_properties() -> str:
         color = getattr(s.COLORS, first_word.upper(), s.COLORS.RESET)
         centered_prop = prop.center(75)
         ret_val +=color+ centered_prop + s.COLORS.RESET + '\n'
+    os.system('cls')
     return ret_val
 
 def ttt_handler(server: Socket, active_terminal: Terminal, player_id: int) -> None:
@@ -247,6 +249,7 @@ def fishing(gamestate: str) -> tuple[str, str]:
     """
     stdIn = ''
     if (gamestate == 'start'):
+        os.system('cls')
         return fishing_game_obj.start(), 'playing'
     elif (gamestate == 'playing'):
         stdIn = fishing_game_obj.get_input()
