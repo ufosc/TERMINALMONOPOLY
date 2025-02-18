@@ -287,8 +287,10 @@ def get_input() -> None:
                 skip_initial_input = True
                 continue
             if stdIn == "helpstocks" or stdIn == "help stocks":
+                os.system('cls')
                 active_terminal.update(g.get("helpstocks"), padding=False)
             elif stdIn.startswith("help"):
+                os.system('cls')
                 if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
                     active_terminal.update(g.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
                 else: 
