@@ -18,7 +18,7 @@ gameboard = ""
 board = None
 history = []
 status = []
-CASH = 100
+CASH = 401
 num_players = 2
 bankrupts = 0
 players = []
@@ -412,13 +412,14 @@ def log_error(error_message: str) -> None:
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
 def unittest():
-    #TODO
-    players[0].buy(1, board)
-    players[0].buy(3, board)
-    players[1].buy(5, board)
-    players[1].buy(15, board)
-    players[1].buy(25, board)
-    players[1].buy(35, board)
+    # TODO make a more robust unit testing system, using below as a framework. Allow the programmer to 
+    # choose which properties to buy for each player, and how much cash to allocate to each. 
+    # players[0].buy(1, board)
+    players[0].buy(31, board)
+    players[1].buy(32, board)
+    # players[1].buy(15, board)
+    # players[1].buy(25, board)
+    # players[1].buy(35, board)
     # players[3].buy(12, board)
     # players[3].buy(28, board)
 
@@ -725,10 +726,13 @@ def player_choice():
                     mortgage_logic(players[turn])
                 elif option == "s": # Sell houses/hotels
                     housing_logic(players[turn])
+                if players[turn].cash >= 0:
+                    break
                 option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
-        update_history(f"{players[turn]} declared bankruptcy.")
-        players[turn].order = -1
-        bankrupts += 1
+        if players[turn].cash < 0:
+            update_history(f"{players[turn]} declared bankruptcy.")
+            players[turn].order = -1
+            bankrupts += 1
 
     # Wipe the bottom of the screen (input area)
     bottom_screen_wipe()
@@ -775,7 +779,7 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
     gameboard = g.get('gameboard')
     os.system('cls' if os.name == 'nt' else 'clear')
     
-    #unittest()
+    unittest()
     
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)
