@@ -57,10 +57,7 @@ def module(socket: socket, active_terminal, pid: int):
                 sleep(0.1)
                 balance = int(net.receive_message(socket))
                 ss.overwrite(c.RESET+"\r" + " " * 40)
-                if i.__name__ == 'casino_games.coin_flip':
-                    winnings = i.play(active_terminal,wager, pid)
-                else:
-                    winnings = i.play(active_terminal,wager)
+                winnings = i.play(active_terminal,wager)
                 net.send_message(socket, f"{pid}casino win {winnings}")
                 sleep(0.1)
                 balance = int(net.receive_message(socket))
