@@ -3,6 +3,7 @@ import style as s
 from style import COLORS
 import random
 import os
+import textwrap
 
 from properties import Property
 from cards import Cards
@@ -11,6 +12,7 @@ from player_class import MonopolyPlayer
 import screenspace as ss
 import style as s
 from style import graphics as g
+
 
 mode = "normal"
 output = ""
@@ -111,17 +113,15 @@ def update_history(message: str):
     Text added here needs to be a maximum of 40 characters, or wrap around\n
     Split the text into multiple lines (multiple entries to history variable)\n
     """
-    if "[38;5" in message:
+    if "[38;5" in message: # If color is included in message
         if(((40 - (len(message) - 9)) * 2) == 0):
             history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((40 - (len(message) - 9)) // 2))
         else:
             history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((39 - (len(message) - 9)) // 2))
     else:
-        if len(message) > 40:
-            while len(message) > 40:
-                history.append(message[:40] + " " * (40 - len(message)))
-                message = message[40:]
-        history.append(message + " " * (40 - len(message)))
+        wrapped_message = textwrap.wrap(message, 40)
+        for line in wrapped_message:
+            history.append(line + " " * (40 - len(line)))
     while(len(history) > 30):
         history.pop(0)
     refresh_h_and_s()
@@ -499,7 +499,6 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
 
             elif num_rolls == 2:
                 update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
-                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
                 update_history(f"{players[turn].name} rolled doubles three times in a row!")
@@ -520,7 +519,7 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
             refresh_board()
         done_moving_around = False
         card = ""
-        while not done_moving_around:
+        while not done_moving_around and not players[turn].jail:
             done_moving_around = True
             if board.locations[players[turn].location].owner < 0:
                 if (board.locations[players[turn].location].owner == -1): #unowned
