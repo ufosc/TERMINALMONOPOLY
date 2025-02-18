@@ -4,6 +4,7 @@ import style as s
 from style import graphics as g
 from modules_directory.fishing import fishing_game
 from modules_directory.tictactoe import destruct_board, construct_board
+import shop
 from socket import socket as Socket
 import networking as net
 import keyboard
@@ -254,6 +255,9 @@ def fishing(gamestate: str) -> tuple[str, str]:
         return fishing_game_obj.results(), 'e'  
     elif (gamestate == 'e'):
         return '', 'start'  
+
+def shop_handler() -> str:
+    return 
 
 def kill() -> str:
     return g.get('skull')
