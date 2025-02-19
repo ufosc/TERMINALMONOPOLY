@@ -67,6 +67,17 @@ def module(socket: socket, active_terminal: Terminal, pid: int):
                 wrong = 1
 
 def get_submodules():
+    """
+    Retrieves a list of available casino game submodules.
+
+    This function scans the "casino_games" directory for Python files, dynamically 
+    imports each module, and checks if the module has a 'game_title' attribute.
+    If the attribute exists, the game's title along with its command name is added 
+    to the formatted list.
+
+    Returns:
+        str: A formatted string listing all available casino games with their commands.
+    """
     modules_list = ""
     for file in os.listdir("casino_games"):
         if file.endswith(".py"):
