@@ -113,6 +113,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
                 name = input("Player name: ")
 
         print(f"Welcome, {name}!")
+        active_terminal.name = name
 
         s.print_w_dots("Press enter to connect to the server...", end='')
         input()

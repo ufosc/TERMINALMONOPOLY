@@ -65,6 +65,7 @@ class Terminal:
         self.y = coordinates[1] # top left corner of the terminal
         self.data = []
         self.padded_data = False
+        self.name = f"Player {index}"
 
     def update(self, data, padding: bool = True) -> None:
         """
