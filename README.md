@@ -63,17 +63,6 @@ Ensure you have the following installed:
 - Player will take turns rolling dice, moving across the board, and choosing whether or not to buy a property.
 - Each play can see the gameboard in real time, and the banker will oversee the purchasing of property and rent payments
 
-# Game Commands
-Inputting these commands in the terminal will cause an action: 
-- roll: rolls two dice so the player can move
-- buy: purchases an unowned property when landing on it. 
-- deed <prop info>: will show you detailed property info such as rent and mortgage
-- properties: will list the properties that a player owns
-- mortgage: mortgages a property to raise money
-- pay: Pays an amount to another player or to the bank 
-- housing: Builds hotels or houses on properties where the player has a monopoly
-- Jail: Manages jail-related actions when a player is sent to jail
-
 # How the Game Works
 - Player Class: represents each player in the game and tracks player's cash, balance, owned properties, location, jail status. 
 - Board Class: Handles the game board, managing properties, whether a property is owned or mortgaged, and player locations. This class uses an internal dictionary to store information regarding price, rents, and whethere someone owns a property.
