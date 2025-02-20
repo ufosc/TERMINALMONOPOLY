@@ -52,14 +52,14 @@ def banker_check():
         )   
     elif(current_os == "Linux"):
         # We use a list of existing Linux terminals to run banker.
-        list_of_terms = [("gnome-terminal", "--"), ("kgx", "-x"), ("ptyxis", "--"),
+        list_of_terms = [("gnome-terminal", "-e"), ("kgx", "-x"), ("ptyxis", "--"),
                          ("konsole", "-e"), ("xfce4-terminal", "-e"), ("mate-terminal", "-e"),
                          ("tilix", "-e"), ("xterm", "-e")]
         
         launched = False
         for term in list_of_terms:
             try:
-                subprocess.Popen([term[0], term[1], "python banker.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.Popen([term[0], term[1], "bash -c '" + sys.executable + " banker.py'"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=os.path.dirname(os.path.realpath(__file__)))
                 launched = True
                 break
             except FileNotFoundError:
@@ -71,7 +71,7 @@ def banker_check():
             if(term != "" and ' ' in term):
                 try:
                     term = term.split(" ")
-                    subprocess.Popen([term[0], term[1], "python banker.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.Popen([term[0], term[1], "bash -c '" + sys.executable + " banker.py'"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=os.path.dirname(os.path.realpath(__file__)))
                 except:
                     print("Invalid command! Try running 'python banker.py' directly")
             else:

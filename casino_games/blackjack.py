@@ -155,7 +155,7 @@ def turn(active_terminal: Terminal, turn):
         ss.overwrite("\r" + " " * 40)
         return "TIE"
 
-def play(active_terminal: Terminal, bet):
+def play(active_terminal: Terminal, bet) -> int:
     """
     Blackjack
     

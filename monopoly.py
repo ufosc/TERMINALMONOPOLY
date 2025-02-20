@@ -3,6 +3,7 @@ import style as s
 from style import COLORS
 import random
 import os
+import textwrap
 
 from properties import Property
 from cards import Cards
@@ -12,14 +13,15 @@ import screenspace as ss
 import style as s
 from style import graphics as g
 
+
 mode = "normal"
 output = ""
 gameboard = ""
 board = None
 history = []
 status = []
-CASH = 2000
-num_players = 4
+CASH = 401
+num_players = 2
 bankrupts = 0
 players = []
 border = g.get('history and status')
@@ -111,20 +113,17 @@ def update_history(message: str):
     Text added here needs to be a maximum of 40 characters, or wrap around\n
     Split the text into multiple lines (multiple entries to history variable)\n
     """
-    if "[38;5" in message:
+    if "[38;5" in message: # If color is included in message
         if(((40 - (len(message) - 9)) * 2) == 0):
             history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((40 - (len(message) - 9)) // 2))
         else:
             history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((39 - (len(message) - 9)) // 2))
     else:
-        if len(message) > 40:
-            while len(message) > 40:
-                history.append(message[:40] + " " * (40 - len(message)))
-                message = message[40:]
-        history.append(message + " " * (40 - len(message)))
-        if len(history) > 30:
-            while(len(history) > 30):
-                history.pop(0)
+        wrapped_message = textwrap.wrap(message, 40)
+        for line in wrapped_message:
+            history.append(line + " " * (40 - len(line)))
+    while(len(history) > 30):
+        history.pop(0)
     refresh_h_and_s()
 
 def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: str = "normal", property_id: str = ""):
@@ -412,13 +411,14 @@ def log_error(error_message: str) -> None:
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
 def unittest():
-    #TODO
-    players[0].buy(1, board)
-    players[0].buy(3, board)
-    players[1].buy(5, board)
-    players[1].buy(15, board)
-    players[1].buy(25, board)
-    players[1].buy(35, board)
+    # TODO make a more robust unit testing system, using below as a framework. Allow the programmer to 
+    # choose which properties to buy for each player, and how much cash to allocate to each. 
+    # players[0].buy(1, board)
+    players[0].buy(31, board)
+    players[1].buy(32, board)
+    # players[1].buy(15, board)
+    # players[1].buy(25, board)
+    # players[1].buy(35, board)
     # players[3].buy(12, board)
     # players[3].buy(28, board)
 
@@ -500,7 +500,6 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
 
             elif num_rolls == 2:
                 update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
-                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
                 update_history(f"{players[turn].name} rolled doubles three times in a row!")
@@ -521,7 +520,7 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
             refresh_board()
         done_moving_around = False
         card = ""
-        while not done_moving_around:
+        while not done_moving_around and not players[turn].jail:
             done_moving_around = True
             if board.locations[players[turn].location].owner < 0:
                 if (board.locations[players[turn].location].owner == -1): #unowned
@@ -719,22 +718,19 @@ def player_choice():
         update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"{players[turn]} is in debt. Resolve debts before ending turn.")
-        option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
-        if(option == "b"): # Declare bankruptcy
+        option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
+        while option != 'b': # Loop until bankruptcy is declared
+                if option == "m": # Mortgage properties
+                    mortgage_logic(players[turn])
+                elif option == "s": # Sell houses/hotels
+                    housing_logic(players[turn])
+                if players[turn].cash >= 0:
+                    break
+                option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
+        if players[turn].cash < 0:
             update_history(f"{players[turn]} declared bankruptcy.")
             players[turn].order = -1
-        elif(option == "m"): # Mortgage properties
-            mortgage_logic()
-        elif(option == "s"): # Sell houses/hotels
-            housing_logic()
-
-        # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
-
-        else:
-            update_history(f"{players[turn].name} declared bankruptcy.")
-            players[turn].order = -1
-        # Need to fix all this sometime erghhghh
-        bankrupts += 1
+            bankrupts += 1
 
     # Wipe the bottom of the screen (input area)
     bottom_screen_wipe()
@@ -781,7 +777,7 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
     gameboard = g.get('gameboard')
     os.system('cls' if os.name == 'nt' else 'clear')
     
-    #unittest()
+    unittest()
     
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)

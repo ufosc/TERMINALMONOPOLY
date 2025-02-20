@@ -478,22 +478,7 @@ def auto_calibrate_screen(mode: str = "player") -> None:
                 if max_iterations <= 0:
                     break
         elif os.name == 'posix': # Linux/macOS
-            max_iterations = 20
-            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-                max_iterations -= 1
-                if max_iterations <= 0:
-                    break
-            
-            max_iterations = 20
-            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-                max_iterations -= 1
-                if max_iterations <= 0:
-                    break
-
+            print("\033[8;50;160t") # Set terminal size to 50 rows and 160 columns
     elif mode == "banker":
         if os.name == 'nt': # Windows
             
@@ -518,21 +503,7 @@ def auto_calibrate_screen(mode: str = "player") -> None:
                     break
 
         elif os.name == 'posix': # Linux/macOS
-            max_iterations = 20
-            while shutil.get_terminal_size().lines < HEIGHT or shutil.get_terminal_size().columns < WIDTH:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-                max_iterations -= 1
-                if max_iterations <= 0:
-                    break
-
-            max_iterations = 20
-            while shutil.get_terminal_size().lines > HEIGHT + 10 or shutil.get_terminal_size().columns > WIDTH + 10:
-                os.system("printf '\033[1;1t'")
-                time.sleep(0.1)
-                max_iterations -= 1
-                if max_iterations <= 0:
-                    break
+            print("\033[8;60;200t") # Set terminal size to 60 rows and 200 columns
 
 def calibrate_screen(type: str) -> None:
     terminal_size = shutil.get_terminal_size()
