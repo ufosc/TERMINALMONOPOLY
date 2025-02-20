@@ -81,7 +81,7 @@ def center_lines(text, width):
 
 def get_graphics() -> dict:
     """
-    Reads all graphics from ascii.txt into a dictionary.
+    Reads all graphics from the ascii directory into a dictionary.
 
     Parameters: None
 

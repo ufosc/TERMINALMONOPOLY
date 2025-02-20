@@ -76,7 +76,6 @@ class Terminal:
             Set padding = True if you're not sure whether your module needs padding.
         
         Parameters: 
-            n (int): Number (1-4) of the terminal to change data. 
             data (str): The string (with newlines to separate lines) to populate the quadrant with.
             data (function): A function that populates the quadrant manually. Useful for modules that need 
                 to print with colors or other formatting
@@ -139,6 +138,18 @@ class Terminal:
         debug_note()
         print(COLORS.RESET, end='')
         set_cursor(0,INPUTLINE)
+    
+    def clear(self):
+        for i in range(rows):
+            set_cursor(self.x,self.y+i)
+            print(" " * cols)
+
+    def kill(self):
+        skull = g.get("skull").split("\n")
+        print(COLORS.RED)
+        for i in range(rows):
+            set_cursor(self.x,self.y+i)
+            print(skull[i])
 
 def notification(message: str, n: int, color: str, custom_x: int, custom_y: int) -> str:
     """
@@ -448,34 +459,51 @@ def auto_calibrate_screen(mode: str = "player") -> None:
     """
     if mode == "player":
         if os.name == 'nt': # Windows
+            max_iterations = 20
             while os.get_terminal_size().lines - 5 < HEIGHT or os.get_terminal_size().columns - 5 < WIDTH:
                 keyboard.press('ctrl')
                 keyboard.send('-')
                 keyboard.release('ctrl')
                 time.sleep(0.1)
-
+                max_iterations -= 1
+                if max_iterations <= 0:
+                    break
+            max_iterations = 20
             while os.get_terminal_size().lines > HEIGHT + 40 or os.get_terminal_size().columns > WIDTH + 40:
                 keyboard.press('ctrl')
                 keyboard.send('+')
                 keyboard.release('ctrl')
                 time.sleep(0.1)
+                max_iterations -= 1
+                if max_iterations <= 0:
+                    break
         elif os.name == 'posix': # Linux/macOS
-            print("\033[8;50;160t")
+            print("\033[8;50;160t") # Set terminal size to 50 rows and 160 columns
     elif mode == "banker":
         if os.name == 'nt': # Windows
+            
+            max_iterations = 20 # Safeguard to prevent infinite loop due to user error or logic error
             while os.get_terminal_size().lines - 5 < 60 or os.get_terminal_size().columns - 5 < 200:
                 keyboard.press('ctrl')
                 keyboard.send('-')
                 keyboard.release('ctrl')
                 time.sleep(0.1)
+                max_iterations -= 1
+                if max_iterations <= 0:
+                    break
 
+            max_iterations = 20
             while os.get_terminal_size().lines > 60 + 20 or os.get_terminal_size().columns > 200 + 20:
                 keyboard.press('ctrl')
                 keyboard.send('+')
                 keyboard.release('ctrl')
                 time.sleep(0.1)
+                max_iterations -= 1
+                if max_iterations <= 0:
+                    break
+
         elif os.name == 'posix': # Linux/macOS
-            print("\033[8;60;200t")
+            print("\033[8;60;200t") # Set terminal size to 60 rows and 200 columns
 
 def calibrate_screen(type: str) -> None:
     terminal_size = shutil.get_terminal_size()
