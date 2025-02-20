@@ -96,22 +96,24 @@ def get_graphics() -> dict:
                 full_file = ascii_text.read()
                 split_file = full_file.splitlines(True)
                 no_header_ascii = ''.join(split_file[1:])
-                match split_file[0].strip():
-                    case "GAMEBD":
-                        text_dict[file] = bytes(no_header_ascii, 'utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8')
-                    case "CENTER":
-                        text_dict[file] = center_lines(no_header_ascii, 75)
-                    case "NWLCUT":
-                        text_dict[file] = no_header_ascii.replace('\n', '')
-                    case "NSTRIP":
-                        text_dict[file] = no_header_ascii.strip()
-                    case "LSTRIP":
-                        text_dict[file] = no_header_ascii.lstrip()
-                    case "RSTRIP":
-                        text_dict[file] = no_header_ascii.rstrip()
-                    case _:
-                        text_dict[file] = '\n' + full_file
+                if (split_file[0].strip() == "GAMEBD"):
+                    text_dict[file] = bytes(no_header_ascii, 'utf-8').decode('unicode_escape').encode('latin-1').decode('utf-8')
+                elif (split_file[0].strip() == "CENTER"):
+                    text_dict[file] = center_lines(no_header_ascii, 75)
+                elif (split_file[0].strip() == "NWLCUT"):
+                    text_dict[file] = no_header_ascii.replace('\n', '')
+                elif (split_file[0].strip() == "NSTRIP"):
+                    text_dict[file] = no_header_ascii.strip()
+                elif (split_file[0].strip() == "LSTRIP"):
+                    text_dict[file] = no_header_ascii.lstrip()
+                elif (split_file[0].strip() == "RSTRIP"):
+                    text_dict[file] = no_header_ascii.rstrip()
+                else:
+                    text_dict[file] = '\n' + full_file
     return text_dict
+
+# Use this object to access all graphics, instead of calling get_graphics() every time.
+graphics = get_graphics()
 
 def set_cursor(x: int, y: int) -> None:
     print(f"\033[{y};{x}H",end="")

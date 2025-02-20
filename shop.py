@@ -1,7 +1,6 @@
-import screenspace as ss
 import keyboard
 import os
-from style import get_graphics, set_cursor, set_cursor_str, COLORS
+from style import get_graphics, set_cursor, set_cursor_str, COLORS, graphics as g
 
 class FishInventory():
     def __init__(self):
@@ -19,24 +18,19 @@ class FishInventory():
         return self.caughtfish
     
     # need function for viewing inventory
-
-testfishinventory = FishInventory()
-
 class Shop():
     # TODO : Shop needs to reference the players own inventory
-    def __init__(self):
+    def __init__(self, inventory): #pass in an inventory object that shop can access
+        self.inventory = inventory
         self.fishprices = {"Carp": 5, "Bass": 8, "Salmon": 12}
-        graphics = get_graphics()
-        self.__shopimages = graphics.copy()
         self.__pictures = []
-        self.__pictures.append(self.__shopimages.pop('shop'))
         
     def display_shop(self, selected_index):
         """
         Display the shop interface with the current selection highlighted.
         Only called once at the start of the shop interface.
         """
-        print(self.__pictures[0])
+        print(g.get('shop'))
         retval = ""
         y = 6
         retval += set_cursor_str(33, 3) + "=== Welcome to the Shop ==="
@@ -57,8 +51,11 @@ class Shop():
         print(retval)
         
     def sellfish(self, fish):
-    # TODO: implement selling properly
-        pass
+        if self.inventory.getinventory()[fish] > 0:
+            self.inventory.removefish(fish)
+            print(f"Sold {fish} for ${self.fishprices[fish]}")
+        else:
+            print(f"No {fish} to sell")
 
     # TODO: update shop screen in response to input
     def shop_interface(self):
@@ -94,9 +91,11 @@ class Shop():
         os.system('cls' if os.name == 'nt' else 'clear')
                     
         
+testfishinventory = FishInventory()
+
 def main():
     os.system('cls' if os.name == 'nt' else 'clear')
-    shop = Shop()
+    shop = Shop([testfishinventory])
     shop.shop_interface()
     
     

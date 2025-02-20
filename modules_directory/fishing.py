@@ -1,6 +1,6 @@
 import time
 import random
-from style import get_graphics, set_cursor, set_cursor_str
+from style import graphics as g, set_cursor, set_cursor_str
 
 class fishing_game():
     """
@@ -12,17 +12,18 @@ class fishing_game():
     If you want to playtest the game you can run the file by itself.
     """
     def __init__(self) -> None:
-        graphics = get_graphics()
-        self.__fishies = graphics.copy()
+        self.__fishies = g.copy()
         self.__pictures = []
         self.__pictures.append(self.__fishies.pop('fishing 1 idle'))
         self.__pictures.append(self.__fishies.pop('fishing 1 win'))
         self.__catchtime = 0
+        self.__inventory = []
 
-    def start(self):
+    def start(self, inventory) -> str:
         start = int(time.time())
         delay = random.randint(3,10)
         self.__catchtime = start + delay
+        self.__inventory = inventory
         return self.__pictures[0]
 
     def get_input(self) -> str:
@@ -33,6 +34,7 @@ class fishing_game():
         if self.__catchtime < int(time.time()) < self.__catchtime + 5:
         # if random.choice([True, False]):
             fish = random.choice(['carp', 'bass', 'salmon'])
+            self.__inventory.append(fish) # added fish to inventory
             
             retval += set_cursor_str(24 - (1 if fish == 'salmon' else 0), 3) + 'Nice job, you caught a ' + fish + '!'
             fish_graphic = self.__fishies['fishing 1 ' + fish]
@@ -45,14 +47,16 @@ class fishing_game():
 
         return retval
 
+    def get_inventory(self)->list:
+        return self.__inventory
+
 if __name__ == "__main__":
     import os
     os.system('cls' if os.name == 'nt' else 'clear')
-    graphics = get_graphics()
 
     pictures = []
 
-    fishies = graphics.copy()
+    fishies = g.copy()
 
     pictures.append(fishies.pop('fishing 1 idle'))
     pictures.append(fishies.pop('fishing 1 win'))

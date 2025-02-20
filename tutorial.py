@@ -37,12 +37,12 @@ players represented by a colored tile with circle   '
 
 import os
 import screenspace as ss
-from style import COLORS
 import style
+from style import COLORS
+from style import graphics as g
 
 cols = ss.WIDTH
 rows = ss.HEIGHT
-graphics = style.get_graphics()
 
 skipped = False # set/used by print_tutorial_screen to determine whether to continue printing past 1st page
 
@@ -122,7 +122,7 @@ def print_tutorial_screen(cols:int, rows:int, title:str, obj_list:list[dict], bo
 #prints all the tutorial screens, if the player hasnt skipped it
 skipped = print_tutorial_screen(cols, rows, "Terminal Monopoly", [
     {"col": 7, "row": 3, "num_lines": 0, "text":"Welcome to:"},
-    {"col": 10, "row": 6, "num_lines": 17, "text":graphics["logo"]},
+    {"col": 10, "row": 6, "num_lines": 17, "text":g.get("logo")},
     {"col": 15, "row": 27, "num_lines": 0, "text":"The Last Game You'll Ever Play..."}
 ])
 

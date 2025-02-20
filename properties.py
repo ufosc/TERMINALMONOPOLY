@@ -50,19 +50,18 @@ class Property:
 
     def getRent(self) -> int:
         if self.purchasePrice != 0:
-            match self.houses:
-                case 0:
-                    return self.rent
-                case 1:
-                    return self.rent1H
-                case 2:
-                    return self.rent2H
-                case 3:
-                    return self.rent3H
-                case 4:
-                    return self.rent4H
-                case 5:
-                    return self.rentHotel
+            if (self.houses == 0):
+                return self.rent
+            elif (self.houses == 1):
+                return self.rent1H
+            elif (self.houses == 2):
+                return self.rent2H
+            elif (self.houses == 3):
+                return self.rent3H
+            elif (self.houses == 4):
+                return self.rent4H
+            elif (self.houses == 5):
+                return self.rentHotel
 
 
 # Old Code: (In case there was a mistake in transferring the data values)
