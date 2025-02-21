@@ -17,7 +17,7 @@ import monopoly as mply
 import select
 from time import sleep
 
-from test_get_port import get_open_ports
+from get_ports import get_open_ports
 
 STARTING_CASH = 1500
 clients = []

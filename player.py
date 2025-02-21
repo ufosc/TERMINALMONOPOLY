@@ -12,7 +12,7 @@ import modules as m
 import casino
 import networking as net
 import name_validation
-from test_get_port import get_open_ports
+from get_ports import get_open_ports
 
 game_running = False
 text_dict = {}
