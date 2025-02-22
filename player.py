@@ -356,7 +356,7 @@ def get_input() -> None:
                     ss.clear_screen()
                     print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
                     input()
-                    ss.initialize_terminals() # Reinitialize terminals to clear the screen. TODO restore previous terminals state
+                    ss.initialize_terminals(TERMINALS) # Reinitialize terminals to clear the screen. TODO restore previous terminals state
                     ss.update_terminal(active_terminal.index, active_terminal.index)
                 
                 elif stdIn == "bal":
