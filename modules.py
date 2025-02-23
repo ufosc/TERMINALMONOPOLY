@@ -52,6 +52,20 @@ class Inventory():
                 del self.items[item]
 
 def calculator(active_terminal: Terminal) -> str:
+    """
+    A command-line calculator module that supports basic arithmetic operations.
+
+    This function provides a terminal-based calculator where users can input mathematical
+    expressions, which are evaluated recursively. The results are displayed in the terminal,
+    and a history of recent calculations is maintained. Users can exit the calculator by
+    typing 'e'.
+
+    Args:
+        active_terminal (Terminal): The terminal interface where the calculator operates.
+
+    Returns:
+        str: The last computed result or an error message.
+    """
     # Helper function that contructs terminal printing.
     def calculator_terminal_response(footer_option: int) -> str:
         calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
@@ -187,6 +201,21 @@ def list_properties() -> str:
     return ret_val
 
 def ttt_handler(server: Socket, active_terminal: Terminal, player_id: int) -> None:
+    """
+    Manages the client-side logic for joining and playing a Tic-Tac-Toe game.
+
+    This function interacts with the game server to check for ongoing Tic-Tac-Toe games,
+    allow the player to join or create a new game, and handle player moves using keyboard
+    input. The game board updates dynamically based on player actions.
+
+    Args:
+        server (Socket): The socket connection to the game server.
+        active_terminal (Terminal): The terminal where the game is displayed.
+        player_id (int): The player's unique identifier.
+
+    Returns:
+        None
+    """
     net.send_message(server, f'{player_id}ttt,getgamestate')
     time.sleep(0.1)
     active_terminal.update("Waiting for server...", padding=True)

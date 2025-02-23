@@ -258,7 +258,20 @@ def set_unittest() -> None:
         print("Skipping unit tests." if ss.VERBOSE else "")
         return
 
-def change_balance(id: int, delta: int):
+def change_balance(id: int, delta: int): 
+    """
+    Adjusts the balance of a specific player by a given amount.
+
+    This function updates the money attribute of the player identified by their ID.
+    A positive delta increases the player's balance, while a negative delta decreases it.
+
+    Args:
+        id (int): The unique identifier of the player whose balance needs to be adjusted.
+        delta (int): The amount to add or subtract from the player's balance.
+
+    Returns:
+        None
+    """
     clients[id].money += delta
 
 def handle_data(data: str, client: socket.socket) -> None:

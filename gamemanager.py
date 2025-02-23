@@ -39,20 +39,69 @@ def add_player_to_game(game_id: int, player) -> None:
     else: raise ValueError('Player already in game.')
 
 def remove_game(game_id: int) -> None:
+    """
+    Removes a game from the game manager by its ID.
+
+    This function searches for a game with the given ID in the list of active games
+    and removes it if found.
+
+    Args:
+        game_id (int): The unique identifier of the game to be removed.
+
+    Returns:
+        None
+    """
     games.pop(game_id) # intentional choice to keep all other game ids the same
 
 def is_game_full(game_id: int):
+    """
+    Checks whether a game has reached its maximum number of players.
+
+    This function retrieves a game by its ID and determines if the number of 
+    players has reached the game's defined limit.
+
+    Args:
+        game_id (int): The unique identifier of the game.
+
+    Returns:
+        bool: True if the game is full, False otherwise.
+    """
     if None in games[game_id].players:
         return False
     return len(games[game_id].players) >= games[game_id].MAXPLAYERS
 
 def game_exists(game_name: str) -> bool:
+    """
+    Checks if a game with the specified name exists in the game manager.
+
+    This function iterates through the list of active games and determines
+    if a game with the given name is currently available.
+
+    Args:
+        game_name (str): The name of the game to check.
+
+    Returns:
+        bool: True if the game exists, False otherwise.
+    """
     for game in games:
         if game.name == game_name:
             return True
     return False
 
 def player_in_game(game_name: str, player: str) -> bool:
+    """
+    Determines whether a specific player is currently in a game.
+
+    This function searches for a game with the given name and checks if the player 
+    is listed among its participants.
+
+    Args:
+        game_name (str): The name of the game.
+        player_name (str): The name of the player to check.
+
+    Returns:
+        bool: True if the player is in the specified game, False otherwise.
+    """
     for game in games:
         if game.name == game_name and player in [player.name for player in game.players]:
             return True
@@ -61,7 +110,6 @@ def player_in_game(game_name: str, player: str) -> bool:
 def get_game_by_id(game_id: int) -> Game:
     """
     Returns the game object with the given id.
-    Made into a function to support type hints.
     
     Parameters:
     game_id: int - The id of the game to return.
