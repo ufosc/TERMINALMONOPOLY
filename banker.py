@@ -9,6 +9,7 @@ import screenspace as ss
 
 import gamemanager as gm
 import networking as net
+import validation as valid
 
 import modules_directory.tictactoe as tictactoe
 
@@ -80,9 +81,11 @@ def start_server() -> socket.socket:
     ip_address = socket.gethostbyname(host)
 
     # Choose a port that is free
-    # port = int(input("Choose a port, such as 3131: "))
-    port = 3131
+    port = input("Choose a port, such as 3131: ")
+    while not valid.validate_port(port) or not valid.is_port_unused(int(port)):
+        port = input("Invalid port. Choose a port, such as 3131: ")
 
+    port = int(port) # Convert port to int for socket binding
     # Bind to the port
     server_socket.bind((host, port))
     s.print_w_dots(f"Server started on {ip_address} port {port}")
@@ -481,18 +484,7 @@ def handshake(client_socket: socket.socket, handshakes: list) -> None:
     message = net.receive_message(client_socket)
     if message.startswith("Connected!"):
         handshakes[len(clients)-1] = True
-
-        def validate_name(n: str) -> str:
-            """
-            Validates the name of the player. 
-            If the player doesn't enter a name, assign a default name.
-            Also blacklist other illegal names here that would break the game.
-            """
-            if n == "" or n == "PAD ME PLEASE!":
-                return f"Player {len(clients)+1}"
-            return n
-
-        name = validate_name(message.split(',')[1])
+        name = message.split(',')[1]
         
         clients.append(Client(client_socket, None, name, 2000, [])) # Append the client to the list of clients with a temporary id of None
 

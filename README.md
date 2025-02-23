@@ -53,7 +53,7 @@ Before submitting a pull request, write a couple (2-3) unit tests if applicable.
 
 # Installation
 Ensure you have the following installed: 
-- Python 3.10+
+- Python 3.9+
 - install necessary python packages using pip:
   - ```pip install -r requirements.txt```
 - run using python monopoly.py

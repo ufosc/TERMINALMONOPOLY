@@ -3,16 +3,14 @@ import random
 from time import sleep
 from style import graphics as g
 import screenspace as ss
-from screenspace import Terminal
 
 game_title = "♕ Slots Machine"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
-loss_header = "─" * ((75 - len("Try Again!")) // 2) + "Try Again!" + "─" * ((75 - len("Try Again!")) // 2)
-win_header = "WIN!!! " * (75 // len("WIN!!! ")) + "WIN!!!"[:75 % len("WIN!!! ")]
 
 # 1. Create a list of symbols
 slot_graphics = {name: g.get(name) for name in g.keys() if name.startswith("slots")}
 slot_graphics.pop("slots_frame_up")
+slot_graphics.pop("slots_frame_lose")
 slot_graphics.pop("slots_frame_down")
 slot_graphics.pop("slots_frame_win")
 
@@ -49,36 +47,58 @@ def play(bet: int) -> int:
     """
     Slots Module
     Author: Adam Gulde
-    Version: 1.0
+    Version: 1.2 - Rotated individual squares instead of the entire machine with other improvements.
     Play the slots!
     """
 
     ss.set_cursor(0, 0)
-    print(header)
 
     # 3. Display the slots
-    print(up)
-    for t in range(41): 
+    rng = random.randint(0, 3) # Randomly select a column to rotate
+    for t in range(31): # Must be odd
         ss.set_cursor(0, 0)
         sleep_time = exponential_increase(t)
-        rotate_machine() if t % 2 == 0 else None
-        print_frame_up_fast() if t % 2 == 0 else print_frame_down_fast()
-        print_slots(t % 2 == 0)
-        print()
-        sleep(sleep_time)
+
+        rotate_column(0) if t % 2 == 0 else None
+        rotate_column(1) if t % 2 == 1 else None
+        rotate_column(2) if t % 2 == 0 else None
+        
+        print_column(0, t % 2 == 0) 
+        print_column(1, t % 2 == 1)
+        print_column(2, t % 2 == 0)
+        sleep(sleep_time/3) 
+        if rng != 3: # If not rotating all wheels, Rotate the wheels that was not selected to rotate
+            rotate_column(rng) if t % 2 == 1 else None
+            rotate_column((rng + 1) % 3) if t % 2 == 1 else None
+
+            print_column(rng, t % 2 == 1)
+            print_column((rng + 1) % 3, t % 2 == 1)
+
+            sleep(sleep_time / 3)
+
+            rotate_column(rng) if t % 2 == 0 else None
+            print_column(rng, t % 2 == 0)
+
+            sleep(sleep_time / 3)
+        
+    sleep(0.5) 
+    print_column(0, True) # Print all the columns, to give a clicking into place effect
+    rotate_column(1)
+    print_column(1, True) 
+    print_column(2, True) 
 
     # 4. Check for matches
+    sleep(1)
     bonus = check_bonus(bet)
     winnings = check_win(bet) + bonus[0]
     if winnings > 0:
-        ss.set_cursor(0, 1)
-        print(win_header,end="")
         ss.set_cursor(0, 15)
         print(g.get("slots_frame_win"))
         print_results(bet, bonus[1], winnings)
     else:
-        ss.set_cursor(0, 1)
-        print(loss_header,end="")
+        ss.set_cursor(0, 15)
+        print(g.get("slots_frame_lose"), end="") # Print the loss frame
+        print_results(bet, "No Bonus", winnings)
     return winnings
 
 def print_results(bet: int, bonus: str, winnings: int) -> None:
@@ -92,284 +112,112 @@ def print_results(bet: int, bonus: str, winnings: int) -> None:
     ss.set_cursor(28, 18) # Payout
     print(winnings)
 
-
-def print_number_list():
-    for i in range(22):
-        ss.set_cursor(80, i)
-    print(i)
-
 def exponential_increase(t):
     """
     Exponential increase function, used for sleep time aka the spinning speed of the slots.
     """
     return 0.01 * (1.1 ** t)
 
-def rotate_machine():
+def rotate_column(column: int):
     """
-    Rotate the entire slot machine. Allows for new symbols to be displayed.
+    Rotate a column of the slot machine. Allows for new symbols to be displayed.
     """
-    wheel0.append(wheel0.pop(0))
-    wheel1.append(wheel1.pop(0))
-    wheel2.append(wheel2.pop(0))
-
-    # Update the machine with the new wheels
-    machine[0] = [wheel0[0], wheel0[1], wheel0[2]]
-    machine[1] = [wheel1[0], wheel1[1], wheel1[2]]
-    machine[2] = [wheel2[0], wheel2[1], wheel2[2]]
-
-    return machine
+    if column == 0:
+        wheel0.append(wheel0.pop(0))
+        machine[0][0] = wheel0[0]
+        machine[0][1] = wheel0[1]
+        machine[0][2] = wheel0[2]
+    elif column == 1:
+        wheel1.append(wheel1.pop(0))
+        machine[1][0] = wheel1[0]
+        machine[1][1] = wheel1[1]
+        machine[1][2] = wheel1[2]
+    elif column == 2:
+        wheel2.append(wheel2.pop(0))
+        machine[2][0] = wheel2[0]
+        machine[2][1] = wheel2[1]
+        machine[2][2] = wheel2[2]
 
 def halve_image(image, top_half=True):
     """
     Halve an image by removing the top or bottom half
+
+    top_half: If True, keep the top half. If False, keep the bottom half.
     """
     half_image = len(image) // 2
     return image[half_image:] if top_half else image[:half_image]
 
-def print_slots(up=True):
-    """
-    Print the slot machine's symbols in a 3x3 grid format, each symbol in a 23x8 box.
-    Not my greatest work... 
-    """
-
-    box_width = 23
-    box_height = 8
-
+def print_square(symbol, is_half_image: bool, top: bool, x_offset:int, y_offset:int):
     inc_x = 0
     inc_y = 0
+    top_left = ""
+    if is_half_image:
+        top_left = halve_image(symbol, top)
+        # Print a half frame around the symbol.
+        ss.set_cursor(x_offset, y_offset)
+        # Ternary operator to determine the frame characters based on the if the symbol is located on the side, top, or bottom of the screen.
+        print((("┌" if x_offset < 10 else "┬") if x_offset < 40 else "┬") + "───────────────────────" + ("┐")) if not top else print()
+        for i in range(1, 5):
+            ss.set_cursor(x_offset, y_offset + i)
+            print("│")
+            ss.set_cursor(x_offset + 24, y_offset + i)
+            print("│")
+        ss.set_cursor(x_offset, y_offset + 5)
+        print(("└" if x_offset < 10 else "┴") + "───────────────────────" + ("┴" if x_offset < 40 else "┘") if top else ("┬" if x_offset < 10 else "┐")) if top else print()
+    else:
+        top_left = symbol
+
+        # Print the full frame around the symbol.
+        ss.set_cursor(x_offset, y_offset)
+        print(("┌" if x_offset < 10 else "┬") + "───────────────────────" + ("┬" if x_offset < 40 else "┐"))
+        for i in range(1, 9):
+            # For efficiency, only print the left and right sides of the frame.
+            ss.set_cursor(x_offset, y_offset + i)
+            print("│")
+            ss.set_cursor(x_offset + 24, y_offset + i)
+            print("│")
+        ss.set_cursor(x_offset, y_offset + 9) 
+        # 
+        print(("└" if x_offset < 10 else "┴") + "───────────────────────" + ("┴" if x_offset < 40 else "┘"))
     
-    if up: # Print 1/2 top slots, middle slots, and 1/2 bottom slots
-        top_left = halve_image(machine[0][0], True)
-        for line in top_left:
-            x_offset = 1
-            ss.set_cursor(x_offset + inc_x, inc_y + 1)
-            if "\n" in line:
-                inc_y += 1
-                inc_x = 0
-            print(line, end="")
-            inc_x += 1
-        
-        inc_x = 0
-        inc_y = 0
-        top_middle = halve_image(machine[1][0], True)
-        for line in top_middle:
-            x_offset = box_width + 2
-            ss.set_cursor(x_offset + inc_x, inc_y + 1)
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-            print(line, end="")
-            inc_x += 1
+    # Print the symbol in the square
+    for line in top_left:
+        ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
+        if "\n" in line:
+            inc_y += 1
+            inc_x = 0
+        print(line, end="")
+        inc_x += 1
 
-        inc_x = 0
-        inc_y = 0
-        top_right = halve_image(machine[2][0], True)
-        for line in top_right:
-
-            x_offset = box_width*2 + 4
-
-            ss.set_cursor(x_offset + inc_x, inc_y + 1)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        middle_left = machine[0][1]
-        for line in middle_left:
-            y_offset = box_height - 1
-            ss.set_cursor(inc_x + 2, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if "\n" in line:
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        middle_middle = machine[1][1]
-        for line in middle_middle:
-            x_offset = box_width + 3
-            y_offset = box_height - 1
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        middle_right = machine[2][1]
-        for line in middle_right:
-            x_offset = box_width * 2 + 4
-            y_offset = box_height - 1
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        bottom_left = halve_image(machine[0][2], False)
-        for line in bottom_left:
-            x_offset = 2
-            y_offset = box_height * 2 + 1
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        bottom_middle = halve_image(machine[1][2], False)
-        for line in bottom_middle:
-            x_offset = box_width * 1 + 3
-            y_offset = box_height * 2 + 1
-            ss.set_cursor(x_offset + inc_x,  y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        bottom_right = halve_image(machine[2][2], False)
-        for line in bottom_right:
-            x_offset = box_width * 2 + 4
-            y_offset = box_height * 2 + 1
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-    if not up:
-        inc_x = 0
-        inc_y = 0
-        middle_left = machine[0][1]
-        for line in middle_left:
-            y_offset = 2
-            ss.set_cursor(inc_x + 2, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if "\n" in line:
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        middle_middle = machine[1][1]
-        for line in middle_middle:
-            x_offset = box_width + 3
-            y_offset = 2
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        middle_right = machine[2][1]
-        for line in middle_right:
-            x_offset = box_width * 2 + 4
-            y_offset = 2
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-        inc_x = 0
-        inc_y = 0
-
-        bottom_left = machine[0][2]
-        for line in bottom_left:
-            x_offset = 2
-            y_offset = box_height + 4
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        bottom_middle = machine[1][2]
-        for line in bottom_middle:
-            x_offset = box_width * 1 + 3
-            y_offset = box_height + 4
-            ss.set_cursor(x_offset + inc_x,  y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-        inc_x = 0
-        inc_y = 0
-        bottom_right = machine[2][2]
-        for line in bottom_right:
-            x_offset = box_width * 2 + 4
-            y_offset = box_height + 4
-            ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-            print(line, end="")
-            inc_x += 1
-            if line == "\n":
-                inc_y += 1
-                inc_x = 0
-
-def print_frame_up_fast():
+def print_column(row: int, up: bool):
     """
-    Print the frame in the up position.
-    Works faster than simply printing the frame, because not all spaces need to be replaced. 
+    Print a column of the slot machine.
     """
-    ss.set_cursor(0, 2)
-    # print("│                       │                       │                       │")
-    print("│                       │                       │                       │")
-    ss.set_cursor(0, 6)
-    print("└───────────────────────┴───────────────────────┴───────────────────────┘")
-    print("┌───────────────────────┬───────────────────────┬───────────────────────┐")
-    ss.set_cursor(0, 11)
-    print("│                       │                       │                       │")
-    print("│                       │                       │                       │")
-    ss.set_cursor(0, 16)
-    print("└───────────────────────┴───────────────────────┴───────────────────────┘")
-    print("┌───────────────────────┬───────────────────────┬───────────────────────┐")
-    ss.set_cursor(0, 21)
-    print("│                       │                       │                       │")
-
-def print_frame_down_fast():
-    """
-    Print the frame in the down position.
-    Works faster than simply printing the frame, because not all spaces need to be replaced.
-    """
-    ss.set_cursor(0, 2)
-    print("┌───────────────────────┬───────────────────────┬───────────────────────┐")
-    ss.set_cursor(0, 6)
-    print("│                       │                       │                       │")
-    print("│                       │                       │                       │")
-    print("│                       │                       │                       │")
-    ss.set_cursor(0, 11)
-    print("└───────────────────────┴───────────────────────┴───────────────────────┘")
-    print("┌───────────────────────┬───────────────────────┬───────────────────────┐")
-    ss.set_cursor(0, 16)
-    print("│                       │                       │                       │")
-    print("│                       │                       │                       │")
-    print("│                       │                       │                       │")
-    ss.set_cursor(0, 21)
-    print("└───────────────────────┴───────────────────────┴───────────────────────┘")
-    print("                                                                         ")
+    box_width = 23
+    box_height = 8
+    if up:
+        if row == 0:
+            print_square(machine[0][0], True, True, 1, 1)
+            print_square(machine[0][1], False, False, 1, box_height - 1)
+            print_square(machine[0][2], True, False, 1, box_height * 2 + 1)
+        elif row == 1:
+            print_square(machine[1][0], True, True, box_width + 2, 1)
+            print_square(machine[1][1], False, False, box_width + 2, box_height - 1)
+            print_square(machine[1][2], True, False, box_width + 2, box_height * 2 + 1)
+        elif row == 2:
+            print_square(machine[2][0], True, True, box_width * 2 + 3, 1)
+            print_square(machine[2][1], False, False, box_width * 2 + 3, box_height - 1)
+            print_square(machine[2][2], True, False, box_width * 2 + 3, box_height * 2 + 1)
+    else:
+        if row == 0:
+            print_square(machine[0][1], False, True, 1, 2)
+            print_square(machine[0][2], False, False, 1, box_height + 4)
+        elif row == 1:
+            print_square(machine[1][1], False, True, box_width + 2, 2)
+            print_square(machine[1][2], False, False, box_width + 2, box_height + 4)
+        elif row == 2:
+            print_square(machine[2][1], False, True, box_width * 2 + 3, 2)
+            print_square(machine[2][2], False, False, box_width * 2 + 3, box_height + 4)
 
 def check_win(bet: int) -> int:
     """
@@ -378,26 +226,10 @@ def check_win(bet: int) -> int:
     profit = 0
 
     # Check for matches in the first row
-    if machine[0][0] == machine[0][1] == machine[0][2]:
-        profit += bet * 5
-        draw_win_line(coordinates[0][0], coordinates[0][2])
-    # Check for matches in the second row
-    # if machine[1][0] == machine[1][1] == machine[1][2]:
-        # profit += bet * 3
-        # draw_win_line(coordinates[1][0], coordinates[1][2])
-    # Check for matches in the third row
-    if machine[2][0] == machine[2][1] == machine[2][2]:
-        profit += bet * 5
-        draw_win_line(coordinates[2][0], coordinates[2][2])
-    # Check for matches in the first column
     if machine[0][0] == machine[1][0] == machine[2][0]:
         profit += bet * 5
         draw_win_line(coordinates[0][0], coordinates[2][0])
-    # Check for matches in the second column
-    if machine[0][1] == machine[1][1] == machine[2][1]:
-        profit += bet * 5
-        draw_win_line(coordinates[0][1], coordinates[2][1])
-    # Check for matches in the third column
+    # Check for matches in the third row
     if machine[0][2] == machine[1][2] == machine[2][2]:
         profit += bet * 5
         draw_win_line(coordinates[0][2], coordinates[2][2])
@@ -412,6 +244,7 @@ def check_win(bet: int) -> int:
     return profit
 
 def check_bonus(bet) -> list[int, str]:
+
     """
     Check for matches in the bonus (middle) line.
 
@@ -464,6 +297,11 @@ def check_bonus(bet) -> list[int, str]:
  
     return [profit, multiplier]
 
+def print_number_sidebar():
+    # For debugging purposes, print the numbers on the side of the screen.
+    for i in range(0, 25):
+        ss.set_cursor(77, i)
+        print(i, end="")
 
 def draw_win_line(start: tuple, end: tuple):
     """
@@ -476,6 +314,9 @@ def draw_win_line(start: tuple, end: tuple):
         print("▓", end="")
 
 def bresenham(x1, y1, x2, y2):
+    """
+    Function to calculate the points of a line using Bresenham's line algorithm.
+    """
     points = []
     dx = abs(x2 - x1)
     dy = abs(y2 - y1)
@@ -498,5 +339,6 @@ def bresenham(x1, y1, x2, y2):
     return points
 
 if __name__ == "__main__":
+    print_number_sidebar()
     play(100)
     ss.set_cursor(0, 25)
