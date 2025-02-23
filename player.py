@@ -12,7 +12,7 @@ import screenspace as ss
 import modules as m
 import casino
 import networking as net
-import name_validation
+import validation
 
 game_running = False
 screen = 'terminal'
@@ -24,6 +24,7 @@ DEBUG = False
 NET_COMMANDS_ENABLED = False
 TERMINALS = [ss.Terminal(1, (2, 2)), ss.Terminal(2, (ss.cols+3, 2)), ss.Terminal(3, (2, ss.rows+3)), ss.Terminal(4, (ss.cols+3, ss.rows+3))]
 active_terminal = TERMINALS[0]
+inventory = m.Inventory() # global inventory object for all modules to access
 
 def banker_check():
     has_passed_banker_query = False
@@ -98,19 +99,29 @@ def initialize(debug: bool = False, args: list = None) -> None:
         client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
         client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockets = (client_receiver, client_sender)
-        ADDRESS = input("Enter Host IP: ")
-        PORT = input("Enter Host Port: ")
-
+        
         name_validated = False
         print("Enter a name that meets the following criteria:")
         print("1. 8 characters or less")
         print("2. only contains alpha numeric characters or spaces")
         name = input("Player name: ")
         while not name_validated:
-            name_validated = name_validation.validate_name(name)
+            name_validated = validation.validate_name(name)
             if not name_validated:
                 print("The input name was not valid")
                 name = input("Player name: ")
+        
+        ADDRESS = input("Enter Host IP: ").strip()
+        while not validation.validate_address(ADDRESS):
+            print("Invalid IP address. Please enter a valid IP address.")
+            ADDRESS = input("Enter Host IP: ").strip()
+
+        PORT = input("Enter Host Port: ")
+        # Validate IP address and port
+        while not validation.validate_port(PORT):
+            print("Invalid port. Please enter a valid port.")
+            PORT = input("Enter Host Port: ")
+
 
         print(f"Welcome, {name}!")
 
@@ -318,12 +329,23 @@ def get_input() -> None:
             elif stdIn == "fish":
                 fishing_gamestate = 'start'
                 while(fishing_gamestate != 'e'):
-                    game_data, fishing_gamestate = m.fishing(fishing_gamestate)
+                    game_data, fishing_gamestate = m.fishing(fishing_gamestate, inventory)
                     active_terminal.update(game_data, padding=False)
                 ss.set_cursor(0, ss.INPUTLINE)
 
             elif stdIn == "shop":
-                pass
+                m.shop_handler(inventory, active_terminal)
+
+            elif stdIn == "inv" or stdIn == "inventory":
+                item_list = [f"{item}: {quantity}" for item, quantity in inventory.getinventory().items()]
+                if len(item_list) > 0:
+                    item_list = '\n'.join(item_list)
+                    if item_list.count("\n") > 18:
+                        # Truncate the list to 18 lines and add ellipsis
+                        item_list = '\n'.join(item_list.split('\n')[:18]) + "\n..."
+                    active_terminal.update(f"Inventory:\n{item_list}", padding=True)
+                else: 
+                    active_terminal.update("Inventory is empty. Try catching some fish!", padding=True)
             
             elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
@@ -356,7 +378,10 @@ def get_input() -> None:
                     ss.clear_screen()
                     print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
                     input()
-                    ss.initialize_terminals(TERMINALS) # Reinitialize terminals to clear the screen. TODO restore previous terminals state
+                    ss.clear_screen()
+                    print(g.get('terminals'))
+                    for t in TERMINALS:
+                        t.display()
                     ss.update_terminal(active_terminal.index, active_terminal.index)
                 
                 elif stdIn == "bal":

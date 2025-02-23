@@ -13,6 +13,44 @@ import time
 calculator_history_queue = []
 calculator_history_current_capacity = 15
 
+class Inventory():
+    def __init__(self):
+        """
+        Initializes the inventory of the player.
+        The inventory is a dictionary of items and their quantities.
+        All items are stored here, to be extracted by the shop module.
+        """
+        self.items = {}
+    
+    def getinventory(self) -> dict:
+        """
+        Returns the inventory of the player.
+        """
+        return self.items
+    
+    def add_item(self, item: str, quantity: int) -> None:
+        """
+        Adds an item to the inventory.
+        If the item already exists, it adds the quantity to the existing item.
+        This could be a fish, or a Terminal upgrade, or an attack Module. 
+        """
+        if item in self.items:
+            self.items[item] += quantity
+        else:
+            self.items[item] = quantity
+    
+    def remove_item(self, item: str, quantity: int) -> None:
+        """
+        Removes an item from the inventory.
+        If the item does not exist, it does nothing.
+        If the quantity is greater than the quantity of the item, it removes all of the item.
+        """
+        if item in self.items:
+            if self.items[item] > quantity:
+                self.items[item] -= quantity
+            else:
+                del self.items[item]
+
 def calculator(active_terminal: Terminal) -> str:
     # Helper function that contructs terminal printing.
     def calculator_terminal_response(footer_option: int) -> str:
@@ -241,13 +279,13 @@ def ttt_handler(server: Socket, active_terminal: Terminal, player_id: int) -> No
                 break
 
 fishing_game_obj = fishing_game() # fishing is played LOCALLY, not over the network
-def fishing(gamestate: str) -> tuple[str, str]:
+def fishing(gamestate: str, inventory: Inventory) -> tuple[str, str]:
     """
     Fishing module handler for player.py. Returns tuple of [visual data, gamestate] both as strings.
     """
     stdIn = ''
     if (gamestate == 'start'):
-        return fishing_game_obj.start(), 'playing'
+        return fishing_game_obj.start(inventory), 'playing'
     elif (gamestate == 'playing'):
         stdIn = fishing_game_obj.get_input()
         if stdIn == 'e':
@@ -256,8 +294,8 @@ def fishing(gamestate: str) -> tuple[str, str]:
     elif (gamestate == 'e'):
         return '', 'start'  
 
-def shop_handler() -> str:
-    return 
+def shop_handler(inventory: Inventory, active_terminal: Terminal) -> str:
+    active_terminal.update(shop.Shop(inventory).display_shop()) # temporary, will be replaced with banker Shop communication
 
 def kill() -> str:
     return g.get('skull')
