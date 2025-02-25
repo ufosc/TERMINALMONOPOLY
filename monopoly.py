@@ -42,6 +42,12 @@ def get_gameboard() -> str:
     else:
         print(output)
 
+def get_deed(location: int) -> Property:
+    """
+    Get the deed for a location\n
+    """
+    return board.locations[location]
+
 def add_to_output(s):
     global output
     if mode == "banker":
@@ -128,7 +134,8 @@ def update_history(message: str):
 
 def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: str = "normal", property_id: str = ""):
     """
-    Update the status\n
+    Updates the status textbox with the player's properties, or the deed of a property
+
     """
     # Property status update (list all properties of player)
     status.clear()

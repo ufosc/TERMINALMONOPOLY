@@ -323,8 +323,11 @@ def get_input() -> None:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             
             elif stdIn.startswith("deed"):
-                if(len(stdIn) > 4):
-                   pass  # ss.update_quadrant(active_terminal.index, m.deed(stdIn[5:]), padding=True)
+                index = stdIn.find(" ")
+                if index == -1:
+                    active_terminal.update("Please specify a property ID after 'deed'.", padding=False)
+                else:
+                    active_terminal.update(m.deed(sockets[1], player_id, stdIn[index+1:]), padding=False)
             
             elif stdIn == "fish":
                 fishing_gamestate = 'start'

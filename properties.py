@@ -173,3 +173,20 @@ class Property:
                 "Water Works":            (150, 4, 10, -1, -1, 75)
                 }
         """
+
+    def get_deed_str(self) -> str:
+        """This function prints the deed for the current location."""
+        deed_str = "=== Deed Viewer ===\n"
+        deed_str += "Use W/S to navigate and Enter to select.\n"
+        deed_str += f"Property: {self.name}\n"
+        deed_str += f"Owner: {self.owner}\n"
+        deed_str += f"Houses: {self.houses}\n"
+        deed_str += f"Purchase Price: {self.purchasePrice}\n"
+        deed_str += f"House Price: {self.housePrice}\n"
+        deed_str += f"Rent: {self.rent}\n"
+        deed_str += f"Rent w 1 House: {self.rent1H}\n"
+        deed_str += f"Rent w 2 Houses: {self.rent2H}\n"
+        deed_str += f"Rent w 3 Houses: {self.rent3H}\n"
+        deed_str += f"Rent w 4 Houses: {self.rent4H}\n"
+        deed_str += f"Rent w Hotel: {self.rentHotel}\n"
+        return deed_str

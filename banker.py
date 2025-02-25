@@ -301,6 +301,11 @@ def handle_data(data: str, client: socket.socket) -> None:
     elif data.startswith('request_info'):
         pass
 
+    if data.startswith("deed"):
+        cmds = data.split(',') 
+        property_data = mply.get_deed(int(cmds[1]))
+        net.send_message(client, property_data.get_deed_str())
+
     elif data.startswith('mply'):
         monopoly_game(current_client, data)
 
