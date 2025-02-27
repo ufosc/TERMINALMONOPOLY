@@ -20,7 +20,7 @@ gameboard = ""
 board = None
 history = []
 status = []
-CASH = 401
+CASH = 0 # Defined by unittest or set by player
 num_players = 2
 bankrupts = 0
 players = []
@@ -41,6 +41,12 @@ def get_gameboard() -> str:
         return output
     else:
         print(output)
+
+def get_deed(location: int) -> Property:
+    """
+    Get the deed for a location\n
+    """
+    return board.locations[location]
 
 def add_to_output(s):
     global output
@@ -128,7 +134,8 @@ def update_history(message: str):
 
 def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: str = "normal", property_id: str = ""):
     """
-    Update the status\n
+    Updates the status textbox with the player's properties, or the deed of a property
+
     """
     # Property status update (list all properties of player)
     status.clear()
@@ -410,17 +417,59 @@ def log_error(error_message: str) -> None:
         formatted_datetime = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
-def unittest():
+def unittest(num:int = 5):
+    global CASH
+    if num == 1:
+        # Two players, high cash
+        CASH = 1500
+        players[0].buy(1, board)
+        players[0].buy(3, board)
+        players[0].buy(5, board)
+        players[0].buy(7, board)
+        players[0].buy(9, board)
+        players[1].buy(12, board)
+        players[1].buy(14, board)
+        players[1].buy(16, board)
+        players[1].buy(18, board)
+        players[1].buy(19, board)
+    if num == 2:
+        # Two players, low cash, will bankrupt if a 4 is rolled due to income tax
+        CASH = 401
+        players[0].buy(31, board)
+        players[1].buy(32, board)
+    elif num == 3:
+        # Three players, high cash
+        CASH = 1500
+        players[0].buy(1, board)
+        players[1].buy(15, board)
+        players[1].buy(25, board)
+        players[1].buy(35, board)
+        players[2].buy(12, board)
+        players[2].buy(28, board)
+    elif num == 4:
+        # Four players, high cash, no properties
+        CASH = 2000
+    elif num == 5: 
+        CASH = 3000
+        players[0].buy(1, board)
+        players[0].buy(3, board)
+        players[0].buy(5, board)
+        players[0].buy(6, board)
+        players[0].buy(8, board)
+        players[0].buy(9, board)
+        players[1].buy(11, board)
+        players[1].buy(12, board)
+        players[1].buy(13, board)
+        players[1].buy(14, board)
+        players[1].buy(15, board)
+        players[1].buy(16, board)
+        players[1].buy(18, board)
+        players[1].buy(19, board)
+    for p in players:
+        p.cash += CASH
+    
     # TODO make a more robust unit testing system, using below as a framework. Allow the programmer to 
     # choose which properties to buy for each player, and how much cash to allocate to each. 
-    # players[0].buy(1, board)
-    players[0].buy(31, board)
-    players[1].buy(32, board)
-    # players[1].buy(15, board)
-    # players[1].buy(25, board)
-    # players[1].buy(35, board)
-    # players[3].buy(12, board)
-    # players[3].buy(28, board)
 
 #wipes the bottom of the screen where the player does all of their input
 def bottom_screen_wipe():

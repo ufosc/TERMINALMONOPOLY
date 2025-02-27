@@ -32,6 +32,7 @@ def module(socket: socket, active_terminal: Terminal, pid: int):
         elif(wrong == 3):
             ss.overwrite(c.RESET + c.RED + "\rWager has to be an integer greater than 0. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
         game = input(c.backYELLOW+c.BLACK+f"\r").lower().split(" ")
+        print(c.RESET, end="") #Reset the color
         ss.overwrite(c.RESET+"\r" + " " * 40)
         if(game[0] == ""):
             wrong = 2
