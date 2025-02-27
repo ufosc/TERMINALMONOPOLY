@@ -140,6 +140,7 @@ class Terminal:
         set_cursor(0,INPUTLINE)
     
     def clear(self):
+        """Prints a blank screen in the terminal."""
         for i in range(rows):
             set_cursor(self.x,self.y+i)
             print(" " * cols)

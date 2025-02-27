@@ -322,13 +322,6 @@ def get_input() -> None:
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             
-            elif stdIn.startswith("deed"):
-                index = stdIn.find(" ")
-                if index == -1:
-                    active_terminal.update("Please specify a property ID after 'deed'.", padding=False)
-                else:
-                    active_terminal.update(m.deed(sockets[1], player_id, stdIn[index+1:]), padding=False)
-            
             elif stdIn == "fish":
                 fishing_gamestate = 'start'
                 while(fishing_gamestate != 'e'):
@@ -364,8 +357,8 @@ def get_input() -> None:
                 ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
             
-            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino"]:
-                ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode.")
+            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "deed"]:
+                ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode." + COLORS.RESET)
 
             elif stdIn == "exit":
                 break
@@ -391,6 +384,15 @@ def get_input() -> None:
                     net.send_message(sockets[1], f'{player_id}bal')
                     active_terminal.update(net.receive_message(sockets[1]).center(ss.cols), padding=True)
             
+                elif stdIn.startswith("deed"):
+                    index = ss.get_valid_int("Enter a property ID: ", 1, 39, disallowed=[0,2,4,7,10,17,20,22,30,33,36,38])
+                    active_terminal.clear()
+                    # Send the deed request to the server, which will return the deed data.
+                    net.send_message(sockets[1], f'{player_id}deed {index}')
+
+                    # Wait for server to send back the deed, then display it on the active terminal.
+                    active_terminal.update(net.receive_message(sockets[1]), padding=False)
+
                 elif stdIn == "ttt" or stdIn == "tictactoe":
                     m.ttt_handler(sockets[1], active_terminal, player_id)
 
