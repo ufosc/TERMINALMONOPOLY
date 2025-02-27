@@ -181,6 +181,21 @@ def calculator(active_terminal: Terminal) -> str:
         except:
             active_terminal.update(calculator_terminal_response(2), padding=True)
 
+def deed(server: Socket, player_id: int, location: int) -> str:
+    """
+    Displays the deed for the current location.
+    Returns: str with newlines 
+    """
+    # Send the server the location to get the deed for
+    net.send_message(server, f'{player_id}deed,{location}')
+    # Wait for server to send back the deed
+    deed_data = net.receive_message(server)
+
+    return deed_data
+
+
+
+
 def list_properties() -> str:
     """
     Lists all properties on the board by calling the property list stored in graphics.

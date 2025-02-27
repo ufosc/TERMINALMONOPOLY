@@ -293,7 +293,11 @@ def get_input() -> None:
                 net.send_message(sockets[1], f'{player_id}mply,endturn')
 
         elif screen == 'terminal':
-            stdIn = input(COLORS.WHITE+'\r').lower().strip()
+            if active_terminal.persistent and not active_terminal.is_retrieved: # If the terminal is persistent, don't take input from the player
+                active_terminal.is_retrieved = True
+                stdIn = active_terminal.get_persistent_command()
+            else:
+                stdIn = input(COLORS.WHITE+'\r').lower().strip()
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
                 skip_initial_input = True
                 continue
@@ -322,6 +326,18 @@ def get_input() -> None:
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             
+<<<<<<< HEAD
+=======
+            elif stdIn.startswith("deed"):
+                index = stdIn.find(" ")
+                active_terminal.set_persistent(True) # Always allow players to use deeds when they navigate to the deed terminal.
+                active_terminal.persistent_command = "deed"
+                if index == -1:
+                    active_terminal.update("Please specify a property ID after 'deed'.", padding=False)
+                else:
+                    active_terminal.update(m.deed(sockets[1], player_id, stdIn[index+1:]), padding=False)
+            
+>>>>>>> 4f29a99 (enhancement: persistent terminals)
             elif stdIn == "fish":
                 fishing_gamestate = 'start'
                 while(fishing_gamestate != 'e'):

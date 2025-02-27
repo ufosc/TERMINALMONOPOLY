@@ -65,6 +65,34 @@ class Terminal:
         self.y = coordinates[1] # top left corner of the terminal
         self.data = []
         self.padded_data = False
+        self.persistent = False
+        self.persistent_command = ""
+        self.is_retrieved = False
+
+    def set_persistent(self, persistent: bool) -> None:
+        """
+        Description:
+            Sets the terminal to be persistent. This means that the module within this terminal will reactivate when the player navigates to it.
+        
+        Parameters: 
+            persistent (bool): True if the terminal should be persistent, False otherwise.
+        Returns: 
+            None
+        """
+        self.persistent = persistent
+    
+    def get_persistent_command(self) -> str:
+        """
+        Description:
+            Gets the persistent command for the terminal. This is used to reactivate the module within the terminal when the player navigates to it.
+        
+        Parameters: 
+            None
+        Returns: 
+            str: The persistent command for the terminal.
+        """
+        return self.persistent_command
+
 
     def update(self, data, padding: bool = True) -> None:
         """

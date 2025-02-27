@@ -37,7 +37,8 @@ def module(socket: socket, active_terminal: Terminal, pid: int):
         if(game[0] == ""):
             wrong = 2
         elif(game[0] == "e"):
-            active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
+            # active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
+            active_terminal.set_persistent(True)
             break
         elif(len(game) == 1):
             wrong = 2
