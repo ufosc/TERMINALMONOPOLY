@@ -11,6 +11,7 @@ from style import graphics as g
 import screenspace as ss
 import modules as m
 import casino
+import stocks
 import networking as net
 import name_validation
 
@@ -20,6 +21,7 @@ sockets = (socket.socket(socket.AF_INET, socket.SOCK_STREAM), socket.socket(sock
 ADDRESS = ""
 PORT = 0
 player_id: int
+name: str = ''
 DEBUG = False
 NET_COMMANDS_ENABLED = False
 TERMINALS = [ss.Terminal(1, (2, 2)), ss.Terminal(2, (ss.cols+3, 2)), ss.Terminal(3, (2, ss.rows+3)), ss.Terminal(4, (ss.cols+3, ss.rows+3))]
@@ -89,7 +91,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
     Parameters: None
     Returns: None
     """
-    global sockets, ADDRESS, PORT
+    global sockets, ADDRESS, PORT, name
     ss.clear_screen()
     if not debug:
         banker_check()
@@ -340,7 +342,7 @@ def get_input() -> None:
                 ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
             
-            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino"]:
+            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "stocks"]:
                 ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode.")
 
             elif stdIn == "exit":
@@ -369,6 +371,10 @@ def get_input() -> None:
 
                 elif stdIn == "casino":
                     casino.module(sockets[1], active_terminal, player_id)
+
+                elif stdIn == "stocks":
+                    ss.indicate_keyboard_hook(active_terminal.index)
+                    stocks.module(sockets[1], active_terminal, player_id, name)
 
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
