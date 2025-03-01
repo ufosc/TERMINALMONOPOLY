@@ -10,19 +10,19 @@ module_name = "Casino"
 module_command = "casino"
 module_description = "Gamble your money at the casino!"
 
-def module(socket: socket, active_terminal: Terminal, pid: int):
+def run(player_id: int, server: socket, active_terminal: Terminal):
     """
     Casino Module
     Author: Jordan Brotherton (github.com/jordanbrotherton)
-    Version: 1.2 - UX improvements.
+    Version: 1.3 - Moved to its own file
     Gamble your money away!
     A basic menu loader for casino_games.
     """
     wrong = 0
     while True:
-        net.send_message(socket, f"{pid}bal")
+        net.send_message(server, f"{player_id}bal")
         sleep(0.1)
-        balance = int(net.receive_message(socket))
+        balance = int(net.receive_message(server))
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
         active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\nSelect a game by typing the command and wager.\n\n"
                        + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + get_submodules() + "\n☒ Exit (e)")
@@ -38,7 +38,8 @@ def module(socket: socket, active_terminal: Terminal, pid: int):
         if(game[0] == ""):
             wrong = 2
         elif(game[0] == "e"):
-            active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
+            # active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
+            active_terminal.set_persistent(True)
             break
         elif(len(game) == 1):
             wrong = 2
@@ -56,15 +57,15 @@ def module(socket: socket, active_terminal: Terminal, pid: int):
                 wager = int(game[1])
                 if(wager == 0): continue
 
-                net.send_message(socket, f"{pid}casino lose {wager}")
+                net.send_message(server, f"{player_id}casino lose {wager}")
                 sleep(0.1)
-                balance = int(net.receive_message(socket))
+                balance = int(net.receive_message(server))
 
                 ss.overwrite(c.RESET+"\r" + " " * 40)
                 winnings = i.play(active_terminal,wager)
-                net.send_message(socket, f"{pid}casino win {winnings}")
+                net.send_message(server, f"{player_id}casino win {winnings}")
                 sleep(0.1)
-                balance = int(net.receive_message(socket))
+                balance = int(net.receive_message(server))
             except ImportError:
                 wrong = 1
 
@@ -90,4 +91,8 @@ def get_submodules():
     return modules_list
 
 if __name__ == "__main__":
-    module(1)
+    run(1)
+
+name = "Casino Loader"
+command = "casino"
+help_text = "Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."

@@ -1,18 +1,18 @@
 === PROPERTY LIST ===
 
-BROWN SET: Mediterranean Avenue, Baltic Avenue
-LIGHTBLUE SET: Oriental Avenue, Vermont Avenue, Conneticut Avenue
+BROWN Mediterranean Avenue, Baltic Avenue [1, 3]
+LIGHTBLUE Oriental Avenue, Vermont Avenue, Conneticut Avenue [6, 8, 9]
 
-ROUGE SET: St. Charles Place, States Avenue, Virginia Avenue
-ORANGE SET: St. James Place, Tennessee Avenue, New York Avenue
+ROUGE St. Charles Place, States Avenue, Virginia Avenue [11, 13, 14]
+ORANGE St. James Place, Tennessee Avenue, New York Avenue [16, 18, 19]
 
-RED SET: Kentucky Avenue, Indiana Avenue, Illinois Avenue 
-YELLOW SET: Atlantic Avenue, Ventnor Avenue, Marvin Gardens
+RED Kentucky Avenue, Indiana Avenue, Illinois Avenue [21, 23, 24]
+YELLOW Atlantic Avenue, Ventnor Avenue, Marvin Gardens [26, 27, 29]
 
-GREEN SET: Pacific Avenue, North Carolina Avenue, Pennsylvania Avenue
-BLUE SET: Park Place, Boardwalk
+GREEN Pacific Avenue, North Carolina Avenue, Pennsylvania Avenue [31, 32, 34]
+BLUE Park Place, Boardwalk [37, 39]
 
 RAILROADS: Reading Railroad, Pennsylvania Railroad, 
-B&O Railroad, Short Line
+B&O Railroad, Short Line [5, 15, 25, 35]
 
-UTILITIES: Electric Company, Water Works
+UTILITIES: Electric Company, Water Works [12, 28]

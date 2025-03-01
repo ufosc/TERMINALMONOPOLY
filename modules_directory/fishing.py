@@ -1,15 +1,15 @@
 import time
 import random
 from style import graphics as g, set_cursor, set_cursor_str
+# import modules_directory.inventory as inv
 
 class fishing_game():
     """
     Fishing Game
     Author: Adam Gulde (github.com/adamgulde)
-    Version: 1.2 (2/22/2025) Reworked to include inventory updating
+    Version: 1.3 (2/27/2025) Updated to adhere to new module constraints
     Written on an airplane in an hour, roughly.
     This class interfaces with player.py perfectly. 
-    If you want to playtest the game you can run the file by itself.
     """
     def __init__(self) -> None:
         self.__fishies = g.copy()
@@ -47,42 +47,25 @@ class fishing_game():
 
         return retval
 
-if __name__ == "__main__":
-    import os
-    os.system('cls' if os.name == 'nt' else 'clear')
+name = "Fishing Game"
+author = "https://github.com/adamgulde"
+description = "Go fishing!"
+version = "1.3" # Moved to its own file
+command = "fish"
+help_text = "Type FISH to go fishing, and press ENTER to try to reel something in!"
 
-    pictures = []
-
-    fishies = g.copy()
-
-    pictures.append(fishies.pop('fishing 1 idle'))
-    pictures.append(fishies.pop('fishing 1 win'))
-
-    print(pictures[0])
-
-    start = int(time.time())
-    delay = random.randint(3,10)
-    catchtime = start + delay
-   
-    input()
-    set_cursor(0,0)
-    print(pictures[1])
-    print()
-    print()
-    if catchtime < int(time.time()) < catchtime + 5:
-        fish = random.choice(['Carp', 'Bass', 'Salmon'])
-
-        retval = ""
-        retval += set_cursor_str(24 - (1 if fish == 'Salmon' else 0), 3) + 'Nice job, you caught a ' + fish + '!'
-        fish_graphic = fishies['fishing 1 ' + fish]
-        retval += set_cursor_str(37,9) + fish_graphic[0:3]
-        retval += set_cursor_str(37,10) + fish_graphic[3:6]
-        retval += set_cursor_str(37,11) + fish_graphic[6:9]
-
-        print(retval)
-
-    else:    
-        set_cursor(33, 5)
-        print('No luck...')
-    set_cursor(0, 40)
-
+fishing_game_obj = fishing_game() 
+# def run(inventory: inventory, gamestate: str = 'start') -> tuple[str, str]:
+#     """
+#     Fishing module handler for player.py. Returns tuple of [visual data, gamestate] both as strings.
+#     """
+#     stdIn = ''
+#     if (gamestate == 'start'):
+#         return fishing_game_obj.start(inventory), 'playing'
+#     elif (gamestate == 'playing'):
+#         stdIn = fishing_game_obj.get_input()
+#         if stdIn == 'e':
+#             return '', 'e'
+#         return fishing_game_obj.results(), 'e'  
+#     elif (gamestate == 'e'):
+#         return '', 'start'  
