@@ -9,10 +9,9 @@ import style as s
 from style import COLORS
 from style import graphics as g
 import screenspace as ss
-import modules as m
-import casino
 import networking as net
 import validation
+import modules_directory.inventory as inv
 
 game_running = False
 screen = 'terminal'
@@ -24,7 +23,7 @@ DEBUG = False
 NET_COMMANDS_ENABLED = False
 TERMINALS = [ss.Terminal(1, (2, 2)), ss.Terminal(2, (ss.cols+3, 2)), ss.Terminal(3, (2, ss.rows+3)), ss.Terminal(4, (ss.cols+3, ss.rows+3))]
 active_terminal = TERMINALS[0]
-inventory = m.Inventory() # global inventory object for all modules to access
+inventory = inv.Inventory() # global inventory object for all modules to access
 
 def banker_check():
     has_passed_banker_query = False
@@ -249,6 +248,28 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.set_cursor(0, ss.INPUTLINE)
 
+import importlib
+
+def get_module_commands() -> dict: 
+    """
+    Retrieves a list of available module commands and their corresponding functions.
+    This function scans the "modules_directory" for Python files, dynamically
+    imports each module, and checks if the module has a 'command' and 'run' attribute.
+    If the attributes exist, the command and its corresponding function are added
+    to the dictionary.
+    
+    Returns:
+        dict: A dictionary mapping module commands to their corresponding functions.
+    """
+    pairs = {}
+    for file in os.listdir("modules_directory"):
+        if file.endswith(".py"):
+            file = file[:-3]
+            module = importlib.import_module("modules_directory." + file)
+            if hasattr(module, 'command') and hasattr(module, 'run'): 
+                pairs[module.command] = module.run   
+    return pairs
+
 def get_input() -> None:
     """
     Main loop for input handling while in the terminal screen. Essentially just takes input from user, 
@@ -258,6 +279,8 @@ def get_input() -> None:
     Returns: None
     """
     global active_terminal, screen, player_id
+    cmds = get_module_commands()
+    
     stdIn = ""
     skip_initial_input = False
 
@@ -293,7 +316,7 @@ def get_input() -> None:
                 net.send_message(sockets[1], f'{player_id}mply,endturn')
 
         elif screen == 'terminal':
-            if active_terminal.persistent and not active_terminal.is_retrieved: # If the terminal is persistent, don't take input from the player
+            if not active_terminal.is_retrieved: # If the terminal is persistent, don't take input from the player
                 active_terminal.is_retrieved = True
                 stdIn = active_terminal.get_persistent_command()
             else:
@@ -301,7 +324,21 @@ def get_input() -> None:
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
                 skip_initial_input = True
                 continue
-            if stdIn == "helpstocks" or stdIn == "help stocks":
+            # This 'term' command needs to be first, in case of a persistent module.
+            if stdIn.startswith("term "): 
+                if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
+                    n = int(stdIn.strip().split(" ")[1])
+                    ss.update_terminal(n = n, o = active_terminal.index)
+                    active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
+                    ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
+                    if active_terminal.persistent:
+                        stdIn = active_terminal.get_persistent_command()
+                else:
+                    ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
+            
+            
+            # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
+            elif stdIn == "helpstocks" or stdIn == "help stocks":
                 active_terminal.clear()
                 active_terminal.update(g.get("helpstocks"))
             elif stdIn.startswith("help"):
@@ -310,59 +347,16 @@ def get_input() -> None:
                 else: 
                     active_terminal.update(g.get('help'), padding=True)
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
-            
-            elif stdIn == "calc":
-                m.calculator(active_terminal)
-            
-            elif stdIn == "list":
-                active_terminal.update(m.list_properties(), padding=False)
-            
-            elif stdIn.startswith("term "):
-                if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
-                    n = int(stdIn.strip().split(" ")[1])
-                    ss.update_terminal(n = n, o = active_terminal.index)
-                    active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
-                    ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
-                else:
-                    ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
-            
-<<<<<<< HEAD
-=======
-            elif stdIn.startswith("deed"):
-                index = stdIn.find(" ")
-                active_terminal.set_persistent(True) # Always allow players to use deeds when they navigate to the deed terminal.
-                active_terminal.persistent_command = "deed"
-                if index == -1:
-                    active_terminal.update("Please specify a property ID after 'deed'.", padding=False)
-                else:
-                    active_terminal.update(m.deed(sockets[1], player_id, stdIn[index+1:]), padding=False)
-            
->>>>>>> 4f29a99 (enhancement: persistent terminals)
-            elif stdIn == "fish":
-                fishing_gamestate = 'start'
-                while(fishing_gamestate != 'e'):
-                    game_data, fishing_gamestate = m.fishing(fishing_gamestate, inventory)
-                    active_terminal.update(game_data, padding=False)
-                ss.set_cursor(0, ss.INPUTLINE)
 
-            elif stdIn == "shop":
-                m.shop_handler(inventory, active_terminal)
+            elif stdIn in cmds.keys():
+                cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal)
 
-            elif stdIn == "inv" or stdIn == "inventory":
-                item_list = [f"{item}: {quantity}" for item, quantity in inventory.getinventory().items()]
-                if len(item_list) > 0:
-                    item_list = '\n'.join(item_list)
-                    if item_list.count("\n") > 18:
-                        # Truncate the list to 18 lines and add ellipsis
-                        item_list = '\n'.join(item_list.split('\n')[:18]) + "\n..."
-                    active_terminal.update(f"Inventory:\n{item_list}", padding=True)
-                else: 
-                    active_terminal.update("Inventory is empty. Try catching some fish!", padding=True)
             
-            elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
+            elif stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
                 ss.overwrite("\r")
             
+            # Reset screen calibration logic
             elif stdIn.startswith('reset'):
                 ss.calibrate_screen('player')
                 ss.clear_screen()
@@ -399,21 +393,6 @@ def get_input() -> None:
                 elif stdIn == "bal":
                     net.send_message(sockets[1], f'{player_id}bal')
                     active_terminal.update(net.receive_message(sockets[1]).center(ss.cols), padding=True)
-            
-                elif stdIn.startswith("deed"):
-                    index = ss.get_valid_int("Enter a property ID: ", 1, 39, disallowed=[0,2,4,7,10,17,20,22,30,33,36,38])
-                    active_terminal.clear()
-                    # Send the deed request to the server, which will return the deed data.
-                    net.send_message(sockets[1], f'{player_id}deed {index}')
-
-                    # Wait for server to send back the deed, then display it on the active terminal.
-                    active_terminal.update(net.receive_message(sockets[1]), padding=False)
-
-                elif stdIn == "ttt" or stdIn == "tictactoe":
-                    m.ttt_handler(sockets[1], active_terminal, player_id)
-
-                elif stdIn == "casino":
-                    casino.module(sockets[1], active_terminal, player_id)
 
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")

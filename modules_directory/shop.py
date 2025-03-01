@@ -1,13 +1,16 @@
 import keyboard
 import os
-from style import get_graphics, set_cursor, set_cursor_str, COLORS, graphics as g
+import screenspace as ss
+from socket import socket
+import networking as net
+from style import set_cursor_str, graphics as g
+import modules_directory.inventory as inventory
 
 class Shop():
     # TODO : Shop needs to reference the players own inventory
     def __init__(self, inventory): #pass in an inventory object that shop can access
         self.inventory = inventory
         self.fishprices = {"Carp": 5, "Bass": 8, "Salmon": 12}
-        self.__pictures = []
         
     def display_shop(self, selected_index:int =0):
         """
@@ -73,18 +76,13 @@ class Shop():
                     y += 1
                     
         # os.system('cls' if os.name == 'nt' else 'clear')
-                    
-    
 
-def main():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    # shop = Shop([testfishinventory])
-    # shop.shop_interface()
-    print("Unimplemented as standalone! Please run player.py to test shop functionality.")
-    
-    
-if __name__ == '__main__':
-    main()
-    
+name = "Shop Module"
+author = "https://github.com/Eon02"
+description = "Buy and sell items here!"
+version = "1.2"
+command = "shop"
+help_text = "Type SHOP to enter the shop. Press W/S to navigate and Enter to select. Press Q to exit the shop."
 
-    
+# def run(inventory: inventory, active_terminal: ss.Terminal) -> str:
+    # active_terminal.update(Shop(inventory).display_shop()) # temporary, will be replaced with banker Shop communication
