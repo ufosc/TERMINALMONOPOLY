@@ -17,6 +17,7 @@ wheel = [
 wheel_numbers = [num for num, _ in wheel]
 wheel_colors = {num: color for num, color in wheel}
 
+game_title = "⚂ Roulette"
 
 def get_bet():
     bet = int(input("How much do you want to bet? $"))
@@ -55,20 +56,20 @@ def get_bet():
 
 async def spin_wheel(bet, choice, bet_value):
     num_positions = len(wheel_numbers)  # Ensure ball cycles through all numbers
-    delay = 0.1  # Initial delay
-    max_delay = 0.6  # Slowest speed before stopping
-    slow_factor = 1.15  # Slowdown rate
+    delay = 0.05  # Initial delay
+    max_delay = 0.5  # Slowest speed before stopping
+    slow_factor = 1.20  # Slowdown rate
 
     index = random.randint(0, len(wheel_numbers) - 1)  # Start position
     for _ in range(30):  # Control animation duration
         index = (index + 1) % len(wheel_numbers)  # Move forward
 
-        # Display 8 numbers including the current one with the ball symbol
+        # Display 12 numbers including the current one with the ball symbol
         display_numbers = []
-        for i in range(8):
+        for i in range(12):
             num = wheel_numbers[(index + i) % len(wheel_numbers)]
             # Place ball symbol on the current number (middle position)
-            if i == 4:
+            if i == 6:
                 display_numbers.append(f"⚪ {num}")
             else:
                 display_numbers.append(str(num))
