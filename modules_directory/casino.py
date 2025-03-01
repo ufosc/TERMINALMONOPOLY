@@ -14,7 +14,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
     """
     Casino Module
     Author: Jordan Brotherton (github.com/jordanbrotherton)
-    Version: 1.2 - Moved to its own file
+    Version: 1.3 - Moved to its own file
     Gamble your money away!
     A basic menu loader for casino_games.
     """
@@ -24,7 +24,8 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
         sleep(0.1)
         balance = int(net.receive_message(server))
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
-        active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + f"\n$ BALANCE = {balance} $\nSelect a game by typing the command and wager." + get_submodules() + "\n☒ Exit (e)")
+        active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\nSelect a game by typing the command and wager.\n\n"
+                       + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + get_submodules() + "\n☒ Exit (e)")
         if(wrong == 1):
             ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
         elif(wrong == 2):
@@ -86,7 +87,7 @@ def get_submodules():
             file = file[:-3]
             i = __import__('casino_games.' + file, fromlist=[''])
             if(hasattr(i, 'game_title')):
-                modules_list += f"\n{i.game_title} ({file})"
+                modules_list += f"{i.game_title.ljust(37, '.')} {file}\n"
     return modules_list
 
 if __name__ == "__main__":
