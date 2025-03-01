@@ -1,4 +1,3 @@
-from modules_directory.generic_module import GenericModule
 from style import COLORS, graphics as g
 import screenspace as ss
 from socket import socket

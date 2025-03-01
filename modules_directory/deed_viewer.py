@@ -1,4 +1,3 @@
-from modules_directory.generic_module import GenericModule
 import screenspace as ss
 from socket import socket
 import networking as net
