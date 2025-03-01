@@ -93,7 +93,6 @@ class Terminal:
         """
         return self.persistent_command
 
-
     def update(self, data, padding: bool = True) -> None:
         """
         Description:
@@ -122,11 +121,9 @@ class Terminal:
 
         # These lines are taking any additional string fragments that use "set_cursor_string()" from 
         # style.py and update the x,y coordinates to the current quadrant.
-        pattern = r'\033\[(\d+);(\d+)H'
-        data = re.sub(pattern, lambda m: replace_sequence(m, self.x, self.y), data)
-        self.data = data
+        self.data = self.translate_coords(data)
         self.display()
-        
+    
     def display(self) -> None:
         """
         Description:
@@ -167,6 +164,11 @@ class Terminal:
         print(COLORS.RESET, end='')
         set_cursor(0,INPUTLINE)
     
+    def translate_coords(self, data) -> str:
+        pattern = r'\033\[(\d+);(\d+)H'
+        data = re.sub(pattern, lambda m: replace_sequence(m, self.x, self.y), data)
+        return data
+
     def clear(self):
         """Prints a blank screen in the terminal."""
         for i in range(rows):

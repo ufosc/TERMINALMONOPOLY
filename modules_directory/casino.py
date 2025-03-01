@@ -24,7 +24,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
         sleep(0.1)
         balance = int(net.receive_message(server))
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
-        active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\nSelect a game by typing the command and wager.\n\n"
+        active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\n\nSelect a game by typing the command and wager.\n\n"
                        + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + get_submodules() + "\n☒ Exit (e)")
         if(wrong == 1):
             ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
