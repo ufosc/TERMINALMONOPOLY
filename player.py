@@ -117,7 +117,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
                 print("The input name was not valid")
                 name = input("Player name: ")
         
-        if "localhost" not in args:
+        if "localhost" not in sys.argv:
             ADDRESS = input("Enter Host IP: ").strip()
             while not validation.validate_address(ADDRESS):
                 print("Invalid IP address. Please enter a valid IP address.")
@@ -159,7 +159,6 @@ def initialize(debug: bool = False, args: list = None) -> None:
         sockets[0].connect((ADDRESS, int(PORT)))
         handshake(sockets[0], name)
 
-    sleep(1)
     confirmation_msg = net.receive_message(sockets[0])
     if 'Game Start!' in confirmation_msg:
         global player_id
@@ -396,10 +395,6 @@ def get_input() -> None:
                     for t in TERMINALS:
                         t.display()
                     ss.update_terminal(active_terminal.index, active_terminal.index)
-                
-                elif stdIn == "bal":
-                    net.send_message(sockets[1], f'{player_id}bal')
-                    active_terminal.update(net.receive_message(sockets[1]).center(ss.cols), padding=True)
 
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
