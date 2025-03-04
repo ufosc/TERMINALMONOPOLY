@@ -6,6 +6,7 @@ import random
 
 from style import MYCOLORS as COLORS, print_w_dots
 import screenspace as ss 
+import importlib
 
 import gamemanager as gm
 import networking as net
@@ -24,6 +25,7 @@ server_socket = None
 port = 3131
 num_players = 0
 play_monopoly = True
+handle_cmds = {}
 
 TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
 Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
@@ -40,7 +42,28 @@ class Client:
         self.can_roll = True
         self.num_rolls = 0
 
-def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
+def get_handle_commands() -> dict: 
+    """
+    Retrieves a list of available module commands and their corresponding functions.
+    This function scans the "modules_directory" for Python files, dynamically
+    imports each module, and checks if the module has a 'command' and 'handle' attribute.
+    If the attributes exist, the command and its corresponding function are added
+    to the dictionary.
+    
+    Returns:
+        dict: A dictionary mapping module commands to their corresponding functions.
+    """
+    global handle_cmds
+    pairs = {}
+    for file in os.listdir("modules_directory"):
+        if file.endswith(".py"):
+            file = file[:-3]
+            module = importlib.import_module("modules_directory." + file)
+            if hasattr(module, 'command') and hasattr(module, 'handle'): 
+                pairs[module.command] = module.handle   
+    handle_cmds = pairs
+
+def add_to_output_area(output_type: str, text: str, color: str = s.COLORS.WHITE) -> None:
     """
     Adds text to the specified output area.
     This should replace all print statements in the code.
@@ -318,17 +341,6 @@ def handle_data(data: str, client: socket.socket) -> None:
     if data == 'request_board': 
         net.send_message(client, mply.get_gameboard())
     
-    elif data.startswith('request_info'):
-        pass
-
-    if data.startswith("deed"):
-        cmds = data.split(' ') 
-        location = int(cmds[1])
-        property_data = mply.get_deed(location)
-        deed_str = property_data.get_deed_str(True)
-
-        net.send_message(client, deed_str)
-
     elif data.startswith('mply'):
         monopoly_game(current_client, data)
 
@@ -336,8 +348,14 @@ def handle_data(data: str, client: socket.socket) -> None:
 
         # handle_battleship(data, current_client)
 
-    elif data.startswith('ttt'):
-        handle_ttt(data, current_client)
+    # elif data.startswith('ttt'):
+    #     handle_ttt(data, current_client)
+
+    # First check if the command is a valid module command. 
+    # If it is, handle it with the corresponding function
+    # The command will always be the first word in the data string.
+    elif data.split()[0] in handle_cmds.keys():
+        handle_cmds[data.split()[0]](data, current_client, mply)
 
     elif data.startswith('bal'):
         """
@@ -555,7 +573,7 @@ def set_gamerules() -> None:
         input()
         set_gamerules()
 
-def monopoly_controller() -> None:
+def monopoly_controller(unit_test) -> None:
     """
     Controls the flow of the Monopoly game.
 
@@ -573,7 +591,7 @@ def monopoly_controller() -> None:
         add_to_output_area("Monopoly", "No players in the game. Not attempting to run Monopoly.")
         return
     sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
-    mply.unittest()
+    mply.unittest(unit_test)
     net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.")
     add_to_output_area("Monopoly", "Sent gameboard to player 0.")
     last_turn = 0
@@ -662,6 +680,9 @@ if __name__ == "__main__":
     # set_gamerules()
     start_server()
     ss.print_banker_frames()
+    monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
     game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)])
-    threading.Thread(target=monopoly_controller, daemon=True).start()
+    threading.Thread(target=monopoly_controller, args=[monopoly_unit_test], daemon=True).start()
+    get_handle_commands()
     start_receiver()
+
