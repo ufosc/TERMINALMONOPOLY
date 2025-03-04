@@ -76,14 +76,20 @@ def start_server() -> socket.socket:
     # Create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # Get local machine name
-    host = socket.gethostname()
-    ip_address = socket.gethostbyname(host)
+    if "-local" in sys.argv:
+        ip_address = "localhost"
+        host = "localhost"
+        port = 33333
+    else: 
+        # Get local machine name
+        host = socket.gethostname()
+        ip_address = socket.gethostbyname(host)
 
-    # Choose a port that is free
-    port = input("Choose a port, such as 3131: ")
-    while not valid.validate_port(port) or not valid.is_port_unused(int(port)):
-        port = input("Invalid port. Choose a port, such as 3131: ")
+        # Choose a port that is free
+        port = input("Choose a port, such as 3131: ")
+    
+        while not valid.validate_port(port) or not valid.is_port_unused(int(port)):
+            port = input("Invalid port. Choose a port, such as 3131: ")
 
     port = int(port) # Convert port to int for socket binding
     # Bind to the port
@@ -133,6 +139,9 @@ def start_receiver() -> None:
     with socket.socket() as server:
         host = socket.gethostname()
         ip_address = socket.gethostbyname(host)
+        if "-local" in sys.argv:
+            ip_address = "localhost"
+            port = 33333
         server.bind((ip_address,int(port+1)))
         server.listen()
         add_to_output_area("Main", f"[RECEIVER] Receiver accepting connections at {port+1}", s.COLORS.GREEN)
@@ -632,7 +641,7 @@ if __name__ == "__main__":
     os.system('cls' if os.name == 'nt' else 'clear')
     print("Welcome to Terminal Monopoly, Banker!")
 
-    if "-skipcalib" not in sys.argv:
+    if "-skipcalib" not in sys.argv and "-local" not in sys.argv:
         ss.calibrate_screen('banker')
 
     if "-silent" in sys.argv:
