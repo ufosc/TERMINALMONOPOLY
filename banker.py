@@ -20,6 +20,7 @@ from time import sleep
 
 STARTING_CASH = 1500
 clients = []
+server_socket = None
 port = 3131
 num_players = 0
 play_monopoly = True
@@ -72,7 +73,7 @@ def start_server() -> socket.socket:
 
     Returns: Transmitter socket aka the Banker's sender socket.  
     """
-    global clients, port
+    global clients, port, server_socket
     # Create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -121,7 +122,6 @@ def start_server() -> socket.socket:
         clients[i].id = i
         net.send_message(clients[i].socket, f"Game Start!{num_players} {i}")
         sleep(0.5)
-    return server_socket
 
 def start_receiver() -> None:
     """
@@ -162,12 +162,23 @@ def start_receiver() -> None:
                     except ConnectionResetError:
                         add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
                         to_read.remove(reader) # remove from monitoring
-                    if not data: # No data indicates disconnect
-                        add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
-                        to_read.remove(reader) # remove from monitoring
+
+                        # TODO send a message to each player to query who is still connected, then properly remove
+                        # the disconnected player from the game. Currently only removing the first player in clients list. 
+                        clients.pop(0)
+
+                    # if not data: # No data indicates disconnect
+                    #     add_to_output_area("Main", f"Player at {address[0]} disconnected.", s.COLORS.RED)
+                    #     to_read.remove(reader) # remove from monitoring
                 if(len(to_read) == 1):
-                    add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver stopped.", COLORS.GREEN)
-                    return
+                    if "-stayopen" not in sys.argv:
+                        add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver stopped.", COLORS.GREEN)
+                        return
+                    else:
+                        add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver will stay open.", COLORS.GREEN)
+                        # Reopen the server socket
+                        server_socket.close()
+                        start_server()
 
 def set_unittest() -> None:
     """
