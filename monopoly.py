@@ -3,6 +3,7 @@ import style as s
 from style import COLORS
 import random
 import os
+import textwrap
 
 from properties import Property
 from cards import Cards
@@ -10,6 +11,8 @@ from board import Board
 from player_class import MonopolyPlayer
 import screenspace as ss
 import style as s
+from style import graphics as g
+
 
 mode = "normal"
 output = ""
@@ -17,11 +20,11 @@ gameboard = ""
 board = None
 history = []
 status = []
-CASH = 2000
-num_players = 4
+CASH = 0 # Defined by unittest or set by player
+num_players = 2
 bankrupts = 0
 players = []
-border = s.get_graphics().get('history and status')
+border = g.get('history and status')
 border = border.split("\n")
 turn = 0
 
@@ -38,6 +41,12 @@ def get_gameboard() -> str:
         return output
     else:
         print(output)
+
+def get_deed(location: int) -> Property:
+    """
+    Get the deed for a location\n
+    """
+    return board.locations[location]
 
 def add_to_output(s):
     global output
@@ -100,7 +109,7 @@ def print_commands():
     """
     Print commands\n
     """
-    commandsinfo = s.get_graphics().get('commands').split("\n")
+    commandsinfo = g.get('commands').split("\n")
     for i in range(len(commandsinfo)):
         add_to_output(f"\033[{34+i};79H" + commandsinfo[i])
 
@@ -110,25 +119,23 @@ def update_history(message: str):
     Text added here needs to be a maximum of 40 characters, or wrap around\n
     Split the text into multiple lines (multiple entries to history variable)\n
     """
-    if "[38;5" in message:
+    if "[38;5" in message: # If color is included in message
         if(((40 - (len(message) - 9)) * 2) == 0):
             history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((40 - (len(message) - 9)) // 2))
         else:
             history.append(message[:9] + "─" * ((40 - (len(message) - 9)) // 2) + message[9:] + "─" * ((39 - (len(message) - 9)) // 2))
     else:
-        if len(message) > 40:
-            while len(message) > 40:
-                history.append(message[:40] + " " * (40 - len(message)))
-                message = message[40:]
-        history.append(message + " " * (40 - len(message)))
-        if len(history) > 30:
-            while(len(history) > 30):
-                history.pop(0)
+        wrapped_message = textwrap.wrap(message, 40)
+        for line in wrapped_message:
+            history.append(line + " " * (40 - len(line)))
+    while(len(history) > 30):
+        history.pop(0)
     refresh_h_and_s()
 
 def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: str = "normal", property_id: str = ""):
     """
-    Update the status\n
+    Updates the status textbox with the player's properties, or the deed of a property
+
     """
     # Property status update (list all properties of player)
     status.clear()
@@ -410,16 +417,59 @@ def log_error(error_message: str) -> None:
         formatted_datetime = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
         f.write(f"{formatted_datetime}\n{error_message}\n")
 
-def unittest():
-    #TODO
-    players[0].buy(1, board)
-    players[0].buy(3, board)
-    players[1].buy(5, board)
-    players[1].buy(15, board)
-    players[1].buy(25, board)
-    players[1].buy(35, board)
-    # players[3].buy(12, board)
-    # players[3].buy(28, board)
+def unittest(num:int = 5):
+    global CASH
+    if num == 1:
+        # Two players, high cash
+        CASH = 1500
+        players[0].buy(1, board)
+        players[0].buy(3, board)
+        players[0].buy(5, board)
+        players[0].buy(7, board)
+        players[0].buy(9, board)
+        players[1].buy(12, board)
+        players[1].buy(14, board)
+        players[1].buy(16, board)
+        players[1].buy(18, board)
+        players[1].buy(19, board)
+    if num == 2:
+        # Two players, low cash, will bankrupt if a 4 is rolled due to income tax
+        CASH = 401
+        players[0].buy(31, board)
+        players[1].buy(32, board)
+    elif num == 3:
+        # Three players, high cash
+        CASH = 1500
+        players[0].buy(1, board)
+        players[1].buy(15, board)
+        players[1].buy(25, board)
+        players[1].buy(35, board)
+        players[2].buy(12, board)
+        players[2].buy(28, board)
+    elif num == 4:
+        # Four players, high cash, no properties
+        CASH = 2000
+    elif num == 5: 
+        CASH = 3000
+        players[0].buy(1, board)
+        players[0].buy(3, board)
+        players[0].buy(5, board)
+        players[0].buy(6, board)
+        players[0].buy(8, board)
+        players[0].buy(9, board)
+        players[1].buy(11, board)
+        players[1].buy(12, board)
+        players[1].buy(13, board)
+        players[1].buy(14, board)
+        players[1].buy(15, board)
+        players[1].buy(16, board)
+        players[1].buy(18, board)
+        players[1].buy(19, board)
+    for p in players:
+        p.cash += CASH
+    
+    # TODO make a more robust unit testing system, using below as a framework. Allow the programmer to 
+    # choose which properties to buy for each player, and how much cash to allocate to each. 
 
 #wipes the bottom of the screen where the player does all of their input
 def bottom_screen_wipe():
@@ -499,7 +549,6 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
 
             elif num_rolls == 2:
                 update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
-                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
 
             elif num_rolls == 3:
                 update_history(f"{players[turn].name} rolled doubles three times in a row!")
@@ -520,7 +569,7 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
             refresh_board()
         done_moving_around = False
         card = ""
-        while not done_moving_around:
+        while not done_moving_around and not players[turn].jail:
             done_moving_around = True
             if board.locations[players[turn].location].owner < 0:
                 if (board.locations[players[turn].location].owner == -1): #unowned
@@ -718,22 +767,19 @@ def player_choice():
         update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"{players[turn]} is in debt. Resolve debts before ending turn.")
-        option = input("\033[38;0HResolve debts before ending turn.").lower().strip()
-        if(option == "b"): # Declare bankruptcy
+        option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
+        while option != 'b': # Loop until bankruptcy is declared
+                if option == "m": # Mortgage properties
+                    mortgage_logic(players[turn])
+                elif option == "s": # Sell houses/hotels
+                    housing_logic(players[turn])
+                if players[turn].cash >= 0:
+                    break
+                option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
+        if players[turn].cash < 0:
             update_history(f"{players[turn]} declared bankruptcy.")
             players[turn].order = -1
-        elif(option == "m"): # Mortgage properties
-            mortgage_logic()
-        elif(option == "s"): # Sell houses/hotels
-            housing_logic()
-
-        # TODO! For now, just declare bankruptcy. Player should NOT, by default, be able to by pressing "enter"
-
-        else:
-            update_history(f"{players[turn].name} declared bankruptcy.")
-            players[turn].order = -1
-        # Need to fix all this sometime erghhghh
-        bankrupts += 1
+            bankrupts += 1
 
     # Wipe the bottom of the screen (input area)
     bottom_screen_wipe()
@@ -742,7 +788,7 @@ def start_game(cash: int, num_p: int, names: list[str]) -> str:
     global CASH, num_players, players, gameboard, board, decks, mode
     ss.clear_screen()
     mode = "banker"
-    gameboard = s.get_graphics().get('gameboard')
+    gameboard = g.get('gameboard')
     num_players = num_p
     CASH = cash
     board = Board(num_players)
@@ -777,10 +823,10 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
     board = Board(num_players)
     decks = Cards()
 
-    gameboard = s.get_graphics().get('gameboard')
+    gameboard = g.get('gameboard')
     os.system('cls' if os.name == 'nt' else 'clear')
     
-    #unittest()
+    unittest()
     
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)

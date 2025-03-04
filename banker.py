@@ -9,6 +9,7 @@ import screenspace as ss
 
 import gamemanager as gm
 import networking as net
+import validation as valid
 
 import modules_directory.tictactoe as tictactoe
 
@@ -25,7 +26,7 @@ play_monopoly = True
 
 TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
 Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
-Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES, 191, 5)
+Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES, 191, 6)
 Main_Output = ss.OutputArea("Main", ss.MAIN_OUTPUT_COORDINATES, 79, 12)
 
 class Client:
@@ -75,14 +76,22 @@ def start_server() -> socket.socket:
     # Create a socket object
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # Get local machine name
-    host = socket.gethostname()
-    ip_address = socket.gethostbyname(host)
+    if "-local" in sys.argv:
+        ip_address = "localhost"
+        host = "localhost"
+        port = 33333
+    else: 
+        # Get local machine name
+        host = socket.gethostname()
+        ip_address = socket.gethostbyname(host)
 
-    # Choose a port that is free
-    # port = int(input("Choose a port, such as 3131: "))
-    port = 3131
+        # Choose a port that is free
+        port = input("Choose a port, such as 3131: ")
+    
+        while not valid.validate_port(port) or not valid.is_port_unused(int(port)):
+            port = input("Invalid port. Choose a port, such as 3131: ")
 
+    port = int(port) # Convert port to int for socket binding
     # Bind to the port
     server_socket.bind((host, port))
     s.print_w_dots(f"Server started on {ip_address} port {port}")
@@ -130,6 +139,9 @@ def start_receiver() -> None:
     with socket.socket() as server:
         host = socket.gethostname()
         ip_address = socket.gethostbyname(host)
+        if "-local" in sys.argv:
+            ip_address = "localhost"
+            port = 33333
         server.bind((ip_address,int(port+1)))
         server.listen()
         add_to_output_area("Main", f"[RECEIVER] Receiver accepting connections at {port+1}", s.COLORS.GREEN)
@@ -212,8 +224,8 @@ def set_unittest() -> None:
     if len(sys.argv) > 1:
         if sys.argv[1].isdigit(): # If a test number is provided as a command line argument
             test = int(sys.argv[1])
-        else: # If a non-digit is provided, skip unit tests
-            test = ""
+        else:
+            test = ss.get_valid_int("Enter a test number: ", allowed=[' '])
     else: # If no command line argument is provided, ask for a test number
         test = ss.get_valid_int("Enter a test number: ", allowed=[' '])
     if test == "":
@@ -255,7 +267,20 @@ def set_unittest() -> None:
         print("Skipping unit tests." if ss.VERBOSE else "")
         return
 
-def change_balance(id: int, delta: int):
+def change_balance(id: int, delta: int): 
+    """
+    Adjusts the balance of a specific player by a given amount.
+
+    This function updates the money attribute of the player identified by their ID.
+    A positive delta increases the player's balance, while a negative delta decreases it.
+
+    Args:
+        id (int): The unique identifier of the player whose balance needs to be adjusted.
+        delta (int): The amount to add or subtract from the player's balance.
+
+    Returns:
+        None
+    """
     clients[id].money += delta
 
 def handle_data(data: str, client: socket.socket) -> None:
@@ -284,6 +309,14 @@ def handle_data(data: str, client: socket.socket) -> None:
     
     elif data.startswith('request_info'):
         pass
+
+    if data.startswith("deed"):
+        cmds = data.split(' ') 
+        location = int(cmds[1])
+        property_data = mply.get_deed(location)
+        deed_str = property_data.get_deed_str(True)
+
+        net.send_message(client, deed_str)
 
     elif data.startswith('mply'):
         monopoly_game(current_client, data)
@@ -341,7 +374,7 @@ def handle_ttt(cmds: str, current_client: Client) -> None:
         None
     """
     ttt_game = None
-    TTT_Output.add_output("TicTacToe data requested!")
+    add_to_output_area("TicTacToe", "TicTacToe data requested!")
     if cmds.split(',')[1] == 'getgamestate':
         # Joining a game logic
         # Game does not exist
@@ -468,18 +501,7 @@ def handshake(client_socket: socket.socket, handshakes: list) -> None:
     message = net.receive_message(client_socket)
     if message.startswith("Connected!"):
         handshakes[len(clients)-1] = True
-
-        def validate_name(n: str) -> str:
-            """
-            Validates the name of the player. 
-            If the player doesn't enter a name, assign a default name.
-            Also blacklist other illegal names here that would break the game.
-            """
-            if n == "" or n == "PAD ME PLEASE!":
-                return f"Player {len(clients)+1}"
-            return n
-
-        name = validate_name(message.split(',')[1])
+        name = message.split(',')[1]
         
         clients.append(Client(client_socket, None, name, 2000, [])) # Append the client to the list of clients with a temporary id of None
 
@@ -619,7 +641,7 @@ if __name__ == "__main__":
     os.system('cls' if os.name == 'nt' else 'clear')
     print("Welcome to Terminal Monopoly, Banker!")
 
-    if "-skipcalib" not in sys.argv:
+    if "-skipcalib" not in sys.argv and "-local" not in sys.argv:
         ss.calibrate_screen('banker')
 
     if "-silent" in sys.argv:

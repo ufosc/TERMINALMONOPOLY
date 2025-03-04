@@ -1,43 +1,23 @@
-import screenspace as ss
 import keyboard
 import os
-from style import get_graphics, set_cursor, set_cursor_str, COLORS
-
-class FishInventory():
-    def __init__(self):
-        self.caughtfish = {"Carp": 1, "Bass": 0, "Salmon": 0}
-    
-    def getinventory(self):
-        return self.caughtfish
-    
-    def addfish(self, fish):
-        self.caughtfish[fish] += 1
-        return self.caughtfish
-    
-    def removefish(self, fish):
-        self.caughtfish[fish] -= 1
-        return self.caughtfish
-    
-    # need function for viewing inventory
-
-testfishinventory = FishInventory()
+import screenspace as ss
+from socket import socket
+import networking as net
+from style import set_cursor_str, graphics as g
+import modules_directory.inventory as inventory
 
 class Shop():
     # TODO : Shop needs to reference the players own inventory
-    def __init__(self):
+    def __init__(self, inventory): #pass in an inventory object that shop can access
+        self.inventory = inventory
         self.fishprices = {"Carp": 5, "Bass": 8, "Salmon": 12}
-        graphics = get_graphics()
-        self.__shopimages = graphics.copy()
-        self.__pictures = []
-        self.__pictures.append(self.__shopimages.pop('shop'))
         
-    def display_shop(self, selected_index):
+    def display_shop(self, selected_index:int =0):
         """
         Display the shop interface with the current selection highlighted.
         Only called once at the start of the shop interface.
         """
-        print(self.__pictures[0])
-        retval = ""
+        retval = set_cursor_str(0,0) + g.get('shop')
         y = 6
         retval += set_cursor_str(33, 3) + "=== Welcome to the Shop ==="
         retval += set_cursor_str(33, 4) + "Use W/S to navigate and Enter to select."
@@ -50,15 +30,19 @@ class Shop():
         y += 1
         
         retval += set_cursor_str(45, y) + "Your inventory: "
-        for fish in testfishinventory.caughtfish.keys():
-            if testfishinventory.caughtfish[fish] > 0:
-                retval += set_cursor_str(45, y+1) + f"{fish} x{testfishinventory.caughtfish[fish]} "
+        # for fish in testfishinventory.caughtfish.keys():
+        #     if testfishinventory.caughtfish[fish] > 0:
+        #         retval += set_cursor_str(45, y+1) + f"{fish} x{testfishinventory.caughtfish[fish]} "
               
-        print(retval)
+        return retval
+        # print(retval)
         
     def sellfish(self, fish):
-    # TODO: implement selling properly
-        pass
+        if self.inventory.getinventory()[fish] > 0:
+            self.inventory.removefish(fish)
+            print(f"Sold {fish} for ${self.fishprices[fish]}")
+        else:
+            print(f"No {fish} to sell")
 
     # TODO: update shop screen in response to input
     def shop_interface(self):
@@ -91,17 +75,14 @@ class Shop():
                         print(set_cursor_str(43, y) + f"  {price}: ${self.fishprices[price]}")
                     y += 1
                     
-        os.system('cls' if os.name == 'nt' else 'clear')
-                    
-        
-def main():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    shop = Shop()
-    shop.shop_interface()
-    
-    
-if __name__ == '__main__':
-    main()
-    
+        # os.system('cls' if os.name == 'nt' else 'clear')
 
-    
+name = "Shop Module"
+author = "https://github.com/Eon02"
+description = "Buy and sell items here!"
+version = "1.2"
+command = "shop"
+help_text = "Type SHOP to enter the shop. Press W/S to navigate and Enter to select. Press Q to exit the shop."
+
+# def run(inventory: inventory, active_terminal: ss.Terminal) -> str:
+    # active_terminal.update(Shop(inventory).display_shop()) # temporary, will be replaced with banker Shop communication
