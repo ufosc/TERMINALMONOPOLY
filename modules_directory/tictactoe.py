@@ -1,4 +1,10 @@
-
+import networking as net
+from screenspace import Terminal
+import screenspace as ss
+import style as s
+from socket import socket
+import keyboard
+import time
 
 class TicTacToe:
     def __init__(self):
@@ -66,3 +72,119 @@ if __name__ == "__main__": # Driver code for
         x,y = map(int, input("Enter x,y: ").split(','))
         ttt.place(x,y)
         ttt.print_board
+
+
+
+name = "TicTacToe Module"
+author = "https://github.com/adamgulde"
+description = "TicTacToe basis for attack module."
+version = "1.1" # Moved to its own file
+command = "ttt"
+help_text = "Type TTT to play someone in TicTacToe."
+
+def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
+    """
+    Manages the client-side logic for joining and playing a Tic-Tac-Toe game.
+
+    This function interacts with the game server to check for ongoing Tic-Tac-Toe games,
+    allow the player to join or create a new game, and handle player moves using keyboard
+    input. The game board updates dynamically based on player actions.
+
+    Args:
+        server (socket): The socket connection to the game server.
+        active_terminal (Terminal): The terminal where the game is displayed.
+        player_id (int): The player's unique identifier.
+
+    Returns:
+        None
+    """
+    net.send_message(server, f'{player_id}ttt,getgamestate')
+    time.sleep(0.1)
+    active_terminal.update("Waiting for server...", padding=True)
+    game_data = net.receive_message(server)
+    game_id = None 
+
+    def get_printable_board(upper_text: str, board_data: str, lower_text) -> str:
+        return f"{upper_text}\n{board_data}\n{lower_text}\nUse WASD to move, Enter to select, Esc to cancel."
+
+    if 'create a new' in game_data:
+        active_terminal.update(game_data, padding=True)
+        game_id = ss.get_valid_int(prompt='Enter the game id: ', min_val=-1, max_val=0)
+        if game_id == -1: # If creating a new game, ask who else is playing.
+            while True:
+                active_terminal.update("1: Player 1\n2: Player 2\n3: Player 3\n4: Player 4", padding=True)  # TODO: This is hardcoded for now, but should be dynamic
+                opponent = ss.get_valid_int(prompt=f"Enter the opponent's ID (1-4), not including your ID): ",
+                                            min_val=1, max_val=4)-1 # -1 for zero-indexing
+
+                net.send_message(server, f'{player_id}ttt,joingame,{game_id},{opponent}')
+                active_terminal.update("Attempting to join game...", padding=True)
+                game_data = net.receive_message(server)
+                if 'select a game' in game_data or (('X' in game_data and 'O' in game_data and (not '▒' in game_data)) or '▒' in game_data):
+                    break
+                else:
+                    active_terminal.update(game_data + "\nEnter to continue...", padding=True)
+                    input()
+        else: 
+            active_terminal.update("Not creating a new game.", padding=True)
+
+    if 'select a game' in game_data:
+        active_terminal.update(game_data, padding=True)    
+        game_id = ss.get_valid_int(prompt='Enter the game id: ', min_val=-1, max_val=10) # 10 is incorrect! temp for now TODO
+        # Send the server the game id to join. Should be validated on server side. 
+        net.send_message(server, f'{player_id}ttt,joingame,{game_id}')
+
+        # Wait for server to send back the new board
+        game_data = net.receive_message(server)
+        active_terminal.update(game_data, padding=True)
+
+    if ('X' in game_data and 'O' in game_data and (not '▒' in game_data)) or '▒' in game_data: # If the game data sent back is a board, then we can play the game
+        # TODO check this is going to work with player name's that have 'X' or 'O' in them, or hell, with the '▒' character
+        simple_board = destruct_board(game_data)
+        original_board = destruct_board(game_data)
+        x,y = 0,0
+        b = construct_board(simple_board)
+        active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
+
+        # Only hook the keyboard after you are definitely IN a game. 
+        ss.indicate_keyboard_hook(active_terminal.index) # update terminal border to show keyboard is hooked
+
+        while True:
+
+            if keyboard.read_event().event_type == keyboard.KEY_DOWN:
+                simple_board[y][x] = s.COLORS.RESET + original_board[y][x]
+                b = construct_board(simple_board)
+                active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
+
+            if keyboard.is_pressed('w'):
+                y = max(0, min(y-1, 2))
+            if keyboard.is_pressed('a'):
+                x = max(0, min(x-1, 2))
+            if keyboard.is_pressed('s'):
+                y = max(0, min(y+1, 2))
+            if keyboard.is_pressed('d'):
+                x = max(0, min(x+1, 2))
+
+            simple_board[y][x] = s.COLORS.backYELLOW + original_board[y][x] + s.COLORS.RESET
+            time.sleep(0.05)
+            b = construct_board(simple_board)
+            active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
+            
+            if keyboard.is_pressed('enter'):
+                # Send move to server
+                if '▒' in simple_board[y][x]:
+                    # At this point, the client can be sure that they have the
+                    # correct game ID and that the move is valid. Thus, we add
+                    # the game ID to the move string.
+                    net.send_message(server, f'{player_id}ttt,move,{game_id},{x}.{y}')
+                    # receive new board (for display) from server
+                    active_terminal.update("Updated board:\n" + net.receive_message(server), padding=True)
+                    ss.update_terminal(active_terminal.index, active_terminal.index) # reset terminal to normal
+                    keyboard.unhook_all()
+                    break
+                else:
+                    active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})\nInvalid move. Try again."))
+
+            if keyboard.is_pressed('esc'):
+                ss.update_terminal(active_terminal.index, active_terminal.index) # reset terminal to normal
+                keyboard.unhook_all()
+                break

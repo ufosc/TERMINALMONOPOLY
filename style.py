@@ -144,7 +144,7 @@ def center_lines(text, width):
 
 def get_graphics() -> dict:
     """
-    Reads all graphics from ascii.txt into a dictionary.
+    Reads all graphics from the ascii directory into a dictionary.
 
     Parameters: None
 
@@ -174,6 +174,9 @@ def get_graphics() -> dict:
                 else:
                     text_dict[file] = '\n' + full_file
     return text_dict
+
+# Use this object to access all graphics, instead of calling get_graphics() every time.
+graphics = get_graphics()
 
 def set_cursor(x: int, y: int) -> None:
     print(f"\033[{y};{x}H",end="")

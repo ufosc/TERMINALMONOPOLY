@@ -20,15 +20,45 @@
 ## Core Monopoly Game
 Bankrupt everyone else and be the last player standing. Only the strongest will survive. 
 ### Movement
-TODO
+At each player’s turn, two six-sided die are rolled. The sum of the die is the number of spaces that the player moves clockwise around the board. 
+- For example, "Player 1 rolled 6 and 1" means that Player 1 moves 6 + 1 = 7 spaces.
+
+While movement is generally clockwise, certain game elements such as community chest cards and the Go To Jail square can impact a player’s movement.
 ### Buying properties
-TODO
+If you land on an unowned property, you can buy it by entering ‘y’ or decline by entering ‘n’. 
+- Pre-req: You may only buy a property if you have enough funds. The buying prompt will tell you the name and price of the property. 
+
+By owning properties, you can collect rent from other players that land on your property. If you buy and own all properties in a group, you get a **monopoly**!
 ### Improving properties
-TODO
+You can expand your dominance by improving your properties, aka buying houses.
+- Pre-req: You can only buy houses if you own a monopoly on the property.
+1. Enter ‘p’ to manage your properties.
+2. Enter ‘b’ to buy houses.
+3. Enter the property number you want to buy houses on.
+4. Enter the number of houses you want to buy. The prompt will tell you the price of a house and the maximum number of houses you can buy.
 ### Selling properties
-TODO
+You may sell your properties to pay off debt or just have more moolah.
+- Pre-req: You can only sell properties if you own the property.
+
+During a regular turn (no debt):
+1. Enter 'p' to manage your properties.
+2. Enter 's' to sell properties.
+3. Enter the property number of the property you want to sell.
+
+If you have debt, the process for selling is the same, only start at step 2.
 ### Paying rent
 TODO
+### Mortgaging properties
+You may mortgage your properties to pay off debt or just have more moolah.
+
+- Pre-req: You can only mortgage properties if you own the property.
+
+During a regular turn (no debt):
+1. Enter 'p' to manage your properties.
+2. Enter 'm' to mortgage properties.
+3. Enter the property number of the property you want to mortgage.
+
+If you have debt, the process for mortgaging is the same, only start at step 2.
 ### Trading
 TODO
 ### Jail

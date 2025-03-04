@@ -7,57 +7,84 @@ import platform
 from time import sleep
 import style as s
 from style import COLORS
+from style import graphics as g
 import screenspace as ss
-import modules as m
-import casino
 import networking as net
-import name_validation
+import validation
+import modules_directory.inventory as inv
 
 game_running = False
-text_dict = {}
 screen = 'terminal'
-active_terminal = 1
 sockets = (socket.socket(socket.AF_INET, socket.SOCK_STREAM), socket.socket(socket.AF_INET, socket.SOCK_STREAM))
 ADDRESS = ""
 PORT = 0
 player_id: int
 DEBUG = False
 NET_COMMANDS_ENABLED = False
+TERMINALS = [ss.Terminal(1, (2, 2)), ss.Terminal(2, (ss.cols+3, 2)), ss.Terminal(3, (2, ss.rows+3)), ss.Terminal(4, (ss.cols+3, ss.rows+3))]
+active_terminal = TERMINALS[0]
+inventory = inv.Inventory() # global inventory object for all modules to access
 
-def get_graphics():
-    """Grab text from ascii.txt and split into dictionary"""
-    global text_dict
-    text_dict = s.get_graphics()
-
-def banker_check():
+def banker_check(local: bool = False) -> None:
+    """
+    Asks player if they want to run banker (host a game). If not, prompts user to start it.
+    Parameters: local (bool) - if True, create a server on localhost, with all further inputs satisfied. Default is False. 
+    Returns: None
+    """
     has_passed_banker_query = False
     is_banker = False
-    while(not has_passed_banker_query):
-        choice = input("If you would like to host a game, press b. If you would like to join a game, press p ")
-        if(choice == 'b' or choice == 'p'):
-            has_passed_banker_query = True
-            if(choice == 'b'):
-                is_banker = True
-        else:
-            ss.clear_screen()
-            print("Invalid choice, try again.")
-    ss.clear_screen()
-    if(is_banker == False):
-        return
+    if not local:
+        while( not has_passed_banker_query):
+            choice = input("If you would like to host a game, press b. If you would like to join a game, press p ")
+            if(choice == 'b' or choice == 'p'):
+                has_passed_banker_query = True
+                if(choice == 'b'):
+                    is_banker = True
+            else:
+                ss.clear_screen()
+                print("Invalid choice, try again.")
+        ss.clear_screen()
+        if(is_banker == False):
+            return
     current_os = platform.system()
     if(current_os == "Windows"):
-        subprocess.call('start python banker.py', shell=True)
+        subprocess.call("start python banker.py -local" if local else "start python banker.py", shell=True)
     elif(current_os == "Darwin"):
-        cmd = "python banker.py"
+        cmd = "python banker.py -local" if local else "python banker.py"
         subprocess.run(
             shlex.split(
             f"""osascript -e 'tell app "Terminal" to activate' -e 'tell app "Terminal" to do script "{cmd}" '"""
             )
         )   
     elif(current_os == "Linux"):
-        subprocess.call(['gnome-terminal', '-x', 'python banker.py'])
+        # We use a list of existing Linux terminals to run banker.
+        list_of_terms = [("gnome-terminal", "-e"), ("kgx", "-x"), ("ptyxis", "--"),
+                        ("konsole", "-e"), ("xfce4-terminal", "-e"), ("mate-terminal", "-e"),
+                        ("tilix", "-e"), ("xterm", "-e")]
+        
+        launched = False
+        for term in list_of_terms:
+            try:
+                subprocess.Popen([term[0], term[1], "bash -c '" + sys.executable + (" banker.py -local'" if local else " banker.py'")], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=os.path.dirname(os.path.realpath(__file__)))
+                launched = True
+                break
+            except FileNotFoundError:
+                pass
+
+        if(not launched):
+            print("Your terminal was not detected!\nYou can either type in your terminal's start command (ex: 'gnome-terminal -x') or press enter and directly run 'python banker.py'.")
+            term = input("Terminal Command (default: none): ")
+            if(term != "" and ' ' in term):
+                try:
+                    term = term.split(" ")
+                    subprocess.Popen([term[0], term[1], "bash -c '" + sys.executable + (" banker.py -local'" if local else " banker.py'")], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=os.path.dirname(os.path.realpath(__file__)))
+                except:
+                    print("Invalid command! Try running 'python banker.py' directly")
+            else:
+                print("Make sure you start 'python banker.py' directly")
     else:
         print("Current OS not supported to open new window, try running 'python banker.py' directly")
+
 
 def initialize(debug: bool = False, args: list = None) -> None:
     """
@@ -78,19 +105,29 @@ def initialize(debug: bool = False, args: list = None) -> None:
         client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
         client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockets = (client_receiver, client_sender)
-        ADDRESS = input("Enter Host IP: ")
-        PORT = input("Enter Host Port: ")
-
+        
         name_validated = False
         print("Enter a name that meets the following criteria:")
         print("1. 8 characters or less")
         print("2. only contains alpha numeric characters or spaces")
         name = input("Player name: ")
         while not name_validated:
-            name_validated = name_validation.validate_name(name)
+            name_validated = validation.validate_name(name)
             if not name_validated:
                 print("The input name was not valid")
                 name = input("Player name: ")
+        
+        if "localhost" not in args:
+            ADDRESS = input("Enter Host IP: ").strip()
+            while not validation.validate_address(ADDRESS):
+                print("Invalid IP address. Please enter a valid IP address.")
+                ADDRESS = input("Enter Host IP: ").strip()
+
+            PORT = input("Enter Host Port: ")
+            # Validate IP address and port
+            while not validation.validate_port(PORT):
+                print("Invalid port. Please enter a valid port.")
+                PORT = input("Enter Host Port: ")
 
         print(f"Welcome, {name}!")
 
@@ -196,8 +233,8 @@ def start_notification_listener(my_socket: socket.socket) -> None:
             notif = notif[5:]
             notif_list.append(notif)
             # Display notifications in the player's interface. Places the notification in the next available terminal.
-            print(ss.notification(notif_list.pop(0), (current_pos) if current_pos != active_terminal else (current_pos + 1) if current_pos + 1 <= 4 else 1
-                                if active_terminal != 1 else 2, s.COLORS.RED)) # this is probably an overly defined ternary operator(s)
+            print(ss.notification(notif_list.pop(0), (current_pos) if current_pos != active_terminal.index else (current_pos + 1) if current_pos + 1 <= 4 else 1
+                                if active_terminal.index != 1 else 2, s.COLORS.RED)) # this is probably an overly defined ternary operator(s)
             current_pos = (current_pos + 1) if current_pos + 1 <= 4 else 1
             print(s.COLORS.RESET)
             ss.set_cursor(0, ss.INPUTLINE)
@@ -214,9 +251,31 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 # ss.set_cursor(0, ss.INPUTLINE)
                 # print("End of turn. Press enter to return to terminal.")
                 screen = 'terminal'
-                ss.initialize_terminals()
-                ss.update_terminal(active_terminal, active_terminal)
+                # ss.initialize_terminals()
+                ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.set_cursor(0, ss.INPUTLINE)
+
+import importlib
+
+def get_module_commands() -> dict: 
+    """
+    Retrieves a list of available module commands and their corresponding functions.
+    This function scans the "modules_directory" for Python files, dynamically
+    imports each module, and checks if the module has a 'command' and 'run' attribute.
+    If the attributes exist, the command and its corresponding function are added
+    to the dictionary.
+    
+    Returns:
+        dict: A dictionary mapping module commands to their corresponding functions.
+    """
+    pairs = {}
+    for file in os.listdir("modules_directory"):
+        if file.endswith(".py"):
+            file = file[:-3]
+            module = importlib.import_module("modules_directory." + file)
+            if hasattr(module, 'command') and hasattr(module, 'run'): 
+                pairs[module.command] = module.run   
+    return pairs
 
 def get_input() -> None:
     """
@@ -227,6 +286,8 @@ def get_input() -> None:
     Returns: None
     """
     global active_terminal, screen, player_id
+    cmds = get_module_commands()
+    
     stdIn = ""
     skip_initial_input = False
 
@@ -262,69 +323,62 @@ def get_input() -> None:
                 net.send_message(sockets[1], f'{player_id}mply,endturn')
 
         elif screen == 'terminal':
-            stdIn = input(COLORS.WHITE+'\r').lower().strip()
+            if not active_terminal.is_retrieved: # If the terminal is persistent, don't take input from the player
+                active_terminal.is_retrieved = True
+                stdIn = active_terminal.get_persistent_command()
+            else:
+                stdIn = input(COLORS.WHITE+'\r').lower().strip()
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
                 skip_initial_input = True
                 continue
-            if stdIn == "helpstocks" or stdIn == "help stocks":
-                ss.update_quadrant(active_terminal, text_dict.get("helpstocks"), padding=False)
-            elif stdIn.startswith("help"):
-                if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
-                    ss.update_quadrant(active_terminal, text_dict.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
-                else: 
-                    ss.update_quadrant(active_terminal, text_dict.get('help'), padding=True)
-                    ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
-            
-            elif stdIn == "calc":
-                m.calculator(active_terminal)
-            
-            elif stdIn == "list":
-                ss.update_quadrant(active_terminal, m.list_properties(), padding=False)
-            
-            elif stdIn.startswith("term "):
+            # This 'term' command needs to be first, in case of a persistent module.
+            if stdIn.startswith("term "): 
                 if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                     n = int(stdIn.strip().split(" ")[1])
-                    ss.update_terminal(n = n, o = active_terminal)
-                    active_terminal = n
+                    ss.update_terminal(n = n, o = active_terminal.index)
+                    active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
                     ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
+                    if active_terminal.persistent:
+                        stdIn = active_terminal.get_persistent_command()
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             
-            elif stdIn.startswith("deed"):
-                if(len(stdIn) > 4):
-                   pass  # ss.update_quadrant(active_terminal, m.deed(stdIn[5:]), padding=True)
             
-            elif stdIn == "fish":
-                fishing_gamestate = 'start'
-                while(fishing_gamestate != 'e'):
-                    game_data, fishing_gamestate = m.fishing(fishing_gamestate)
-                    ss.update_quadrant(active_terminal, game_data, padding=False)
-                ss.set_cursor(0, ss.INPUTLINE)
+            # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
+            elif stdIn == "helpstocks" or stdIn == "help stocks":
+                active_terminal.clear()
+                active_terminal.update(g.get("helpstocks"))
+            elif stdIn.startswith("help"):
+                if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
+                    active_terminal.update(g.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
+                else: 
+                    active_terminal.update(g.get('help'), padding=True)
+                    ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
+
+            elif stdIn in cmds.keys():
+                cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal)
+
             
-            elif stdIn == "exit" or stdIn.isspace() or stdIn == "":
+            elif stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
                 ss.overwrite("\r")
             
+            # Reset screen calibration logic
             elif stdIn.startswith('reset'):
                 ss.calibrate_screen('player')
                 ss.clear_screen()
-                ss.initialize_terminals()
-                ss.update_terminal(active_terminal, active_terminal)
+                print(g.get('terminals'))
+                for t in TERMINALS:
+                    t.display()
+                ss.set_cursor(0, 0)
+                ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
-
-            # Temporary commands - to be removed later. TODO
-            elif stdIn == "disable":
-                ss.update_quadrant(active_terminal, m.disable())
             
-            elif stdIn == "kill":
-                print(COLORS.RED)
-                ss.update_quadrant(active_terminal, m.kill())
-            
-            elif ss.DEBUG and stdIn in ["game", "bal", "ships", "ttt", "tictactoe", "casino"]:
-                ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode.")
+            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "deed"]:
+                ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode." + COLORS.RESET)
 
             elif stdIn == "exit":
-                continue
+                break
 
             else:
                 ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
@@ -337,21 +391,15 @@ def get_input() -> None:
                     ss.clear_screen()
                     print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
                     input()
-                    ss.initialize_terminals() # Reinitialize terminals to clear the screen. TODO restore previous terminals state
-                    ss.update_terminal(active_terminal, active_terminal)
+                    ss.clear_screen()
+                    print(g.get('terminals'))
+                    for t in TERMINALS:
+                        t.display()
+                    ss.update_terminal(active_terminal.index, active_terminal.index)
                 
                 elif stdIn == "bal":
                     net.send_message(sockets[1], f'{player_id}bal')
-                    ss.update_quadrant(active_terminal, net.receive_message(sockets[1]).center(ss.cols), padding=True)
-                
-                elif stdIn == "ships":
-                    m.battleship_handler(sockets[1], active_terminal, player_id)     
-            
-                elif stdIn == "ttt" or stdIn == "tictactoe":
-                    m.ttt_handler(sockets[1], active_terminal, player_id)
-
-                elif stdIn == "casino":
-                    casino.module(sockets[1], active_terminal, player_id)
+                    active_terminal.update(net.receive_message(sockets[1]).center(ss.cols), padding=True)
 
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
@@ -365,18 +413,16 @@ if __name__ == "__main__":
     """
     Main driver function for player.
     """
-    get_graphics()
-
-    # Feel free to comment out the 3 following lines for testing purposes.
-    if(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
-        initialize()
-        ss.make_fullscreen()
-        # ss.calibrate_screen('player')
-    elif sys.argv[1] == "-debug":
-        ss.DEBUG = True
-
     if "-withnet" in sys.argv:
         NET_COMMANDS_ENABLED = True
+    
+    if "-local" in sys.argv:
+        initialize(True, ["Player", "localhost", "33333"])
+    elif(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
+        initialize()
+        ss.make_fullscreen()
+    elif sys.argv[1] == "-debug":
+        ss.DEBUG = True
 
     if(len(sys.argv) >= 5): # Debug mode, with args (name, ip, port)
         if sys.argv[3].count('.') == 3 and all(part.isdigit() and 0 <= int(part) <= 255 for part in sys.argv[3].split('.')):
@@ -384,18 +430,18 @@ if __name__ == "__main__":
             ss.DEBUG = True
         else:
             print("Invalid IP address format. Please use the format xxx.xxx.xxx.xxx")
-            sys.exit(1)
+            sys.exit(1)    
 
     if not ss.DEBUG:
         ss.make_fullscreen()
         ss.auto_calibrate_screen()
 
     ss.clear_screen()
-    ss.initialize_terminals()
-    ss.update_terminal(active_terminal, active_terminal)
+    ss.initialize_terminals(TERMINALS)
+    ss.update_terminal(active_terminal.index, active_terminal.index)
     
     # Prints help in quadrant 2 to orient player.
-    ss.update_quadrant(2, text_dict.get('help'), padding=True)
+    TERMINALS[1].update(g.get('help'), padding=True)
     get_input()
     # s.print_w_dots("Goodbye!")
 

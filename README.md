@@ -53,7 +53,7 @@ Before submitting a pull request, write a couple (2-3) unit tests if applicable.
 
 # Installation
 Ensure you have the following installed: 
-- Python 3.10+
+- Python 3.9+
 - install necessary python packages using pip:
   - ```pip install -r requirements.txt```
 - run using python monopoly.py
@@ -62,17 +62,6 @@ Ensure you have the following installed:
 - Banker runs the entire game and manages whose turn it is
 - Player will take turns rolling dice, moving across the board, and choosing whether or not to buy a property.
 - Each play can see the gameboard in real time, and the banker will oversee the purchasing of property and rent payments
-
-# Game Commands
-Inputting these commands in the terminal will cause an action: 
-- roll: rolls two dice so the player can move
-- buy: purchases an unowned property when landing on it. 
-- deed <prop info>: will show you detailed property info such as rent and mortgage
-- properties: will list the properties that a player owns
-- mortgage: mortgages a property to raise money
-- pay: Pays an amount to another player or to the bank 
-- housing: Builds hotels or houses on properties where the player has a monopoly
-- Jail: Manages jail-related actions when a player is sent to jail
 
 # How the Game Works
 - Player Class: represents each player in the game and tracks player's cash, balance, owned properties, location, jail status. 

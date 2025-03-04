@@ -1,4 +1,4 @@
-import style as s
+from style import graphics as g
 import random
 from board import Board
 from player_class import MonopolyPlayer
@@ -9,8 +9,8 @@ class Cards:
     Contains card data.\n
     """
     def __init__(self) -> None:
-        self.chance = s.get_graphics().get('chance cards text').split("\n")
-        self.community_chest = s.get_graphics().get('community chest text').split("\n")
+        self.chance = g.get('chance cards text').split("\n")
+        self.community_chest = g.get('community chest text').split("\n")
         random.shuffle(self.chance)
         random.shuffle(self.community_chest)
     def draw_chance(self, p: MonopolyPlayer, board: Board, players) -> str:
@@ -95,8 +95,7 @@ class Cards:
         elif (card_number == 5):
             p.jail_cards += 1
         elif (card_number == 6):
-            board.update_location(p, p.location, 10)
-            p.jail = True
+            p.go_to_jail()
         elif (card_number == 7):
             p.receive(100)
         elif (card_number == 8):
