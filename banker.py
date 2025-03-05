@@ -13,6 +13,9 @@ import networking as net
 import validation as valid
 
 import modules_directory.tictactoe as tictactoe
+from modules_directory.deed_viewer import handle as handle_deed
+from modules_directory.balance import handle as handle_balance
+from modules_directory.casino import handle as handle_casino
 
 import monopoly as mply
 
@@ -41,27 +44,6 @@ class Client:
         self.properties = properties
         self.can_roll = True
         self.num_rolls = 0
-
-def get_handle_commands() -> dict: 
-    """
-    Retrieves a list of available module commands and their corresponding functions.
-    This function scans the "modules_directory" for Python files, dynamically
-    imports each module, and checks if the module has a 'command' and 'handle' attribute.
-    If the attributes exist, the command and its corresponding function are added
-    to the dictionary.
-    
-    Returns:
-        dict: A dictionary mapping module commands to their corresponding functions.
-    """
-    global handle_cmds
-    pairs = {}
-    for file in os.listdir("modules_directory"):
-        if file.endswith(".py"):
-            file = file[:-3]
-            module = importlib.import_module("modules_directory." + file)
-            if hasattr(module, 'command') and hasattr(module, 'handle'): 
-                pairs[module.command] = module.handle   
-    handle_cmds = pairs
 
 def add_to_output_area(output_type: str, text: str, color: str = s.COLORS.WHITE) -> None:
     """
@@ -301,7 +283,7 @@ def set_unittest() -> None:
         print("Skipping unit tests." if ss.VERBOSE else "")
         return
 
-def change_balance(id: int, delta: int): 
+def change_balance(id: int, delta: int) -> int: 
     """
     Adjusts the balance of a specific player by a given amount.
 
@@ -316,6 +298,7 @@ def change_balance(id: int, delta: int):
         None
     """
     clients[id].money += delta
+    return clients[id].money
 
 def handle_data(data: str, client: socket.socket) -> None:
     """
@@ -336,7 +319,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         current_client = get_client_by_socket(client) # This is a backup in case the client data is not prefixed by client.
         add_to_output_area("Main", f"Failed to get client from data. Data was not prefixed by client: {data}", COLORS.RED)
 
-    add_to_output_area("Main", f"Received data from {current_client.name}: {data}")
+    add_to_output_area("Main", f"Received data from {current_client.name}: \"{data}\"")
     
     if data == 'request_board': 
         net.send_message(client, mply.get_gameboard())
@@ -344,173 +327,17 @@ def handle_data(data: str, client: socket.socket) -> None:
     elif data.startswith('mply'):
         monopoly_game(current_client, data)
 
-    # elif data == 'ships':
-
-        # handle_battleship(data, current_client)
-
     # elif data.startswith('ttt'):
     #     handle_ttt(data, current_client)
 
-    # First check if the command is a valid module command. 
-    # If it is, handle it with the corresponding function
-    # The command will always be the first word in the data string.
-    elif data.split()[0] in handle_cmds.keys():
-        handle_cmds[data.split()[0]](data, current_client, mply)
+    elif data.startswith('deed'):
+        handle_deed(data, client, mply)
 
-    elif data.startswith('bal'):
-        """
-        Return the client's balance.
-        """
-        net.send_message(client, str(current_client.money))
+    elif data.startswith("bal"):
+        handle_balance(data, client, mply, current_client.money, current_client.properties)
 
     elif data.startswith('casino'):
-        handle_casino(data, current_client)
-        net.send_message(client, str(current_client.money))
-
-def handle_casino(cmds: str, current_client: Client) -> None:
-    """
-    Handles casino-related commands for a client by updating their balance.
-
-    Args:
-        cmds (str): The command string containing the casino operation details.
-                    Expected format: "casino [casino_id] [change_balance]"
-                    - [delta] (str): The player's win or loss string.
-                    - [change_balance] (int): The amount to change the client's balance by.
-        current_client (Client): The client whose balance is to be updated.
-
-    Returns:
-        None
-
-    Example:
-        handle_casino("casino win 100", client)
-        This will add 100 to the client's balance.
-    """
-    command_data = cmds.split(' ')
-    delta = 1 if command_data[1] == 'win' else -1
-    amount = int(command_data[2])
-    change_balance(current_client.id, delta * amount)
-    add_to_output_area("Casino", f"Updated {current_client.name}'s balance by {delta * amount}. New balance: {current_client.money}")
-
-def handle_ttt(cmds: str, current_client: Client) -> None:
-    """
-    Handles all TicTacToe requests from the player.
-    
-    Parameters:
-        cmds (str): The command string from the player.
-        current_client (Client): The client object associated with the player.
-    
-    Returns:
-        None
-    """
-    ttt_game = None
-    add_to_output_area("TicTacToe", "TicTacToe data requested!")
-    if cmds.split(',')[1] == 'getgamestate':
-        # Joining a game logic
-        # Game does not exist
-        if gm.player_in_game('TicTacToe', current_client.name) == True:
-            if len(gm.get_game_by_name('TicTacToe')) >= 1:
-                add_to_output_area("TicTacToe", "Player is already playing at least one game, need to select a specific game to rejoin.")
-                net.send_message(current_client.socket, "\nPlease select a game to join.\n" + gm.display_games(name='TicTacToe', player_name=current_client.name))
-        # Player is not in any games
-        else: 
-            add_to_output_area("TicTacToe", f"Player is not in any games. Can create a game.")
-            # Ask player first, then create a game if they want to play.
-            sleep(1)
-            net.send_message(current_client.socket, "\nYou are not part of any games.\nWould you like to create a new TicTacToe game?\nEnter -1 to create, or 0 to ignore.")
-            net.send_notif(current_client.socket, "You are not part of any games. Would you like to create a new TicTacToe game? Enter -1 to create, or 0 to ignore.")
-        return
-
-    if cmds.split(',')[1] == 'joingame':
-    # Player knows game exists, and is trying to (re)join a game
-        game_id = int(cmds.split(',')[2])
-
-        if game_id == -1: # Create a new game.
-            # Don't let a player create a new game if they're already in one.. This might be adjusted later TODO debug
-            if gm.player_in_game('TicTacToe', current_client.name) == True:
-                if len(gm.get_game_by_name('TicTacToe')) >= 1:
-                    add_to_output_area("TicTacToe", "Player input -1 when already playing another game, need to select a specific game to rejoin.")
-                    net.send_message(current_client.socket, "\nYou're playing a game already! Rejoin from the game list.\n" + gm.display_games(name='TicTacToe', player_name=current_client.name))
-                    return
-            else: 
-                opponent = int(cmds.split(',')[3])
-                # Check if valid opponent inputted
-                if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == current_client:
-                    net.send_message(current_client.socket, "\nInvalid opponent. Please select another player.")
-                    return
-
-                add_to_output_area("TicTacToe", "Creating new TicTacToe game.")
-                ttt_game = tictactoe.TicTacToe()
-                gm.add_game(gm.Game('TicTacToe', [None] * 2, ttt_game.board, ttt_game))
-                game_id = len(gm.games)-1
-                gm.get_game_by_id(len(gm.games)-1).players[0] = current_client # Should be able to safely assume that the last game in the list is the one we just created.
-                gm.get_game_by_id(len(gm.games)-1).players[1] = clients[opponent] # Second player
-                net.send_notif(clients[opponent].socket, f'{current_client.name} is attacking you in TicTacToe!')
-                add_to_output_area("TicTacToe", "Game created.")
-                add_to_output_area("TicTacToe", f'{current_client.name} joined game with id {len(gm.games)-1}.')
-        
-        queried_game = gm.get_game_by_id(game_id)
-        if queried_game: # Game requested by ID exists
-            if queried_game.name == 'TicTacToe' and len(queried_game.players) < queried_game.MAXPLAYERS:
-                # Game is a TicTacToe game and has space for another player
-                # Note that this means a player can accidentally join a game they're not supposed to
-                # if they know the game ID. This is a security flaw. TODO fix this
-                gm.add_player_to_game(game_id, current_client.name)
-                add_to_output_area("TicTacToe", f'Player {current_client.name} joined game.')
-                
-                ttt_game = gm.get_game_by_id(game_id)
-
-            elif queried_game.name == 'TicTacToe' and current_client.name in [player.name for player in queried_game.players]:
-                # Player is already in the game. Let them rejoin and continue playing with the same game object.
-                add_to_output_area("TicTacToe", f'Player rejoined game with ID {game_id}.')
-                ttt_game = queried_game
-
-            elif queried_game.name != 'TicTacToe':
-                # Player tried to join a game that isn't TicTacToe
-                add_to_output_area("TicTacToe", f"[{current_client.name}] Incorrect game name.")
-                net.send_message(current_client.socket, "\nIncorrect game name. Please select another game.")
-            elif len(queried_game.players) >= queried_game.MAXPLAYERS:
-                # Game is full
-                add_to_output_area("TicTacToe", f"[{current_client.name}] Game full.")
-                net.send_message(current_client.socket, "\nGame is full. Please select another game.")
-            else: # Edge case handling. Not strictly necessary or helpful, so remove in the future if it's not needed.
-                add_to_output_area("TicTacToe", f"[{current_client.name}] Something else went wrong. Game not found.")
-        else: 
-            add_to_output_area("TicTacToe", f"[{current_client.name}] Game not found.")
-    else: 
-        pass
-    
-    # We should have a game object by now. If we don't, something went wrong.
-    if cmds.split(',')[1] == 'move':
-        if ttt_game == None: # We know the player is validly in a game, so we can get the game object
-            ttt_game = gm.get_game_by_id(int(cmds.split(',')[2]))
-
-        if type(ttt_game) == gm.Game:
-            ttt_game_object = ttt_game.other_data # Get the actual *specific* game object from the Game object (in this case, the TicTacToe object)
-        # Now check for moves
-        if cmds.split(',')[1] == 'move':
-            if (ttt_game_object.current_player == 'O' and current_client.name == ttt_game.players[0].name) \
-            or (ttt_game_object.current_player == 'X' and current_client.name == ttt_game.players[1].name):
-                net.send_message(current_client.socket, "It's not your turn!")
-                return "It's not your turn!"
-            ttt_game_object.place(int(cmds.split(',')[3].split('.')[0]), int(cmds.split(',')[3].split('.')[1]))
-            if ttt_game_object.check_winner():
-                net.send_message(current_client.socket, "You win!")
-                gm.remove_game(ttt_game.id)
-                return "You win!"
-            elif ttt_game_object.is_full():
-                net.send_message(current_client.socket, "It's a tie!")
-                gm.remove_game(ttt_game.id)
-                return "It's a tie!"
-            else:
-                ttt_game_object.current_player = 'O' if ttt_game_object.current_player == 'X' else 'X'
-                if current_client.name == ttt_game.players[0].name:
-                    net.send_notif(ttt_game.players[1].socket, f'TTT: {current_client.name} has made a move!')
-                elif current_client.name == ttt_game.players[1].name:
-                    net.send_notif(ttt_game.players[0].socket, f'TTT: {current_client.name} has made a move!')
-        
-        # Send the board to the player
-    if ttt_game != None:
-        net.send_message(current_client.socket, tictactoe.construct_board(ttt_game.board))
+        handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
 
 def handshake(client_socket: socket.socket, handshakes: list) -> None:
     """
@@ -683,6 +510,5 @@ if __name__ == "__main__":
     monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
     game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)])
     threading.Thread(target=monopoly_controller, args=[monopoly_unit_test], daemon=True).start()
-    get_handle_commands()
     start_receiver()
 
