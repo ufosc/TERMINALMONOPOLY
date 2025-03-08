@@ -1,6 +1,4 @@
 # Monopoly game is played on Banker's terminal. 
-import style as s
-from style import COLORS
 import random
 import os
 import textwrap
@@ -9,8 +7,8 @@ from properties import Property
 from cards import Cards
 from board import Board
 from player_class import MonopolyPlayer
-import screenspace as ss
-import style as s
+from screenspace import calibrate_screen, make_fullscreen
+from style import MYCOLORS as COLORS, set_cursor_str, set_cursor
 from style import graphics as g
 
 
@@ -60,7 +58,7 @@ def refresh_board():
     Refresh the gameboard\n
     """
     
-    add_to_output(COLORS.RESET + "\033[0;0H")
+    add_to_output(COLORS.RESET + set_cursor_str(0,0))
     add_to_output(gameboard)
     for i in range(40): 
         # This loop paints the properties on the board with respective color schemes
@@ -179,7 +177,7 @@ def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: s
         except ValueError:
             add_to_output(f"Invalid input. Please enter a # for a property.")
             if mode == "banker":
-                return get_gameboard() + ss.set_cursor_str(0, 39) + f"[Deed Viewer]\nInvalid input. Please enter a # for a property."
+                return get_gameboard() + set_cursor_str(0, 39) + f"[Deed Viewer]\nInvalid input. Please enter a # for a property."
     refresh_h_and_s()
     if mode == "banker":
         return get_gameboard()
@@ -212,7 +210,7 @@ def refresh_h_and_s():
 def buy_logic(mode: str = "normal", pinput: str = ""):
     CL = players[turn].location
     if mode == "normal":
-        choice = input(ss.set_cursor_str(0, 36) + f"Buy {board.locations[CL].name} for ${board.locations[CL].purchasePrice}? (y/n) ")
+        choice = input(set_cursor_str(0, 36) + f"Buy {board.locations[CL].name} for ${board.locations[CL].purchasePrice}? (y/n) ")
     else:
         choice = pinput
     if(board.locations[CL].purchasePrice != 0 and choice == 'y'):
@@ -227,13 +225,13 @@ def buy_logic(mode: str = "normal", pinput: str = ""):
 def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "", num_houses: int = -1):
     update_status(p, "properties")
     if mode == "normal":
-        print(ss.set_cursor_str(0, 38) + ' ' * 75)
-        propertyid = input(ss.set_cursor_str(0, 38) + "What property do you want to build on? Enter property # or 'e' to exit.")
+        print(set_cursor_str(0, 38) + ' ' * 75)
+        propertyid = input(set_cursor_str(0, 38) + "What property do you want to build on? Enter property # or 'e' to exit.")
     else:
         if propertyid == "e":
             return get_gameboard()
         elif propertyid == "":
-            return get_gameboard() + ss.set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
+            return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
     flag = True
     exit_flag = False
     try:   
@@ -254,7 +252,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
                 print("\033[40;0HThis property cannot be improved.")
                 flag = False
                 if mode == "banker":
-                    return get_gameboard() + ss.set_cursor_str(0, 40) + "This property cannot be improved."
+                    return get_gameboard() + set_cursor_str(0, 40) + "This property cannot be improved."
             if flag: 
                 for i in range(propertyid-3 if propertyid > 3 else 0, propertyid+5 if propertyid < 35 else 39): # check only a few properties around for efficiency
                     if board.locations[i].color == family:
@@ -262,12 +260,12 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
                             print("\033[40;0HYou do not own a monopoly on these properties!")
                             flag = False
                             if mode == "banker":
-                                return get_gameboard() + ss.set_cursor_str(0, 40) + "You do not own a monopoly on these properties!"  
+                                return get_gameboard() + set_cursor_str(0, 40) + "You do not own a monopoly on these properties!"  
             if flag and board.locations[propertyid].mortgaged:
                 add_to_output("This property is mortaged.")
                 flag = False
                 if mode == "banker":
-                    return get_gameboard() + ss.set_cursor_str(0, 40) + "This property is mortaged."
+                    return get_gameboard() + set_cursor_str(0, 40) + "This property is mortaged."
             if flag:
                 cost = 0
                 if flag:
@@ -305,7 +303,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
         else:
             print("\033[38;0H" + ' ' * 70)
             print("\033[38;0HInvalid option!")
-            return get_gameboard() + ss.set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
+            return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
     return get_gameboard()
 
 def mortgage_logic(p:MonopolyPlayer):
@@ -473,14 +471,14 @@ def unittest(num:int = 5):
 
 #wipes the bottom of the screen where the player does all of their input
 def bottom_screen_wipe():
-    add_to_output(ss.set_cursor_str(0, 36) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 37) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 38) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 39) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 40) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 41) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 42) + " " * 76)
-    add_to_output(ss.set_cursor_str(0, 36))
+    add_to_output(set_cursor_str(0, 36) + " " * 76)
+    add_to_output(set_cursor_str(0, 37) + " " * 76)
+    add_to_output(set_cursor_str(0, 38) + " " * 76)
+    add_to_output(set_cursor_str(0, 39) + " " * 76)
+    add_to_output(set_cursor_str(0, 40) + " " * 76)
+    add_to_output(set_cursor_str(0, 41) + " " * 76)
+    add_to_output(set_cursor_str(0, 42) + " " * 76)
+    add_to_output(set_cursor_str(0, 36))
 
 #Rolls the dice and returns them for the player as a tuple
 def roll():
@@ -640,7 +638,7 @@ def request_roll() -> str:
         output = get_gameboard()
         update_history(player_color + f"{players[turn].name}'s turn")
         print_commands()
-        output += ss.set_cursor_str(0, 36) + "Press enter to roll dice."
+        output += set_cursor_str(0, 36) + "Press enter to roll dice."
         return output
     else:
         return "Player is bankrupt." # Really once a player is bankrupt, they should be shut off.
@@ -688,7 +686,7 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
         done_moving_around = True
         if board.locations[players[turn].location].owner < 0:
             if (board.locations[players[turn].location].owner == -1): #unowned
-                return get_gameboard() + ss.set_cursor_str(0, 37) + "b to buy, enter to continue?"
+                return get_gameboard() + set_cursor_str(0, 37) + "b to buy, enter to continue?"
             elif (board.locations[players[turn].location].owner == -2): #mortgaged
                 pass
             elif (board.locations[players[turn].location].owner == -3): #community chest
@@ -742,7 +740,7 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
     if dice[0] == dice[1]: # and not was_in_jail:
         num_rolls += 1
         request_roll()
-    return "player_choice" + ss.set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
+    return "player_choice" + set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
 
 def end_turn():
     global turn
@@ -809,9 +807,9 @@ def game_loop():
         player_choice()
 
 if __name__ == "__main__": # For debugging purposes. Can play standalone
-    ss.make_fullscreen()
+    make_fullscreen()
 
-    ss.calibrate_screen('gameboard')
+    calibrate_screen('gameboard')
 
     # CASH = input("Starting cash?")
     # num_players = int(input("Number players?"))

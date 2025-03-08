@@ -1,7 +1,7 @@
 import networking as net
 from screenspace import Terminal
 import screenspace as ss
-import style as s
+from style import MYCOLORS as COLORS
 from socket import socket
 import keyboard
 import time
@@ -151,7 +151,7 @@ def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
         while True:
 
             if keyboard.read_event().event_type == keyboard.KEY_DOWN:
-                simple_board[y][x] = s.COLORS.RESET + original_board[y][x]
+                simple_board[y][x] = COLORS.RESET + original_board[y][x]
                 b = construct_board(simple_board)
                 active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
 
@@ -164,7 +164,7 @@ def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
             if keyboard.is_pressed('d'):
                 x = max(0, min(x+1, 2))
 
-            simple_board[y][x] = s.COLORS.backYELLOW + original_board[y][x] + s.COLORS.RESET
+            simple_board[y][x] = COLORS.backYELLOW + original_board[y][x] + COLORS.RESET
             time.sleep(0.05)
             b = construct_board(simple_board)
             active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))

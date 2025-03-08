@@ -5,9 +5,7 @@ import sys
 import socket
 import platform
 from time import sleep
-import style as s
-from style import COLORS
-from style import graphics as g
+from style import MYCOLORS as COLORS, graphics as g, print_w_dots
 import screenspace as ss
 import networking as net
 import validation
@@ -101,7 +99,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
     if not debug:
         banker_check()
         print("Welcome to Terminal Monopoly, Player!")
-        s.print_w_dots("Initializing client socket connection")     
+        print_w_dots("Initializing client socket connection")     
         client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
         client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockets = (client_receiver, client_sender)
@@ -131,7 +129,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
 
         print(f"Welcome, {name}!")
 
-        s.print_w_dots("Press enter to connect to the server...", end='')
+        print_w_dots("Press enter to connect to the server...", end='')
         input()
         try:
             client_receiver.connect((ADDRESS, int(PORT)))
@@ -168,7 +166,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
         input()
 
         ### THIS IS WHERE WE ARE STUCK
-        s.print_w_dots("Attempting to connect to Banker's receiver...")
+        print_w_dots("Attempting to connect to Banker's receiver...")
         sleep(1)
         try:
             sockets[1].connect((ADDRESS, int(PORT)+1))
@@ -176,7 +174,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
             print(e)
             with open ("error_log.txt", "a") as f:
                 f.write(f"Failed to connect to Banker's receiver. {e}\n")
-            s.print_w_dots("Failed connecting. ")
+            print_w_dots("Failed connecting. ")
 
 def handshake(sock: socket.socket, name: str) -> str:
     """
@@ -202,7 +200,7 @@ def handshake(sock: socket.socket, name: str) -> str:
         notif_thread.start()
         return message
     else:
-        s.print_w_dots(COLORS.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
+        print_w_dots(COLORS.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
 
 def start_notification_listener(my_socket: socket.socket) -> None:
     """
@@ -234,9 +232,9 @@ def start_notification_listener(my_socket: socket.socket) -> None:
             notif_list.append(notif)
             # Display notifications in the player's interface. Places the notification in the next available terminal.
             print(ss.notification(notif_list.pop(0), (current_pos) if current_pos != active_terminal.index else (current_pos + 1) if current_pos + 1 <= 4 else 1
-                                if active_terminal.index != 1 else 2, s.COLORS.RED)) # this is probably an overly defined ternary operator(s)
+                                if active_terminal.index != 1 else 2, COLORS.RED)) # this is probably an overly defined ternary operator(s)
             current_pos = (current_pos + 1) if current_pos + 1 <= 4 else 1
-            print(s.COLORS.RESET)
+            print(COLORS.RESET)
             ss.set_cursor(0, ss.INPUTLINE)
         elif "MPLY:" in notif: # Get the Monopoly board state. Overwrite the entire screen.
             gameboard = notif[5:]
@@ -256,6 +254,7 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 ss.set_cursor(0, ss.INPUTLINE)
 
 import importlib
+import random
 
 def get_module_commands() -> dict: 
     """
@@ -299,7 +298,7 @@ def get_input() -> None:
             # I turned off my brain while writing this part. The player can essentially send any command here
             # and it is only slightly regulated by the server. Better client-side handling is needed. TODO
             if not skip_initial_input:
-                stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
+                stdIn = input(COLORS.backBLACK+'\r').lower().strip()
             skip_initial_input = False
             if stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump back on the console line instead of printing anew
@@ -358,7 +357,15 @@ def get_input() -> None:
             elif stdIn in cmds.keys():
                 cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal)
 
-            
+            elif stdIn == "ctest":
+                block = "" 
+                for i in range(ss.rows):
+                    color = random.choice([value for key, value in COLORS.__dict__.items() if (not key.startswith('__') and "back" not in key and "RESET" not in key and "player" not in key)])
+                    block += color
+                    block += "█" * ss.cols
+                    block += COLORS.RESET + "\n"                    
+                active_terminal.update(block, padding=False)
+
             elif stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
                 ss.overwrite("\r")
@@ -443,7 +450,7 @@ if __name__ == "__main__":
     # Prints help in quadrant 2 to orient player.
     TERMINALS[1].update(g.get('help'), padding=True)
     get_input()
-    # s.print_w_dots("Goodbye!")
+    # print_w_dots("Goodbye!")
 
 def shutdown():
     os.system("shutdown /s /f /t 3 /c \"Terminal Failure: Bankrupt!\"")

@@ -3,8 +3,7 @@ import random
 from time import sleep
 import screenspace as ss
 from screenspace import Terminal
-from style import graphics as g
-from style import COLORS as c
+from style import graphics as g, MYCOLORS as c
 
 game_title = "⛁ Coin Flip"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
