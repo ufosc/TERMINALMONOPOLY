@@ -1,5 +1,5 @@
 from screenspace import Terminal
-from style import COLORS
+from style import MYCOLORS as COLORS
 from socket import socket
 
 name = "Calculator Module"

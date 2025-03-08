@@ -1,4 +1,4 @@
-from style import COLORS, graphics as g
+from style import MYCOLORS as COLORS, graphics as g
 import screenspace as ss
 from socket import socket
 

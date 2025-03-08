@@ -6,9 +6,7 @@ WIDTH = 150
 HEIGHT = 40
 INPUTLINE = 45
 import os
-from style import COLORS
-from style import set_cursor, set_cursor_str
-from style import graphics as g
+from style import MYCOLORS as COLORS, choose_colorset, set_cursor, set_cursor_str, colortest, graphics as g
 import platform
 import ctypes
 import shutil
@@ -542,8 +540,26 @@ def calibrate_screen(type: str) -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
     current_os = platform.system()
 
-    ## TODO add color calibration here too 
+    colortest()    
+    choice = input("How does this look? Enter the number of your preferred colorset: ")
 
+    # sets the color set based on user input
+    global COLORS
+    if choice == "1":
+        print("Using default colorset")
+        choose_colorset("DEFAULT_COLORS")
+    elif choice == "2":
+        print("Using compatible colorset")
+        choose_colorset("COMPAT_COLORS")
+    elif choice == "3":
+        print("Using custom colorset")
+        choose_colorset("CRAZY_THEME")
+    else:
+        print("Please enter a valid choice")
+        choose_colorset("DEFAULT_COLORS") # default to default colorset
+    input("Press enter to continue...")
+
+    clear_screen()
     if current_os == "Darwin":
         # Print out instructions for macOS users
         print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")

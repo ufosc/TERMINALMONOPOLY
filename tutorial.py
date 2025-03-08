@@ -38,8 +38,7 @@ players represented by a colored tile with circle   '
 import os
 import screenspace as ss
 import style
-from style import COLORS
-from style import graphics as g
+from style import MYCOLORS as COLORS, graphics as g
 
 cols = ss.WIDTH
 rows = ss.HEIGHT
