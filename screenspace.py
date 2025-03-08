@@ -540,7 +540,6 @@ def calibrate_screen(type: str) -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
     current_os = platform.system()
 
-    print("Select a color set for your board: \n1. Default \n2. Compatible (8-bit ANSI colors)")
     colortest()    
     choice = input("How does this look? Enter the number of your preferred colorset: ")
 
@@ -552,9 +551,13 @@ def calibrate_screen(type: str) -> None:
     elif choice == "2":
         print("Using compatible colorset")
         choose_colorset("COMPAT_COLORS")
+    elif choice == "3":
+        print("Using custom colorset")
+        choose_colorset("CRAZY_THEME")
     else:
         print("Please enter a valid choice")
         choose_colorset("DEFAULT_COLORS") # default to default colorset
+    input("Press enter to continue...")
 
     clear_screen()
     if current_os == "Darwin":

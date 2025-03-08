@@ -1,9 +1,11 @@
 ## Custom theme colors, could be adjusted with more RGB values for more creative themes!
 ## Use these in place of colorama's Fore and Back color literals.
 import os
+import textwrap
 
 # class for compatible colors for terminals that cannot utilize RGB values outside of the 8-bit ANSI colors
 class COMPAT_COLORS:
+    description = textwrap.wrap("A set of colors that are compatible with most terminals.", width=30, initial_indent="> ", subsequent_indent=" ")
     BROWN = "\033[38;5;94m"
     LIGHTBLUE = "\033[38;5;33m"
     ROUGE = "\033[38;5;13m"
@@ -49,6 +51,7 @@ class COMPAT_COLORS:
     backBLACK = BLACK.replace("38", "48")
 
 class DEFAULT_COLORS:
+    description = textwrap.wrap("The default TERMINAL MONOPOLY experience.", width=30, initial_indent="> ", subsequent_indent=" ")
     BROWN = "\033[38;2;138;96;25m"
     LIGHTBLUE = "\033[38;2;43;249;255m"
     ROUGE = "\033[38;2;240;93;231m"
@@ -90,10 +93,48 @@ class DEFAULT_COLORS:
     backCOMMUNITY = COMMUNITY.replace("38", "48")
     backBLACK = BLACK.replace("38", "48")
 
+class CRAZY_THEME:
+    description = textwrap.wrap("A bold colorset.", width=30, initial_indent="> ", subsequent_indent=" ")
+    fore_prefix = "\033[38;2;"
+    back_prefix = "\033[48;2;"
+    BROWN = fore_prefix + "169;0;196m"
+    LIGHTBLUE = fore_prefix + "157;255;254m"
+    ROUGE = fore_prefix + "239;180;255m"
+    ORANGE = fore_prefix + "255;115;0m"
+    RED = fore_prefix + "204;17;17m"
+    YELLOW = fore_prefix + "206;255;42m"
+    GREEN = fore_prefix + "56;255;250m"
+    BLUE = fore_prefix + "0;20;110m"
+    WHITE = fore_prefix + "254;229;255m"
+    CYAN = fore_prefix + "158;254;255m"
+    LIGHTGRAY = fore_prefix + "220;181;255m"
+    LIGHTBLACK = fore_prefix + "118;78;78m"
+    CHANCE = fore_prefix + "228;59;135m"
+    COMMUNITY = fore_prefix + "13;151;19m"
+    BLACK = fore_prefix + "39;76;79m"
+    RESET = "\033[0m"
+    playerColors = ["\033[38;5;1m", "\033[38;5;2m", "\033[38;5;3m", "\033[38;5;4m"]
+    dispGREEN = fore_prefix + "245;0;255m"
+    dispRED = fore_prefix + "7;0;255m"
+    dispBLUE = fore_prefix + "255;251;0m"
+    backBROWN = back_prefix + "132;25;25m"
+    backLIGHTBLUE = back_prefix + "25;127;132m"
+    backROUGE = back_prefix + "132;25;130m"
+    backORANGE = back_prefix + "132;93;25m"
+    backRED = back_prefix + "132;25;25m"
+    backYELLOW = back_prefix + "126;132;25m"
+    backGREEN = back_prefix + "41;132;25m"
+    backBLUE = back_prefix + "25;27;132m"
+    backWHITE = back_prefix + "255;244;205m"
+    backCYAN = back_prefix + "49;98;98m"
+    backLIGHTGRAY = back_prefix + "133;133;133m"
+    backLIGHTBLACK = back_prefix + "78;78;78m"
+    backCHANCE = back_prefix + "136;186;234m"
+    backCOMMUNITY = back_prefix + "210;208;38m"
+    backBLACK = back_prefix + "38;38;38m"
+
 class MYCOLORS:
-    """
-    This is the colorset a player chooses to use in the game.
-    """
+    description = textwrap.wrap("This is the colorset the player chooses to use in the game.", width=30, initial_indent="> ", subsequent_indent=" ")
     BROWN = ""
     LIGHTBLUE = ""
     ROUGE = ""
@@ -151,6 +192,12 @@ def choose_colorset(colorset: str) -> None:
         for attr in dir(DEFAULT_COLORS):
             if not attr.startswith('__'):
                 setattr(MYCOLORS, attr, getattr(DEFAULT_COLORS, attr))
+    elif colorset == "CRAZY_THEME":
+        # Set the colorset to the crazy theme colors
+        for attr in dir(CRAZY_THEME):
+            if not attr.startswith('__'):
+                setattr(MYCOLORS, attr, getattr(CRAZY_THEME, attr))
+
     else:
         raise ValueError("Invalid colorset. Please choose either 'COMPAT_COLORS' or 'DEFAULT_COLORS'.")
 
@@ -158,40 +205,77 @@ def colortest():
     """
     Prints a test of all colors defined in the COLORS class.
     """
-    print("\033[2J", end="")  # Clear the screen.. using escape sequence dont do this use screenspace clear_screen instead
+    set_cursor(1, 4)
+    print(graphics.get("colortestboundary"))
+    y = 7
+    for color in dir(MYCOLORS):
+        if not color.startswith('__') and color != "back_prefix" and not color.startswith('back') and color != "RESET" and color != "description" and color != "fore_prefix":
+            value = getattr(MYCOLORS, color)
+            if isinstance(value, list):
+                for item in value:
+                    set_cursor(2, y)
+                    print(item + f"█████ {color}" + MYCOLORS.RESET)
+                    y += 1
+            else:
+                set_cursor(2, y)
+                print(value + f"█████ {color}" + MYCOLORS.RESET)
+                y += 1
+            set_cursor(2, y)
+    
+    y = y + 1
+    for color in dir(MYCOLORS):
+        if color.startswith('back'):
+            value = getattr(MYCOLORS, color)
+            set_cursor(2, y)
+            print(value + f"      {color}" + MYCOLORS.RESET)
+            y += 1
+    
     print(COMPAT_COLORS.WHITE, end="")  # Reset foreground to white for better visibility
+
+    sets = [DEFAULT_COLORS, COMPAT_COLORS, CRAZY_THEME] # Add to this list to add more color sets to the test.
     
-    sets = [DEFAULT_COLORS, COMPAT_COLORS, MYCOLORS] # Add to this list to add more color sets to the test.
-    
+    offset = max([len(sets[x].description) for x in range(len(sets))]) + 1
+
     for x in range(len(sets)):
+        x_offset = 31
         y = 0
-        set_cursor(x*40, y+1)
-        print(f"Testing color set {sets[x].__name__}:")
-        set_cursor(x*40, y+2)
+        set_cursor(x*x_offset + x_offset, y)
+        lines = textwrap.wrap(f"Testing color set {sets[x].__name__}:", width=x_offset)
+        for line in lines:
+            set_cursor(x*x_offset + x_offset, y+1)
+            print(line, end="")
+            y += 1
+        j = 0
+        for line in sets[x].description:
+            set_cursor(x*x_offset + x_offset, y+1+j)
+            print(line, end="")
+            j += 1
+        y = offset
+        set_cursor(x*x_offset + x_offset, y+2)
         print("Testing foreground colors:\n")
         for color in dir(sets[x]):
-            if not color.startswith('__') and not color.startswith('back') and color != "RESET":
+            if not color.startswith('__') and color != "back_prefix" and not color.startswith('back') and color != "RESET" and color != "description" and color != "fore_prefix":
                 value = getattr(sets[x], color)
-                if isinstance(value, list):  # Skip lists to avoid TypeError
+                if isinstance(value, list):  # Special case for playerColors
                     for item in value:
-                        set_cursor(x*40, y+3)
-                        print(item + f"{color}" + sets[x].RESET)
+                        set_cursor(x*x_offset + x_offset, y+3)
+                        print(item + f"█████ {color}" + sets[x].RESET)
                         y += 1
                 else: 
-                    set_cursor(x*40, y+3)
-                    print(value + f"{color}" + sets[x].RESET)
+                    set_cursor(x*x_offset + x_offset, y+3)
+                    print(value + f"█████ {color}" + sets[x].RESET)
                     y += 1
 
         print(COMPAT_COLORS.WHITE, end="")  # Reset foreground to white for better visibility
-        set_cursor(x*40, y+3)
+        set_cursor(x*x_offset + x_offset, y+3)
         print("Testing background colors:")
         for color in dir(sets[x]):
             print(COMPAT_COLORS.WHITE, end="")  # Reset foreground to white for better visibility
             if color.startswith('back'):
                 value = getattr(sets[x], color)
-                set_cursor(x*40, y+4)
-                print(value + f"{color}" + sets[x].RESET)
-                y += 1
+                set_cursor(x*x_offset + x_offset, y+4)
+                print(value + f"      {color}" + sets[x].RESET)
+                y += 1    
 
 def print_w_dots(text: str, size: int=50, end: str='\n') -> None:
     """
