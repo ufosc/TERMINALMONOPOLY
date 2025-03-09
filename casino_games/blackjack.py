@@ -2,8 +2,7 @@
 import random
 import screenspace as ss
 from screenspace import Terminal
-from style import graphics as g
-from style import COLORS
+from style import MYCOLORS as COLORS, graphics as g
 
 game_title = "🃑 Blackjack"
 

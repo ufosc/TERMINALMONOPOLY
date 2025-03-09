@@ -1,5 +1,5 @@
 from time import sleep
-from style import COLORS as c
+from style import MYCOLORS as c
 import screenspace as ss
 from screenspace import Terminal
 import os

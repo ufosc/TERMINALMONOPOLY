@@ -4,7 +4,7 @@ import os
 import sys
 import random
 
-import style as s
+from style import MYCOLORS as COLORS, print_w_dots
 import screenspace as ss 
 
 import gamemanager as gm
@@ -39,7 +39,7 @@ class Client:
         self.can_roll = True
         self.num_rolls = 0
 
-def add_to_output_area(output_type: str, text: str, color: str = s.COLORS.WHITE) -> None:
+def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
     """
     Adds text to the specified output area.
     This should replace all print statements in the code.
@@ -94,10 +94,10 @@ def start_server() -> socket.socket:
     port = int(port) # Convert port to int for socket binding
     # Bind to the port
     server_socket.bind((host, port))
-    s.print_w_dots(f"Server started on {ip_address} port {port}")
+    print_w_dots(f"Server started on {ip_address} port {port}")
     server_socket.listen()
 
-    s.print_w_dots(f"Waiting for {num_players} clients...")
+    print_w_dots(f"Waiting for {num_players} clients...")
     
     handshakes = [False] * num_players
 
@@ -112,10 +112,10 @@ def start_server() -> socket.socket:
         else: 
             game_full = True
         sleep(0.5) 
-    s.print_w_dots("Game is full. Starting game...")
-    s.print_w_dots("")
-    s.print_w_dots("")
-    s.print_w_dots("")
+    print_w_dots("Game is full. Starting game...")
+    print_w_dots("")
+    print_w_dots("")
+    print_w_dots("")
     # Send a message to each client that the game is starting, allowing them to see their terminals screen
     for i in range(len(clients)): 
         clients[i].id = i
@@ -134,7 +134,7 @@ def start_receiver() -> None:
     Returns: None
     """
     global player_data, port
-    add_to_output_area("Main", "[RECEIVER] Receiver started!", s.COLORS.GREEN) 
+    add_to_output_area("Main", "[RECEIVER] Receiver started!", COLORS.GREEN) 
     # Credit to https://stackoverflow.com/a/43151772/19535084 for seamless server-client handling. 
     with socket.socket() as server:
         host = socket.gethostname()
@@ -144,7 +144,7 @@ def start_receiver() -> None:
             port = 33333
         server.bind((ip_address,int(port+1)))
         server.listen()
-        add_to_output_area("Main", f"[RECEIVER] Receiver accepting connections at {port+1}", s.COLORS.GREEN)
+        add_to_output_area("Main", f"[RECEIVER] Receiver accepting connections at {port+1}", COLORS.GREEN)
         to_read = [server]  # add server to list of readable sockets.
         while True:
             # check for a connection to the server or data ready from clients.
@@ -153,20 +153,20 @@ def start_receiver() -> None:
             for reader in readers:
                 if reader is server:
                     player,address = reader.accept()
-                    add_to_output_area("Main", f"Player connected from: {address[0]}", s.COLORS.GREEN)
+                    add_to_output_area("Main", f"Player connected from: {address[0]}", COLORS.GREEN)
                     to_read.append(player) # add client to list of readable sockets
                 else:
                     try:
                         data = net.receive_message(reader)
                         handle_data(data, reader)
                     except ConnectionResetError:
-                        add_to_output_area("Main", f"Player at {address[0]} disconnected.", s.COLORS.RED)
+                        add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
                         to_read.remove(reader) # remove from monitoring
                     if not data: # No data indicates disconnect
-                        add_to_output_area("Main", f"Player at {address[0]} disconnected.", s.COLORS.RED)
+                        add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
                         to_read.remove(reader) # remove from monitoring
                 if(len(to_read) == 1):
-                    add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver stopped.", s.COLORS.GREEN)
+                    add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver stopped.", COLORS.GREEN)
                     return
 
 def set_unittest() -> None:
@@ -209,7 +209,7 @@ def set_unittest() -> None:
     - STARTING_CASH = 100
     - No games added to the game manager.
     
-    Unit test 4 {s.COLORS.LIGHTBLUE}(Useful for locally testing modules without Monopoly){s.COLORS.RESET}: 
+    Unit test 4 {COLORS.LIGHTBLUE}(Useful for locally testing modules without Monopoly){COLORS.RESET}: 
     - num_players = 1
     - Does not start the Monopoly game.
     - STARTING_CASH = 100
@@ -300,7 +300,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         data = data[1:]
     except:
         current_client = get_client_by_socket(client) # This is a backup in case the client data is not prefixed by client.
-        add_to_output_area("Main", f"Failed to get client from data. Data was not prefixed by client: {data}", s.COLORS.RED)
+        add_to_output_area("Main", f"Failed to get client from data. Data was not prefixed by client: {data}", COLORS.RED)
 
     add_to_output_area("Main", f"Received data from {current_client.name}: {data}")
     
