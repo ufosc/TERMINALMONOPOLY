@@ -53,6 +53,7 @@ description = "Go fishing!"
 version = "1.3" # Moved to its own file
 command = "fish"
 help_text = "Type FISH to go fishing, and press ENTER to try to reel something in!"
+persistent = False
 
 fishing_game_obj = fishing_game() 
 # def run(inventory: inventory, gamestate: str = 'start') -> tuple[str, str]:

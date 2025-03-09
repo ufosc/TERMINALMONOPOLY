@@ -6,9 +6,11 @@ import os
 import networking as net
 from socket import socket
 
-module_name = "Casino"
-module_command = "casino"
-module_description = "Gamble your money at the casino!"
+name = "Casino Loader"
+command = "casino"
+description = "Gamble your money at the casino!"
+help_text = "Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."
+persistent = True
 
 def run(player_id: int, server: socket, active_terminal: Terminal):
     """
@@ -21,7 +23,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
     wrong = 0
     while True:
         net.send_message(server, f"{player_id}bal")
-        sleep(0.1)
+        # sleep(0.1)
         balance = int(net.receive_message(server))
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
         active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\n\nSelect a game by typing the command and wager.\n\n"
@@ -90,9 +92,31 @@ def get_submodules():
                 modules_list += f"{i.game_title.ljust(37, '.')} {file}\n"
     return modules_list
 
+def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, name) -> None:
+    """
+    Handles casino-related commands for a client by updating their balance.
+
+    Args:
+        cmds (str): The command string containing the casino operation details.
+                    Expected format: "casino [casino_id] [change_balance]"
+                    - [delta] (str): The player's win or loss string.
+                    - [change_balance] (int): The amount to change the client's balance by.
+        current_client (Client): The client whose balance is to be updated.
+
+    Returns:
+        None
+
+    Example:
+        handle_casino("casino win 100", client)
+        This will add 100 to the client's balance.
+    """
+    command_data = cmds.split(' ')
+    delta = 1 if command_data[1] == 'win' else -1
+    amount = int(command_data[2])
+    money = change_balance(id, delta * amount)
+    add_to_output_area("Casino", f"Updated {name}'s balance by {delta * amount}. New balance: {money}")
+    net.send_message(client_socket, str(money))
+
+
 if __name__ == "__main__":
     run(1)
-
-name = "Casino Loader"
-command = "casino"
-help_text = "Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."

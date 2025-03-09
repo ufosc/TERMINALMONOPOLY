@@ -83,6 +83,7 @@ description = "Buy and sell items here!"
 version = "1.2"
 command = "shop"
 help_text = "Type SHOP to enter the shop. Press W/S to navigate and Enter to select. Press Q to exit the shop."
+persistent = True
 
 # def run(inventory: inventory, active_terminal: ss.Terminal) -> str:
     # active_terminal.update(Shop(inventory).display_shop()) # temporary, will be replaced with banker Shop communication

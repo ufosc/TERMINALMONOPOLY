@@ -8,6 +8,7 @@ author = "https://github.com/adamgulde"
 description = "Use a calculator."
 version = "1.3"
 help_text = "Type CALC to view your inventory."
+persistent = True
 
 calculator_history_queue = []
 calculator_history_current_capacity = 15

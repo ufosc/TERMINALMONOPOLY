@@ -8,6 +8,7 @@ description = "View property deed details."
 version = "1.1" # Moved to its own file
 command = "list"
 help_text = "Type LIST to view all properties on the board."
+persistent = False
     
 def run(player_id:int = None, server: socket = None, active_terminal: ss.Terminal = None):
     """
