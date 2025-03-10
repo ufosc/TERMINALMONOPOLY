@@ -71,7 +71,6 @@ class Property:
             deed_str += self.color + "▓▒▓" * 8 + "█" + "▀" * 25 + "█" + self.color + "▓▒▓" * 8 + "\n" + COLORS.RESET
             deed_str += "=== Property Deed ===".center(75) + "\n"
             deed_str += self.color + "▓▒▓" * 8 + "█" + "▄" * 25 + "█" + self.color + "▓▒▓" * 8 + "\n" + COLORS.RESET
-            deed_str += "Use W/S to navigate and Enter to select.".center(75) + "\n\n"
             deed_str += f"Property: {self.color}{self.name}{COLORS.RESET}\n"
             deed_str += f"Owner: {self.owner_name} (Player ID: {self.owner})\n" if self.owner != -1 else "Owner: Unowned\n"
             deed_str += f"Houses: {self.houses}\n"

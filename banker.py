@@ -4,7 +4,7 @@ import os
 import sys
 import random
 
-from style import MYCOLORS as COLORS, print_w_dots
+from style import MYCOLORS as COLORS, print_w_dots, choose_colorset
 import screenspace as ss 
 import importlib
 
@@ -45,7 +45,7 @@ class Client:
         self.can_roll = True
         self.num_rolls = 0
 
-def add_to_output_area(output_type: str, text: str, color: str = s.COLORS.WHITE) -> None:
+def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
     """
     Adds text to the specified output area.
     This should replace all print statements in the code.
@@ -506,6 +506,7 @@ if __name__ == "__main__":
     set_unittest() 
     # set_gamerules()
     start_server()
+    choose_colorset("DEFAULT_COLORS")
     ss.print_banker_frames()
     monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
     game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)])

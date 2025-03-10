@@ -1,7 +1,6 @@
 import screenspace as ss
 from socket import socket
 import networking as net
-from style import graphics as g, COLORS
 
 name = "Balance Module"
 author = "https://github.com/adamgulde"
@@ -36,7 +35,7 @@ def handle(data, client_socket, mply, money, properties):
         Simply return the client's balance.
         """
         ret_val += f"Cash on hand: {str(money)}\n"
-        if data == "bal":
+        if data == "bal": 
             net.send_message(client_socket, str(money))
             return
 

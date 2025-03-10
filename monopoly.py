@@ -7,10 +7,8 @@ from properties import Property
 from cards import Cards
 from board import Board
 from player_class import MonopolyPlayer
-from screenspace import calibrate_screen, make_fullscreen
-from style import MYCOLORS as COLORS, set_cursor_str, set_cursor
-from style import graphics as g
-
+from screenspace import calibrate_screen, make_fullscreen, clear_screen
+from style import MYCOLORS as COLORS, set_cursor_str, graphics as g
 
 mode = "normal"
 output = ""
@@ -791,7 +789,7 @@ def player_choice():
 
 def start_game(cash: int, num_p: int, names: list[str], test_num = -1) -> str:
     global CASH, num_players, players, gameboard, board, decks, mode
-    ss.clear_screen()
+    clear_screen()
     mode = "banker"
     gameboard = g.get('gameboard')
     num_players = num_p
