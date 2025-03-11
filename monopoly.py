@@ -7,10 +7,8 @@ from properties import Property
 from cards import Cards
 from board import Board
 from player_class import MonopolyPlayer
-from screenspace import calibrate_screen, make_fullscreen
-from style import MYCOLORS as COLORS, set_cursor_str, set_cursor
-from style import graphics as g
-
+from screenspace import calibrate_screen, make_fullscreen, clear_screen
+from style import MYCOLORS as COLORS, set_cursor_str, graphics as g
 
 mode = "normal"
 output = ""
@@ -417,6 +415,8 @@ def log_error(error_message: str) -> None:
 
 def unittest(num:int = 5):
     global CASH
+    if not num:
+        num = 4
     if num == 1:
         # Two players, high cash
         CASH = 1500
@@ -463,6 +463,11 @@ def unittest(num:int = 5):
         players[1].buy(16, board)
         players[1].buy(18, board)
         players[1].buy(19, board)
+
+    elif num == 6:
+        CASH = 1000
+        players[0].buy(1, board)
+        players[0].buy(3, board)
     for p in players:
         p.cash += CASH
     
@@ -782,9 +787,9 @@ def player_choice():
     # Wipe the bottom of the screen (input area)
     bottom_screen_wipe()
 
-def start_game(cash: int, num_p: int, names: list[str]) -> str:
+def start_game(cash: int, num_p: int, names: list[str], test_num = -1) -> str:
     global CASH, num_players, players, gameboard, board, decks, mode
-    ss.clear_screen()
+    clear_screen()
     mode = "banker"
     gameboard = g.get('gameboard')
     num_players = num_p
@@ -794,7 +799,6 @@ def start_game(cash: int, num_p: int, names: list[str]) -> str:
     players = []
     for i in range(num_players):
         players.append(MonopolyPlayer(CASH, i, names[i]))
-
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)
     return output

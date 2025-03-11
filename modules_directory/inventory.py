@@ -45,8 +45,9 @@ author = "https://github.com/adamgulde"
 description = "View all inventory items."
 version = "1.2"
 help_text = "Type INV to view your inventory."
+persistent = False
 
-def run(server: socket, active_terminal: Terminal, player_id: int):
+def run(player_id:int, server: socket, active_terminal: Terminal):
     item_list = [f"{item}: {quantity}" for item, quantity in Inventory.getinventory().items()]
     if len(item_list) > 0:
         item_list = '\n'.join(item_list)
