@@ -1,5 +1,5 @@
 from time import sleep
-from style import MYCOLORS as c
+from style import MYCOLORS as c, graphics as g
 import screenspace as ss
 from screenspace import Terminal
 import os
@@ -10,7 +10,8 @@ name = "Casino Loader"
 command = "casino"
 description = "Gamble your money at the casino!"
 help_text = "Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."
-persistent = True
+persistent = False # No need to run additional commands after switching
+# No out of focus function needed, because the terminal closes after use
 
 def run(player_id: int, server: socket, active_terminal: Terminal):
     """
@@ -40,8 +41,8 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
         if(game[0] == ""):
             wrong = 2
         elif(game[0] == "e"):
-            # active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\nType 'casino' to go back to the casino!")
-            active_terminal.set_persistent(True)
+            active_terminal.update(g.get("casino_exit"))
+            active_terminal.command = "" # Clear the command to allow re-running
             break
         elif(len(game) == 1):
             wrong = 2

@@ -4,6 +4,7 @@ import shlex
 import sys
 import socket
 import platform
+import threading
 from time import sleep
 from style import MYCOLORS as COLORS, graphics as g, print_w_dots
 import screenspace as ss
@@ -12,7 +13,7 @@ import validation
 import modules_directory.inventory as inv
 
 game_running = False
-screen = 'terminal'
+screen = "terminal"
 sockets = (socket.socket(socket.AF_INET, socket.SOCK_STREAM), socket.socket(socket.AF_INET, socket.SOCK_STREAM))
 ADDRESS = ""
 PORT = 0
@@ -82,7 +83,6 @@ def banker_check(local: bool = False) -> None:
                 print("Make sure you start 'python banker.py' directly")
     else:
         print("Current OS not supported to open new window, try running 'python banker.py' directly")
-
 
 def initialize(debug: bool = False, args: list = None) -> None:
     """
@@ -193,13 +193,31 @@ def handshake(sock: socket.socket, name: str) -> str:
     if message == "Welcome to the game!":
         net.send_message(sock, f"Connected!,{name}")
         # Now start notification socket. 
-        import threading
         notif_thread = threading.Thread(target=start_notification_listener, args=(sockets[0],))
         notif_thread.daemon = True
         notif_thread.start()
         return message
     else:
         print_w_dots(COLORS.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
+
+def print_queue():
+    """
+    Responsible for updating all Terminal screens with persistent modules, i.e. modules that may be updated while not as the active terminal.
+    Ran in its independent thread.
+    """
+    while True:
+        if screen == 'terminal': # Only update if we are in the terminal screen.
+            for t in TERMINALS:
+                sleep(0.5) # Delay to prevent overwhelming the system with print calls. Change to lower value when done debugging.
+                # Also important to delay to ensure calls to banker are not overwhelming.
+                if not t.oof_callable == None and t.index != active_terminal.index: # Only update if the terminal is not active and has an out-of-focus callable.
+                    data = t.oof_callable() # Call the out-of-focus function to get the new data.
+                    t.check_new_data(data) # Check if new data is available.
+                    if t.has_new_data and t.oof_callable is not None: # Only update terminal if there is new data, to avoid unnecessary prints.
+                        t.update(t.oof_callable(), padding=False) # Update the terminal with new data.
+                        t.has_new_data = False # Reset the flag.
+                else: 
+                    continue # No need to update if no callable or terminal is active.
 
 def start_notification_listener(my_socket: socket.socket) -> None:
     """
@@ -253,8 +271,6 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 ss.set_cursor(0, ss.INPUTLINE)
 
 import importlib
-import random
-
 def get_module_commands() -> dict: 
     """
     Retrieves a list of available module commands and their corresponding functions.
@@ -271,8 +287,8 @@ def get_module_commands() -> dict:
         if file.endswith(".py"):
             file = file[:-3]
             module = importlib.import_module("modules_directory." + file)
-            if hasattr(module, 'command') and hasattr(module, 'run'): 
-                pairs[module.command] = module.run   
+            if hasattr(module, 'command') and hasattr(module, 'run'): # Check if the module has 'command' and 'run' attributes
+                pairs[module.command] = module.run # Add the command and its corresponding function to the dictionary
     return pairs
 
 def get_input() -> None:
@@ -285,11 +301,10 @@ def get_input() -> None:
     """
     global active_terminal, screen, player_id
     cmds = get_module_commands()
-    
+    threading.Thread(target=print_queue, daemon=True).start()
+
     stdIn = ""
     skip_initial_input = False
-
-    fishing_gamestate = 'start'
 
     while(stdIn != "exit" or game_running):
         if screen == 'gameboard':
@@ -321,14 +336,12 @@ def get_input() -> None:
                 net.send_message(sockets[1], f'{player_id}mply,endturn')
 
         elif screen == 'terminal':
-            if not active_terminal.is_retrieved: # If the terminal is persistent, don't take input from the player
-                active_terminal.is_retrieved = True
-                stdIn = active_terminal.get_persistent_command()
-            else:
-                stdIn = input(COLORS.WHITE+'\r').lower().strip()
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
                 skip_initial_input = True
                 continue
+
+            stdIn = input(COLORS.backBLACK+'\r').lower().strip()
+
             # This 'term' command needs to be first, in case of a persistent module.
             if stdIn.startswith("term "): 
                 if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
@@ -336,8 +349,6 @@ def get_input() -> None:
                     ss.update_terminal(n = n, o = active_terminal.index)
                     active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
                     ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
-                    if active_terminal.persistent:
-                        stdIn = active_terminal.get_persistent_command()
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             
@@ -353,17 +364,17 @@ def get_input() -> None:
                     active_terminal.update(g.get('help'), padding=True)
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
 
-            elif stdIn in cmds.keys():
-                cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal)
-
-            elif stdIn == "ctest":
-                block = "" 
-                for i in range(ss.rows):
-                    color = random.choice([value for key, value in COLORS.__dict__.items() if (not key.startswith('__') and "back" not in key and "RESET" not in key and "player" not in key)])
-                    block += color
-                    block += "█" * ss.cols
-                    block += COLORS.RESET + "\n"                    
-                active_terminal.update(block, padding=False)
+            elif stdIn in cmds.keys(): # Check if the command is in the available commands
+                usable = True
+                for t in TERMINALS:
+                    if t.command == stdIn: # If the command is already in use by another terminal, do not allow it to be used again.
+                        ss.overwrite(COLORS.RED + "Command already in use by another terminal.")
+                        usable = False
+                        break
+                if usable:
+                    active_terminal.command = stdIn # Set the command for the active terminal
+                    active_terminal.oof_callable = cmds[stdIn] if hasattr(cmds[stdIn], 'oof') else None # Set the out of focus callable function if it exists
+                    cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal) # Call the function with the required parameters
 
             elif stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
@@ -383,28 +394,23 @@ def get_input() -> None:
             elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "deed"]:
                 ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode." + COLORS.RESET)
 
+            elif stdIn == "game": # Simply displays the game board. Does not give player control.
+                net.send_message(sockets[1], f'{player_id}request_board')
+                board_data = net.receive_message(sockets[1])
+                ss.clear_screen()
+                print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
+                input()
+                ss.clear_screen()
+                print(g.get('terminals'))
+                for t in TERMINALS:
+                    t.display()
+                ss.update_terminal(active_terminal.index, active_terminal.index)
+
             elif stdIn == "exit":
                 break
 
             else:
                 ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
-
-            if NET_COMMANDS_ENABLED or not ss.DEBUG:
-                ## Network commands, not available in DEBUG mode. 
-                if stdIn == "game": # Simply displays the game board. Does not give player control.
-                    net.send_message(sockets[1], f'{player_id}request_board')
-                    board_data = net.receive_message(sockets[1])
-                    ss.clear_screen()
-                    print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
-                    input()
-                    ss.clear_screen()
-                    print(g.get('terminals'))
-                    for t in TERMINALS:
-                        t.display()
-                    ss.update_terminal(active_terminal.index, active_terminal.index)
-
-                else:
-                    ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
     if stdIn == "exit" and game_running:
         ss.overwrite('\n' + ' ' * ss.WIDTH)
@@ -434,9 +440,12 @@ if __name__ == "__main__":
             print("Invalid IP address format. Please use the format xxx.xxx.xxx.xxx")
             sys.exit(1)    
 
-    if not ss.DEBUG:
+    if not "-skipcalib" in sys.argv:
         ss.make_fullscreen()
         ss.auto_calibrate_screen()
+        ss.calibrate_screen("player")
+    else: 
+        ss.choose_colorset("COMPAT_COLORS")
 
     ss.clear_screen()
     ss.initialize_terminals(TERMINALS)
