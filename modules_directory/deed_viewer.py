@@ -13,6 +13,7 @@ persistent = True # Keep the terminal open after use
 oof_params = {"player_id": None, "server": None, "index": None} # Global parameters for out of focus function
     
 def run(player_id:int, server: socket, active_terminal: ss.Terminal):
+    active_terminal.persistent = persistent
     index = ss.get_valid_int("Enter a property ID: ", 1, 39, disallowed=[0,2,4,7,10,17,20,22,30,33,36,38], allowed=[" "])
     if not index == "":
         active_terminal.persistent = persistent

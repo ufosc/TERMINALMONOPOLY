@@ -17,6 +17,7 @@ def run(player_id:int = None, server: socket = None, active_terminal: ss.Termina
     Parameters: None
     Returns: None
     """
+    active_terminal.persistent = persistent
     ret_val = ""
     props = g.get('properties').split('\n')
     for prop in props:

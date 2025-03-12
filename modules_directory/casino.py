@@ -21,6 +21,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
     Gamble your money away!
     A basic menu loader for casino_games.
     """
+    active_terminal.persistent = persistent
     wrong = 0
     while True:
         net.send_message(server, f"{player_id}bal")

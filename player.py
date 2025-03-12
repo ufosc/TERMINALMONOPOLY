@@ -305,6 +305,7 @@ def get_input() -> None:
 
     stdIn = ""
     skip_initial_input = False
+    last_terminal = -1
 
     while(stdIn != "exit" or game_running):
         if screen == 'gameboard':
@@ -339,9 +340,13 @@ def get_input() -> None:
             if screen == 'gameboard': # If player has been "pulled" into the gameboard, don't process input
                 skip_initial_input = True
                 continue
+            if active_terminal.persistent and last_terminal != active_terminal.index:
+                stdIn = active_terminal.command
+            else:
+                stdIn = input(COLORS.backBLACK+'\r').lower().strip()
 
-            stdIn = input(COLORS.backBLACK+'\r').lower().strip()
-
+            last_terminal = active_terminal.index
+            
             # This 'term' command needs to be first, in case of a persistent module.
             if stdIn.startswith("term "): 
                 if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
@@ -367,6 +372,8 @@ def get_input() -> None:
             elif stdIn in cmds.keys(): # Check if the command is in the available commands
                 usable = True
                 for t in TERMINALS:
+                    if t.index == active_terminal.index: # Skip the active terminal
+                        continue
                     if t.command == stdIn: # If the command is already in use by another terminal, do not allow it to be used again.
                         ss.overwrite(COLORS.RED + "Command already in use by another terminal.")
                         usable = False

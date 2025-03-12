@@ -86,6 +86,7 @@ help_text = "Type SHOP to enter the shop. Press W/S to navigate and Enter to sel
 persistent = False
 
 def run(player_id, server, active_terminal: ss.Terminal):
+    active_terminal.persistent = persistent
     active_terminal.update(g.get("shop_exit"))
 
 # def run(inventory: inventory, active_terminal: ss.Terminal) -> str:

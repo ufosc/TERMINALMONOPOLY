@@ -8,7 +8,8 @@ author = "https://github.com/adamgulde"
 description = "Use a calculator."
 version = "1.3"
 help_text = "Type CALC to view your inventory."
-persistent = True
+persistent = True # Should be able to run additional commands after switching
+# No out of focus function needed, because nothing will happen when the terminal is out of focus
 
 calculator_history_queue = []
 calculator_history_current_capacity = 15
@@ -28,6 +29,9 @@ def run(server: socket, active_terminal: Terminal, player_id: int):
     Returns:
         str: The last computed result or an error message.
     """
+
+    active_terminal.persistent = persistent
+
     # Helper function that contructs terminal printing.
     def calculator_terminal_response(footer_option: int) -> str:
         calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
