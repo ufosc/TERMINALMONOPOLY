@@ -64,7 +64,9 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
                 balance = int(net.receive_message(server))
 
                 ss.overwrite(c.RESET+"\r" + " " * 40)
+                active_terminal.busy(server, player_id)
                 winnings = i.play(active_terminal,wager)
+                active_terminal.enable(False, server, player_id)
                 net.send_message(server, f"{player_id}casino win {winnings}")
                 sleep(0.1)
                 balance = int(net.receive_message(server))

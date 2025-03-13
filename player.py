@@ -214,7 +214,7 @@ def start_notification_listener(my_socket: socket.socket) -> None:
     Returns:
     None
     """
-    global screen
+    global screen, player_id
     notif_list = []
     current_pos = 1 # Current position of the notification in the player's interface, where value is 1-4 for each terminal.
 
@@ -235,6 +235,15 @@ def start_notification_listener(my_socket: socket.socket) -> None:
             current_pos = (current_pos + 1) if current_pos + 1 <= 4 else 1
             print(COLORS.RESET)
             ss.set_cursor(0, ss.INPUTLINE)
+        elif "TERM:" in notif:
+            term = notif[5:]
+            term = term.split(" ")
+            if(term[0] == "kill"):
+                TERMINALS[int(term[1])].kill()
+            elif(term[0] == "disable"):
+                TERMINALS[int(term[1])].disable()
+            elif(term[0] == "enable"):
+                TERMINALS[int(term[1])].enable(True, sockets[1], player_id)
         elif "MPLY:" in notif: # Get the Monopoly board state. Overwrite the entire screen.
             gameboard = notif[5:]
             ss.clear_screen()
@@ -340,8 +349,13 @@ def get_input() -> None:
                         stdIn = active_terminal.get_persistent_command()
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
-            
-            
+            elif stdIn == "exit":
+                break
+            # Anything beyond this one should be not crucial, as it will NOT work if disabled.
+            elif active_terminal.status == "DISABLED":
+                ss.overwrite(COLORS.RED + "Terminal is disabled! Switch to another terminal with 'term'.")
+                continue
+
             # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
             elif stdIn == "helpstocks" or stdIn == "help stocks":
                 active_terminal.clear()
@@ -380,12 +394,14 @@ def get_input() -> None:
                 ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
             
-            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "deed"]:
+            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "deed", "kill", "disable"]:
                 ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode." + COLORS.RESET)
 
-            elif stdIn == "exit":
-                break
-
+            #elif stdIn == "kill":
+                #active_terminal.kill()
+            
+            elif stdIn == "disable":
+                active_terminal.disable()
             else:
                 ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
@@ -403,6 +419,19 @@ def get_input() -> None:
                         t.display()
                     ss.update_terminal(active_terminal.index, active_terminal.index)
 
+                elif stdIn.startswith("kill"):
+                    if(len(stdIn.split(" ")) == 3):
+                        net.send_message(sockets[1], f'{player_id}' + stdIn)
+                        ss.overwrite(COLORS.RED + net.receive_message(sockets[1]))
+                    else:
+                        ss.overwrite(COLORS.RED + "Invalid command. Syntax is 'kill PLAYER TERM' (ex. 'kill 0 3)")
+                elif stdIn.startswith("disable"):
+                    #TODO - This direct command is mostly for testing.
+                    if(len(stdIn.split(" ")) == 4):
+                        net.send_message(sockets[1], f'{player_id}' + stdIn)
+                        ss.overwrite(COLORS.RED + net.receive_message(sockets[1]))
+                    else:
+                        ss.overwrite(COLORS.RED + "Invalid command. Syntax is 'disable PLAYER TERM LENGTH' (ex. 'disable 0 3 15)")
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
