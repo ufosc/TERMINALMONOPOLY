@@ -32,6 +32,7 @@ class MonopolyPlayer:
         self.cash -= board.locations[location].getPrice()
         if (board.locations[location].owner == -1):
             board.locations[location].owner = self.order
+            board.locations[location].owner_name = self.name
             if location == 5 or location == 15 or location == 25 or location == 35: # railroad
                 owned_rails = [k for k in [5, 15, 25, 35] if board.locations[k].owner == self.order]
                 for k in owned_rails:

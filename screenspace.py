@@ -6,9 +6,7 @@ WIDTH = 150
 HEIGHT = 40
 INPUTLINE = 45
 import os
-from style import COLORS
-from style import set_cursor, set_cursor_str
-from style import graphics as g
+from style import MYCOLORS as COLORS, choose_colorset, set_cursor, set_cursor_str, colortest, graphics as g
 import platform
 import ctypes
 import shutil
@@ -64,7 +62,11 @@ class Terminal:
         self.x = coordinates[0] # top left corner of the terminal
         self.y = coordinates[1] # top left corner of the terminal
         self.data = []
+        self.command = ""
         self.padded_data = False
+        self.persistent = False
+        self.has_new_data = False
+        self.oof_callable = None
 
     def update(self, data, padding: bool = True) -> None:
         """
@@ -94,21 +96,31 @@ class Terminal:
 
         # These lines are taking any additional string fragments that use "set_cursor_string()" from 
         # style.py and update the x,y coordinates to the current quadrant.
-        pattern = r'\033\[(\d+);(\d+)H'
-        data = re.sub(pattern, lambda m: replace_sequence(m, self.x, self.y), data)
-        self.data = data
+        self.data = self.translate_coords(data)
         self.display()
-        
+    
+    def check_new_data(self, new_data: str):
+        """
+        Only checks if the new data is different from the old data. If it is, it updates the data and sets has_new_data to True.
+        This will later be used to determine if the terminal needs to be redrawn, saving unnecessary print statements.
+        """
+        if self.data != new_data:
+            self.data = new_data
+            self.has_new_data = True
+        else:
+            self.has_new_data = False
+
     def display(self) -> None:
         """
         Description:
-            Prints the terminal data with a border and a title.
+            Prints the terminal data defined in its internal data variable.
         
         Parameters: 
             None
         Returns: 
             None
         """
+        print(COLORS.RESET, end='') # Reset color before printing
         if self.data and not callable(self.data):
             if self.data:
                 line_list = self.data.split('\n')
@@ -116,8 +128,8 @@ class Terminal:
                     line_list = line_list[:rows] # Truncate if necessary bc someone might send a long string
                 for i in range(len(line_list)):
                     set_cursor(self.x,self.y+i)
-                    if self.padded_data:
-                        line_list[i] = line_list[i] + " " * (cols - len(line_list[i]))
+                    if self.padded_data: 
+                        line_list[i] = line_list[i] + " " * (cols - len(line_list[i])) # Pad with spaces if necessary
 
                     print(line_list[i][:cols] if len(line_list[i]) > cols and self.padded_data else line_list[i]) # Truncate if necessary bc someone might send a long string
                 for i in range(len(line_list), rows):
@@ -139,7 +151,13 @@ class Terminal:
         print(COLORS.RESET, end='')
         set_cursor(0,INPUTLINE)
     
+    def translate_coords(self, data) -> str:
+        pattern = r'\033\[(\d+);(\d+)H'
+        data = re.sub(pattern, lambda m: replace_sequence(m, self.x, self.y), data)
+        return data
+
     def clear(self):
+        """Prints a blank screen in the terminal."""
         for i in range(rows):
             set_cursor(self.x,self.y+i)
             print(" " * cols)
@@ -511,8 +529,26 @@ def calibrate_screen(type: str) -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
     current_os = platform.system()
 
-    ## TODO add color calibration here too 
+    colortest()    
+    choice = input("How does this look? Enter the number of your preferred colorset: ")
 
+    # sets the color set based on user input
+    global COLORS
+    if choice == "1":
+        print("Using default colorset")
+        choose_colorset("DEFAULT_COLORS")
+    elif choice == "2":
+        print("Using compatible colorset")
+        choose_colorset("COMPAT_COLORS")
+    elif choice == "3":
+        print("Using custom colorset")
+        choose_colorset("CRAZY_THEME")
+    else:
+        print("Please enter a valid choice")
+        choose_colorset("DEFAULT_COLORS") # default to default colorset
+    input("Press enter to continue...")
+
+    clear_screen()
     if current_os == "Darwin":
         # Print out instructions for macOS users
         print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")

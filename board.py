@@ -1,5 +1,5 @@
 from properties import Property
-from style import COLORS
+from style import MYCOLORS as COLORS
 from player_class import MonopolyPlayer
 
 class Board:

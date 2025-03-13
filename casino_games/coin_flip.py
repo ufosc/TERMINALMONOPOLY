@@ -3,8 +3,7 @@ import random
 from time import sleep
 import screenspace as ss
 from screenspace import Terminal
-from style import graphics as g
-from style import COLORS as c
+from style import graphics as g, MYCOLORS as c
 
 game_title = "⛁ Coin Flip"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
@@ -21,7 +20,7 @@ def play(active_terminal: Terminal, bet: int):
 
     active_terminal.update(header + "\n" + g['coin_flip_heads'])
     
-    choice = input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: Heads or Tails? (h/T) ")
+    choice = input(c.backYELLOW+c.BLACK+f"\rHeads or Tails? (h/T) ")
     ss.overwrite("\r" + " " * 40)
     flip = random.choice(['heads', 'tails'])
     
@@ -37,17 +36,17 @@ def play(active_terminal: Terminal, bet: int):
     active_terminal.update(header + "\n" + g['coin_flip_heads' if flip == 'heads' else 'coin_flip_tails'])
 
     if(choice.lower() == "h" and flip == 'heads'):
-        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got heads!")
+        input(c.backYELLOW+c.BLACK+f"\rYou got heads!")
         ss.overwrite("\r" + " " * 40)
         score[0] += 1
     elif(choice.lower() == "h" and flip == 'tails'):
-        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got tails...")
+        input(c.backYELLOW+c.BLACK+f"\rYou got tails...")
         ss.overwrite("\r" + " " * 40)
     elif(flip == 'heads'):
-        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got heads...")
+        input(c.backYELLOW+c.BLACK+f"\rYou got heads...")
         ss.overwrite("\r" + " " * 40)
     else:
-        input(c.backYELLOW+c.BLACK+f"\rPlayer {1}: You got tails!")
+        input(c.backYELLOW+c.BLACK+f"\rYou got tails!")
         ss.overwrite("\r" + " " * 40)
         score[0] += 1
 

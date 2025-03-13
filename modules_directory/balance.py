@@ -1,0 +1,145 @@
+import screenspace as ss
+from socket import socket
+import networking as net
+from style import graphics as g
+
+name = "Balance Module"
+author = "https://github.com/adamgulde"
+description = "View balance, net worth, stocks, and property deeds."
+version = "1.0" # Moved to its own file
+command = "bal"
+help_text = "Type BAL to view your cash and assets."
+persistent = False
+oof_params = {"player_id": None, "server": None} # Global parameters for out of focus function
+
+def run(player_id:int, server: socket, active_terminal: ss.Terminal):
+    """
+    Balance Module
+    
+    Displays the player's cash and assets.
+    
+    Args:
+        player_id (int): The ID of the player.
+        server (socket): The server socket to communicate with.
+        active_terminal (ss.Terminal): The terminal to display the information.
+        
+    Returns:
+        None
+    """
+    active_terminal.clear()
+    active_terminal.persistent = persistent
+    active_terminal.oof_callable = oof # Set the out of focus callable function
+    set_oof_params(player_id, server) # Set the parameters for the out of focus function
+    
+    header = f"Consolidated Cash and Assets".center(75)
+    # Get the player's cash on hand
+    net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
+    info = header + "\n" + net.receive_message(server)
+
+    # Get moneybag image and create the lists of lines
+    image = str(g.get("moneybag"))
+    image = image.splitlines()
+    info_lines = info.splitlines() 
+
+    ret_val = ""
+
+    for i in range(ss.rows):
+        if i < len(info_lines): # Check if there is a line in info
+            if i < len(image): # Check if there is a corresponding line in image
+                ret_val += info_lines[i].ljust(55) + image[i] + "\n" # Combine both lines
+            else:
+                ret_val += info_lines[i].ljust(55) + "\n" # Only info line
+        elif i < len(image):
+            ret_val += " " * 55 + image[i] + "\n" # Only image line
+        else:
+            ret_val += "\n" # Empty line
+
+    active_terminal.update(ret_val, False)
+
+def set_oof_params(player_id:int, server: socket) -> None: 
+    """
+    Sets the parameters for the out of focus function.
+    """
+    oof_params["player_id"] = player_id
+    oof_params["server"] = server
+
+def oof() -> str:
+    """
+    Update function for when the terminal is out of focus. Does NOT need active_terminal, and returns the string to be displayed.
+    """
+    server = oof_params["server"]
+    player_id = oof_params["player_id"]
+
+    header = f"Consolidated Cash and Assets".center(75)
+    # Get the player's cash on hand
+    net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
+    info = header + "\n" + net.receive_message(server)
+    
+    # Get moneybag image and create the lists of lines
+    image = str(g.get("moneybag"))
+    image = image.splitlines()
+    info_lines = info.splitlines() 
+
+    ret_val = ""
+
+    for i in range(ss.rows):
+        if i < len(info_lines): # Check if there is a line in info
+            if i < len(image): # Check if there is a corresponding line in image
+                ret_val += info_lines[i].ljust(55) + image[i] + "\n" # Combine both lines
+            else:
+                ret_val += info_lines[i].ljust(55) + "\n" # Only info line
+        elif i < len(image):
+            ret_val += " " * 55 + image[i] + "\n" # Only image line
+        else:
+            ret_val += "\n" # Empty line
+
+    return ret_val
+    
+
+def handle(data, client_socket, mply, money, properties):
+    """
+    Handles the balance command for the banker.
+    """
+    ret_val = ""
+    if "bal" in data:
+        """
+        Simply return the client's balance.
+        """
+        ret_val += f"Cash on hand: {str(money)}\n"
+        if data == "bal": 
+            net.send_message(client_socket, str(money))
+            return
+
+    if "get_assets" in data:
+        """
+        Build the string list of client's assets.
+        """
+        assets = ""
+        for prop in properties:
+            deed = mply.get_deed(prop)
+            name = deed.name.split()[0][:3] + " " + deed.name.split()[1][:3] # Get first 3 letters of each word
+            assets += f"{name} - ${deed.getPrice() + deed.housePrice * deed.houses}\n"
+        if properties == []:
+            assets += "You have no properties.\n"
+
+        # for stock in current_client.stocks:
+        #     assets += stock.get_value()
+
+        ret_val += assets
+        
+    if "get_net_worth" in data:
+        """
+        Calculate net worth of client based on money, properties, and stocks.
+        """
+        net_worth = money
+        for prop in properties:
+            deed = mply.get_deed(prop)
+            deed_value = deed.getPrice() if deed.mortgaged == False else deed.mortgage
+            deed_value += deed.housePrice * deed.houses 
+            net_worth += deed_value
+
+        # for stock in current_client.stocks:
+        #     net_worth += stock.get_value()
+
+        ret_val += f"You have a net worth of ${net_worth}.\n"
+    net.send_message(client_socket, ret_val)
