@@ -18,7 +18,7 @@ from modules_directory.balance import handle as handle_balance
 from modules_directory.casino import handle as handle_casino
 from modules_directory.chat import handle as handle_chat
 
-import monopoly as mply
+import monopoly_directory.monopoly as mply
 
 import select
 from time import sleep

@@ -43,18 +43,18 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
 
     ret_val = ""
 
+    for i in range(len(image)):
+        ret_val += " " * 35 + image[i] + "\n"
+    active_terminal.update(ret_val, False) # print just the moneybags 
+
+    ret_val = ""
     for i in range(ss.rows):
         if i < len(info_lines): # Check if there is a line in info
-            if i < len(image): # Check if there is a corresponding line in image
-                ret_val += info_lines[i].ljust(55) + image[i] + "\n" # Combine both lines
-            else:
-                ret_val += info_lines[i].ljust(55) + "\n" # Only info line
-        elif i < len(image):
-            ret_val += " " * 55 + image[i] + "\n" # Only image line
+            ret_val += info_lines[i] + "\n" # Only info line
         else:
-            ret_val += "\n" # Empty line
+            ret_val += "\n"
 
-    active_terminal.update(ret_val, False)
+    active_terminal.update(ret_val, False) # print the rest of the info, False to print over the moneybags, but not clear the screen
 
 def set_oof_params(player_id:int, server: socket) -> None: 
     """
