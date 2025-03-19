@@ -267,4 +267,8 @@ def print_maze(maze):
 +-+
 input as string, resolves in "for" loop to be able to type many directions at once (use wait or sleep command to force it to stop between)
 '''
-
+if "__main__" == __name__:
+    maze_off = 18
+    num_rows = 9
+    num_cols = 19
+    maze_input()
