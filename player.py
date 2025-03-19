@@ -208,6 +208,8 @@ def print_queue():
     while True:
         if screen == 'terminal': # Only update if we are in the terminal screen.
             for t in TERMINALS:
+                if t.status == "DISABLED" or t.status == "BUSY": # Skip disabled or (just in case) busy terminals.
+                    continue
                 sleep(0.5) # Delay to prevent overwhelming the system with print calls. Change to lower value when done debugging.
                 # Also important to delay to ensure calls to banker are not overwhelming.
                 if not t.oof_callable == None and t.index != active_terminal.index: # Only update if the terminal is not active and has an out-of-focus callable.

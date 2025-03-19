@@ -36,9 +36,12 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
             ss.overwrite(c.RESET + c.RED + "\rInvalid input. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
         elif(wrong == 3):
             ss.overwrite(c.RESET + c.RED + "\rWager has to be an integer greater than 0. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
+        
         game = input(c.backYELLOW+c.BLACK+f"\r").lower().split(" ")
         print(c.RESET, end="") #Reset the color
         ss.overwrite(c.RESET+"\r" + " " * 40)
+        if active_terminal.status != "ACTIVE":
+            break # Exit the loop if the Terminal is no longer active
         if(game[0] == ""):
             wrong = 2
         elif(game[0] == "e"):
