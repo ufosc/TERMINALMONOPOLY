@@ -85,7 +85,7 @@ command = "shop"
 help_text = "Type SHOP to enter the shop. Press W/S to navigate and Enter to select. Press Q to exit the shop."
 persistent = False
 
-def run(player_id, server, active_terminal: ss.Terminal):
+def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     active_terminal.persistent = persistent
     active_terminal.update(g.get("shop_exit"))
 

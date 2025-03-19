@@ -2,8 +2,8 @@
 
 # Player Terminal total width and height: 153x43. There is 3 extra characters for the border.
 # Banker total width and height is 200x60
-WIDTH = 200
-HEIGHT = 60
+WIDTH = 150
+HEIGHT = 40
 INPUTLINE = 45
 import os
 from style import MYCOLORS as COLORS, choose_colorset, set_cursor, set_cursor_str, colortest, graphics as g
@@ -391,6 +391,7 @@ def overwrite(text: str = ""):
     """
     set_cursor(0, INPUTLINE)
     print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r')
+    set_cursor(0, INPUTLINE)
 
 def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowed = [], allowed = []): # arbitrary large numbers
     """

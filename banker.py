@@ -121,10 +121,7 @@ def start_server() -> socket.socket:
         else: 
             game_full = True
         sleep(0.5) 
-    print_w_dots("Game is full. Starting game...")
-    print_w_dots("")
-    print_w_dots("")
-    print_w_dots("")
+    print_w_dots("Game is full. Starting game")
     # Send a message to each client that the game is starting, allowing them to see their terminals screen
     for i in range(len(clients)): 
         clients[i].id = i

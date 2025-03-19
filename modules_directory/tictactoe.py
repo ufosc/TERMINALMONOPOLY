@@ -99,7 +99,6 @@ def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
         None
     """
     net.send_message(server, f'{player_id}ttt,getgamestate')
-    time.sleep(0.1)
     active_terminal.update("Waiting for server...", padding=True)
     game_data = net.receive_message(server)
     game_id = None 

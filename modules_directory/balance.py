@@ -1,7 +1,7 @@
 import screenspace as ss
 from socket import socket
 import networking as net
-from style import graphics as g
+from style import graphics as g, set_cursor_str
 
 name = "Balance Module"
 author = "https://github.com/adamgulde"
@@ -34,7 +34,9 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     header = f"Consolidated Cash and Assets".center(75)
     # Get the player's cash on hand
     net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
+    net.player_mtrw = True
     info = header + "\n" + net.receive_message(server)
+    net.player_mtrw = False
 
     # Get moneybag image and create the lists of lines
     image = str(g.get("moneybag"))
@@ -66,6 +68,7 @@ def set_oof_params(player_id:int, server: socket) -> None:
 def oof() -> str:
     """
     Update function for when the terminal is out of focus. Does NOT need active_terminal, and returns the string to be displayed.
+    Of course, do NOT update player_mtrw here because this is not called in the main thread.
     """
     server = oof_params["server"]
     player_id = oof_params["player_id"]
@@ -79,19 +82,17 @@ def oof() -> str:
     image = str(g.get("moneybag"))
     image = image.splitlines()
     info_lines = info.splitlines() 
-
+    
     ret_val = ""
+
+    for i in range(len(image)):
+        ret_val += " " * 35 + image[i] + "\n"
 
     for i in range(ss.rows):
         if i < len(info_lines): # Check if there is a line in info
-            if i < len(image): # Check if there is a corresponding line in image
-                ret_val += info_lines[i].ljust(55) + image[i] + "\n" # Combine both lines
-            else:
-                ret_val += info_lines[i].ljust(55) + "\n" # Only info line
-        elif i < len(image):
-            ret_val += " " * 55 + image[i] + "\n" # Only image line
+            ret_val += set_cursor_str(0,i) + info_lines[i] + "\n" # Only info line
         else:
-            ret_val += "\n" # Empty line
+            ret_val += "\n"
 
     return ret_val
     
