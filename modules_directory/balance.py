@@ -1,6 +1,7 @@
 import screenspace as ss
 from socket import socket
 import networking as net
+from style import graphics as g
 
 name = "Balance Module"
 author = "https://github.com/adamgulde"
@@ -9,21 +10,91 @@ version = "1.0" # Moved to its own file
 command = "bal"
 help_text = "Type BAL to view your cash and assets."
 persistent = False
-    
-def run(player_id:int, server: socket, active_terminal: ss.Terminal):
-    active_terminal.clear()
+oof_params = {"player_id": None, "server": None} # Global parameters for out of focus function
 
-    # Get moneybag image and create the list of lines, where the middle 14 lines are the moneybag image
-    # image = g.get("moneybag")
-    # lines = [""] * 3 + [image] * 14 + [""] * 3
+def run(player_id:int, server: socket, active_terminal: ss.Terminal):
+    """
+    Balance Module
+    
+    Displays the player's cash and assets.
+    
+    Args:
+        player_id (int): The ID of the player.
+        server (socket): The server socket to communicate with.
+        active_terminal (ss.Terminal): The terminal to display the information.
+        
+    Returns:
+        None
+    """
+    active_terminal.clear()
+    active_terminal.persistent = persistent
+    active_terminal.oof_callable = oof # Set the out of focus callable function
+    set_oof_params(player_id, server) # Set the parameters for the out of focus function
     
     header = f"Consolidated Cash and Assets".center(75)
     # Get the player's cash on hand
     net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
     info = header + "\n" + net.receive_message(server)
-    
 
-    active_terminal.update(info, False)
+    # Get moneybag image and create the lists of lines
+    image = str(g.get("moneybag"))
+    image = image.splitlines()
+    info_lines = info.splitlines() 
+
+    ret_val = ""
+
+    for i in range(ss.rows):
+        if i < len(info_lines): # Check if there is a line in info
+            if i < len(image): # Check if there is a corresponding line in image
+                ret_val += info_lines[i].ljust(55) + image[i] + "\n" # Combine both lines
+            else:
+                ret_val += info_lines[i].ljust(55) + "\n" # Only info line
+        elif i < len(image):
+            ret_val += " " * 55 + image[i] + "\n" # Only image line
+        else:
+            ret_val += "\n" # Empty line
+
+    active_terminal.update(ret_val, False)
+
+def set_oof_params(player_id:int, server: socket) -> None: 
+    """
+    Sets the parameters for the out of focus function.
+    """
+    oof_params["player_id"] = player_id
+    oof_params["server"] = server
+
+def oof() -> str:
+    """
+    Update function for when the terminal is out of focus. Does NOT need active_terminal, and returns the string to be displayed.
+    """
+    server = oof_params["server"]
+    player_id = oof_params["player_id"]
+
+    header = f"Consolidated Cash and Assets".center(75)
+    # Get the player's cash on hand
+    net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
+    info = header + "\n" + net.receive_message(server)
+    
+    # Get moneybag image and create the lists of lines
+    image = str(g.get("moneybag"))
+    image = image.splitlines()
+    info_lines = info.splitlines() 
+
+    ret_val = ""
+
+    for i in range(ss.rows):
+        if i < len(info_lines): # Check if there is a line in info
+            if i < len(image): # Check if there is a corresponding line in image
+                ret_val += info_lines[i].ljust(55) + image[i] + "\n" # Combine both lines
+            else:
+                ret_val += info_lines[i].ljust(55) + "\n" # Only info line
+        elif i < len(image):
+            ret_val += " " * 55 + image[i] + "\n" # Only image line
+        else:
+            ret_val += "\n" # Empty line
+
+    return ret_val
+    
 
 def handle(data, client_socket, mply, money, properties):
     """
