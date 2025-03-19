@@ -7,6 +7,7 @@ HEIGHT = 40
 INPUTLINE = 45
 import os
 from style import MYCOLORS as COLORS, choose_colorset, set_cursor, set_cursor_str, colortest, graphics as g
+import networking as net
 import platform
 import ctypes
 import shutil
@@ -64,6 +65,7 @@ class Terminal:
         self.data = []
         self.command = ""
         self.padded_data = False
+        self.status = "ACTIVE"
         self.persistent = False
         self.has_new_data = False
         self.oof_callable = None
@@ -163,11 +165,67 @@ class Terminal:
             print(" " * cols)
 
     def kill(self):
-        skull = g.get("skull").split("\n")
+        """
+        Description:
+            Kills a terminal, triggered by a netcommand.
+        Parameters: 
+            None
+        Returns: 
+            None
+        """
+        self.status = "DISABLED"
+        skull = g.get("skull")
         print(COLORS.RED)
-        for i in range(rows):
-            set_cursor(self.x,self.y+i)
-            print(skull[i])
+        self.update(skull)
+        print(COLORS.RESET)
+        set_cursor(0, INPUTLINE)
+
+    def disable(self):
+        """
+        Description:
+            Disables a terminal, triggered by a netcommand.
+        Parameters: 
+            None
+        Returns: 
+            None
+        """
+        self.status = "DISABLED"
+        print(COLORS.RED)
+        result = (('X ' * round(cols/2+0.5) + '\n' + 
+                (' X' * round(cols/2+0.5)) + '\n'
+                ) * (rows//2))
+        self.update(result)
+        print(COLORS.RESET)
+        set_cursor(0, INPUTLINE)
+
+    def enable(self, isFromDisable, socket, player_id):
+        """
+        Description:
+            Enables a terminal, triggered either by the client or by a netcommand.
+        Parameters: 
+            isFromDisable(bool): Whether it is triggered from a disable.
+            socket(socket): The socket to update the banker's statuses.
+            player_id(int): The player's ID for the message send.
+        Returns: 
+            None
+        """
+        self.status = "ACTIVE"
+        net.send_message(socket, str(player_id) + "active " + str(self.index))
+        if(isFromDisable):
+            self.update("This terminal is now enabled!")
+    
+    def busy(self, socket, player_id):
+        """
+        Description:
+            Busies a terminal.
+        Parameters: 
+            socket(socket): The socket to update the banker's statuses.
+            player_id(int): The player's ID for the message send.
+        Returns:
+            None
+        """
+        self.status = "BUSY"
+        net.send_message(socket, str(player_id) + "busy " + str(self.index))
 
 def notification(message: str, n: int, color: str, custom_x: int, custom_y: int) -> str:
     """

@@ -38,7 +38,7 @@ def send_message(other: socket.socket, text: str) -> None:
     other.send(header)
     other.send(body)
 
-def send_notif(other: socket.socket, text: str) -> None:
+def send_notif(other: socket.socket, text: str, header: str="NOTF:") -> None:
     """
     Sends a notification to a client socket. This is sent to the client's 
     second socket, which is used for notifications only. This socket is
@@ -48,6 +48,7 @@ def send_notif(other: socket.socket, text: str) -> None:
     Parameters:
         client (socket.socket) The client socket to send the notification to.
         text (str) The notification to be sent.
+        header (str) The header for the type of notification
     
     Returns:
         None
@@ -62,34 +63,7 @@ def send_notif(other: socket.socket, text: str) -> None:
     new_socket.connect((other_address, new_port))
     
     # Send the message
-    send_message(new_socket, f"NOTF:{text}")
-    
-    # Close the new socket
-    new_socket.close()
-
-def send_monopoly(other: socket.socket, stream: str) -> None:
-    """
-    Sends the whole Monopoly board state to a client socket.
-    This is how the banker "throws" a player into Monopoly. 
-    
-    Parameters:
-        client (socket.socket) The client socket to send the message to.
-        stream (str) The Monopoly board state to be sent.
-
-    Returns:
-        None
-    """
-    other_address, other_port = other.getpeername()
-    
-    # Create a new socket
-    new_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
-    # Connect to the receiver socket (port + 1)
-    new_port = other_port + 1
-    new_socket.connect((other_address, new_port))
-    
-    # Send the message
-    send_message(new_socket, f"MPLY:{stream}")
+    send_message(new_socket, header + f"{text}")
     
     # Close the new socket
     new_socket.close()
