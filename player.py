@@ -423,6 +423,8 @@ def get_input() -> None:
             
             # Reset screen calibration logic
             elif stdIn.startswith('reset'):
+                if "auto" in stdIn:
+                    ss.auto_calibrate_screen()
                 ss.calibrate_screen('player')
                 ss.clear_screen()
                 print(g.get('terminals'))

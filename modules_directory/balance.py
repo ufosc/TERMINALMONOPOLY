@@ -77,7 +77,7 @@ def oof() -> str:
     # Get the player's cash on hand
     net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
     info = header + "\n" + net.receive_message(server)
-    
+
     # Get moneybag image and create the lists of lines
     image = str(g.get("moneybag"))
     image = image.splitlines()
@@ -85,14 +85,12 @@ def oof() -> str:
     
     ret_val = ""
 
-    for i in range(len(image)):
-        ret_val += " " * 35 + image[i] + "\n"
+    for j in range(len(image)):
+        ret_val += " " * 35 + image[j] + "\n" # Print the moneybags image 35 spaces from the left side of the screen.
 
     for i in range(ss.rows):
         if i < len(info_lines): # Check if there is a line in info
-            ret_val += set_cursor_str(0,i) + info_lines[i] + "\n" # Only info line
-        else:
-            ret_val += "\n"
+            ret_val += set_cursor_str(0,i) + info_lines[i] # Only info line, set cursor to the beginning of the line.a
 
     return ret_val
     
@@ -125,6 +123,8 @@ def handle(data, client_socket, mply, money, properties):
 
         # for stock in current_client.stocks:
         #     assets += stock.get_value()
+
+        # for fish in current_client.inventory.fish..... <- something like this
 
         ret_val += assets
         
