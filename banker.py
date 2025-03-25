@@ -16,6 +16,7 @@ import modules_directory.tictactoe as tictactoe
 from modules_directory.deed_viewer import handle as handle_deed
 from modules_directory.balance import handle as handle_balance
 from modules_directory.casino import handle as handle_casino
+from modules_directory.chat import handle as handle_chat
 
 import monopoly as mply
 
@@ -29,6 +30,7 @@ port = 3131
 num_players = 0
 play_monopoly = True
 handle_cmds = {}
+messages = []
 
 TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
 Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
@@ -338,6 +340,9 @@ def handle_data(data: str, client: socket.socket) -> None:
 
     elif data.startswith('casino'):
         handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
+
+    elif data.startswith('chat'):
+        handle_chat(data, client, messages, current_client.id, current_client.name)
 
 def handshake(client_socket: socket.socket, handshakes: list) -> None:
     """

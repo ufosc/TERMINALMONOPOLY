@@ -15,6 +15,7 @@ def module(socket: socket, active_terminal: Terminal, pid: int, name: str):
     """
     Stocks Module
     Author: Hiral Shukla (github.com/hiralshukla)
+    Author: Shan Sundal (github.com/ssundal)
     Version: 2.0 - Revised to use network commands and print to screen
     Welcome to The Market!
 
