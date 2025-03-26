@@ -13,6 +13,7 @@ help_text = "Type CASINO to enter the casino, where you can gamble your money fo
 persistent = False # No need to run additional commands after switching
 # No out of focus function needed, because the terminal closes after use
 
+__modules = []
 def run(player_id: int, server: socket, active_terminal: Terminal):
     """
     Casino Module
@@ -31,7 +32,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
         net.player_mtrw = False
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
         active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\n\nSelect a game by typing the command and wager.\n\n"
-                       + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + get_submodules() + "\n☒ Exit (e)")
+                       + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + __modules + "\n☒ Exit (e)")
         if(wrong == 1):
             ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
         elif(wrong == 2):
@@ -83,7 +84,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
 
 def get_submodules():
     """
-    Retrieves a list of available casino game submodules.
+    Sets the list of available casino game submodules.
 
     This function scans the "casino_games" directory for Python files, dynamically 
     imports each module, and checks if the module has a 'game_title' attribute.
@@ -91,7 +92,7 @@ def get_submodules():
     to the formatted list.
 
     Returns:
-        str: A formatted string listing all available casino games with their commands.
+        None
     """
     modules_list = ""
     for file in os.listdir("casino_games"):
@@ -100,7 +101,9 @@ def get_submodules():
             i = __import__('casino_games.' + file, fromlist=[''])
             if(hasattr(i, 'game_title')):
                 modules_list += f"{i.game_title.ljust(37, '.')} {file}\n"
-    return modules_list
+    __modules = modules_list
+
+get_submodules() # Load the casino games when the module is imported (at start of game)
 
 def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, name) -> None:
     """
