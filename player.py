@@ -402,6 +402,7 @@ def get_input() -> None:
                 else: 
                     active_terminal.update(g.get('help'), padding=True)
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
+                active_terminal.oof_callable = None
 
             elif stdIn in cmds.keys(): # Check if the command is in the available commands
                 usable = True
@@ -411,7 +412,7 @@ def get_input() -> None:
                     if t.command == stdIn: # If the command is already in use by another terminal, do not allow it to be used again.
                         ss.overwrite(COLORS.RED + "Command already in use by another terminal.")
                         usable = False
-                        break
+                        break #!!!!!!!!!!! YO uhhh patch the error where oof functions are called when they shouldn't be !!!!!!!!!!!
                 if usable:
                     active_terminal.command = stdIn # Set the command for the active terminal
                     active_terminal.oof_callable = cmds[stdIn] if hasattr(cmds[stdIn], 'oof') else None # Set the out of focus callable function if it exists
