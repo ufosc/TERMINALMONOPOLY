@@ -30,7 +30,7 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     """
     active_terminal.clear()
     active_terminal.persistent = persistent
-    active_terminal.oof_callable = oof
+    # active_terminal.oof_callable = oof
     set_oof_params(player_id, server)
 
     active_terminal.update(title)
@@ -94,7 +94,7 @@ def set_oof_params(player_id: int, server: socket) -> None:
     oof_params["player_id"] = id
     oof_params["server"] = server
 
-def oof() -> str:
+def oof():
     return None
     """
        Update function for when the chat terminal is out of focus.
