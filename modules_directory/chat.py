@@ -35,10 +35,13 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
 
     active_terminal.update(title)
 
+
     net.send_message(server, f"{player_id}chat,get_name")
     output = title + "\n" + "Welcome " + net.receive_message(server) + " to the chat!"
     active_terminal.update(output, False)
 
+    # start threading 
+    #kill thread at end of run
     while True:
 
         # net.send_message(server, f'{player_id}chat,recieve_msg')
@@ -76,7 +79,7 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
 
 
 def set_oof_params(player_id: int, server: socket) -> None:
-    return 0
+    return None
     """
        Sets the parameters for the out of focus function.
 
@@ -92,7 +95,7 @@ def set_oof_params(player_id: int, server: socket) -> None:
     oof_params["server"] = server
 
 def oof() -> str:
-    return 0
+    return None
     """
        Update function for when the chat terminal is out of focus.
        Receives any pending messages from the server.
