@@ -3,6 +3,7 @@ from socket import socket
 import networking as net
 from style import MYCOLORS as c, graphics as g
 import threading
+import time
 
 module_name = "Chat"
 command = "chat"
@@ -16,7 +17,6 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     """
     Chat Module
     Author: Hiral Shukla (github.com/hiralshukla)
-    Author: Shan Sundal (github.com/ssundal)
     Version: 1.0 - attempting to create a chat feature
 
     Args:
@@ -28,53 +28,38 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
         None
 
     """
+    # clears the terminal, labels as a persistent module, and calls out of focu
     active_terminal.clear()
     active_terminal.persistent = persistent
-    # active_terminal.oof_callable = oof
     set_oof_params(player_id, server)
 
+    # preps the title and welcome message to the chatter and prints to screen
     active_terminal.update(title)
-
-
     net.send_message(server, f"{player_id}chat,get_name")
     output = title + "\n" + "Welcome " + net.receive_message(server) + " to the chat!"
     active_terminal.update(output, False)
 
-    # start threading 
-    #kill thread at end of run
-    while True:
+    stop_event = threading.Event() # sets ability to stop thread
+    listener_thread = threading.Thread(target=chat_listener, args=(player_id, server, active_terminal, stop_event))
+    # creates a thread that runs the chat_listener function, and passes the correct arguments to it
+    listener_thread.daemon = True # tells python to not wait for the thread when exiting the program 
+    listener_thread.start() # actually starts the thread in the background and polls the server every 0.5 seconds
+    # while main thread waits for user input
 
-        # net.send_message(server, f'{player_id}chat,recieve_msg')
-        # chat_history = net.receive_message(server)
-
-        #get_message() #implement in handle 
-        #threading
-        #kill last line of run
-
-
-        ss.overwrite(c.RESET + f"\rEnter your message here: " + " " * 20)
-        msg = input(c.LIGHTBLUE + f"\r")
-
-        if msg.lower() == "e":
-            print(c.RESET, end="")
+    while True: # main loop
+        ss.overwrite(c.RESET + f"\rEnter your message here: ") # ability to send message 
+        ss.set_cursor(45, 0) # !!! should move the cursor back to the right location
+        msg = input(c.LIGHTBLUE + f"\r") # takes user input
+        
+        if msg.lower() == "e": # quits chat
+            print(c.RESET, end="") # clear everything 
             ss.overwrite(c.RESET + "\r" + " " * 40)
+            stop_event.set()  # signal thread to stop
             break
 
-        print(c.RESET, end="")
+        print(c.RESET, end="") 
         ss.overwrite(c.RESET + "\r" + " " * 40)
-        net.send_message(server, f'{player_id}chat,add_msg,{msg}')
-        net.receive_message(server)
-        net.send_message(server, f'{player_id}chat,recieve_msg')
-        chat_history = net.receive_message(server)
-
-        lines = chat_history.split('\n')
-        lines = [line if len(line) <= 75 else line[:75] for line in lines]     
-        lines = lines[-19:]                
-        chat_history = '\n'.join(lines)
-        output = title + chat_history
-
-
-        active_terminal.update(output)
+        net.send_message(server, f'{player_id}chat,add_msg,{msg}') # adds message to chat when input recieved
 
 
 
@@ -136,8 +121,24 @@ def oof():
 
     # return output
 
-def get_message(player_id: int, server: socket, active_terminal: ss.Terminal): 
-    return 0
+def chat_listener(player_id: int, server: socket, active_terminal: ss.Terminal, stop_event): 
+    global chat_history
+    while not stop_event.is_set(): # when stop isn't True it runs
+        try:
+            net.send_message(server, f'{player_id}chat,recieve_msg')
+            new_history = net.receive_message(server)
+
+            if new_history != chat_history:
+                chat_history = new_history
+                lines = chat_history.split('\n')
+                lines = [line if len(line) <= 75 else line[:75] for line in lines]
+                lines = lines[-19:]
+                output = title + '\n'.join(lines)
+                active_terminal.update(output)
+
+            time.sleep(0.5)  # add this to slow down polling
+        except:
+            pass
 
 
 def handle(data, client_socket, messages, id, name):
