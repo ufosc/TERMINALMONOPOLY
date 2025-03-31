@@ -31,6 +31,7 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     # clears the terminal, labels as a persistent module, and calls out of focu
     active_terminal.clear()
     active_terminal.persistent = persistent
+    active_terminal.oof_callable = oof
     set_oof_params(player_id, server)
 
     # preps the title and welcome message to the chatter and prints to screen
@@ -64,64 +65,57 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
 
 
 def set_oof_params(player_id: int, server: socket) -> None:
-    return None
     """
-       Sets the parameters for the out of focus function.
+    Sets the parameters for the out of focus function.
 
-       Args:
-           player_name (str): The name of the player.
-           server (socket): The server connection.
-           incoming_msg (str): The incoming message of a user
+    Args:
+        player_name (str): The name of the player.
+        server (socket): The server connection.
 
-       Returns:
-           None
-       """
-    oof_params["player_id"] = id
+    Returns:
+        None
+    """
+    oof_params["player_id"] = player_id
     oof_params["server"] = server
 
-def oof():
-    return None
+def oof() -> str:
     """
        Update function for when the chat terminal is out of focus.
        Receives any pending messages from the server.
 
        Returns:
-           str: The latest chat message.
+           str: The latest chat history string.
        """
     server = oof_params["server"]
     player_id = oof_params["player_id"]
-    
-    # player_name = "0" # Placeholder for player name. 
-    # # Maybe just query the server for the player name?
+    global chat_history
 
-    # net.send_message(server, f"{player_id}get_name")
-    # player_name = net.receive_message(server)
+    try:
+        # Ask the server for updated chat history
+        net.send_message(server, f'{player_id}chat,recieve_msg')
+        new_history = net.receive_message(server)
 
-    # output = title
-    # chat_history = []
+        # Only update if there's a change
+        if new_history != chat_history:
+            chat_history = new_history
 
-    # net.send_message(server, f'{player_id}chat')
-    # ss.overwrite(c.RESET + f"\rEnter your message here: " + " " * 20)
+        lines = chat_history.split('\n')
+        lines = [line if len(line) <= 75 else line[:75] for line in lines]
+        lines = lines[-19:]
+        while len(lines) < 19:
+            lines.insert(0, "")  # pad lines if needed
 
-    # msg = input(c.LIGHTBLUE + f"\r")
-    # print(c.RESET, end="")
-    # ss.overwrite(c.RESET + "\r" + " " * 40)
+        output = title + '\n'.join(lines)
+        return output
 
-    # # if msg.lower() == "e":
-    # #     break
+    except Exception as e:
+        return title + '\n'.join(chat_history.split('\n')[-19:]) if chat_history else title
 
-    # net.send_message(server, f'{player_id}chat {msg}')
-    # incoming_msg = net.receive_message(server)
-
-
-    # if len(chat_history) > 10:
-    #     chat_history.pop(0)
-    # else:
-    #     output = output + c.LIGHTBLUE + player_name + c.RESET + msg + incoming_msg
-
-    # return output
 
 def chat_listener(player_id: int, server: socket, active_terminal: ss.Terminal, stop_event): 
+    """
+        Threading function that ensures any time message is entered by anyone chat is updated for all. 
+    """
     global chat_history
     while not stop_event.is_set(): # when stop isn't True it runs
         try:
@@ -150,7 +144,7 @@ def handle(data, client_socket, messages, id, name):
 
     if "recieve_msg" in data:
         """
-        Extract and format the message with the player's name.
+        Recreate the chat history using global messages from banker.
         """
         for line in messages:
             if line != "":
@@ -162,6 +156,9 @@ def handle(data, client_socket, messages, id, name):
                 net.send_message(client_socket, ret_val)
 
     if "add_msg" in data: 
+        """
+        Add incoming message from user to the chat history.
+        """
         msg = data[2]
         messages.append(name + ',' + msg)
 
