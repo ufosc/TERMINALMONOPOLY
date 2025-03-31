@@ -20,7 +20,7 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     Version: 1.0 - attempting to create a chat feature
 
     Args:
-    player_id (int): The ID of the player.
+        player_id (int): The ID of the player.
         server (socket): The server socket to communicate with.
         active_terminal (ss.Terminal): The terminal to display the information.
 
@@ -69,7 +69,7 @@ def set_oof_params(player_id: int, server: socket) -> None:
     Sets the parameters for the out of focus function.
 
     Args:
-        player_name (str): The name of the player.
+        player_id (str): The id of the player.
         server (socket): The server connection.
 
     Returns:
@@ -80,12 +80,12 @@ def set_oof_params(player_id: int, server: socket) -> None:
 
 def oof() -> str:
     """
-       Update function for when the chat terminal is out of focus.
-       Receives any pending messages from the server.
+    Update function for when the chat terminal is out of focus.
+    Receives any pending messages from the server.
 
-       Returns:
-           str: The latest chat history string.
-       """
+    Returns:
+        str: The latest chat history string.
+    """
     server = oof_params["server"]
     player_id = oof_params["player_id"]
     global chat_history
@@ -114,7 +114,16 @@ def oof() -> str:
 
 def chat_listener(player_id: int, server: socket, active_terminal: ss.Terminal, stop_event): 
     """
-        Threading function that ensures any time message is entered by anyone chat is updated for all. 
+    Threading function that ensures any time a message is entered by anyone chat is updated for all. 
+
+    Args:
+    player_id (str): The id of the player.
+    server (socket): The server connection.
+    active_terminal (ss.Terminal): The terminal to display the information.
+    stop_event: Whether or not thread was terminated. 
+
+    Returns:
+        None
     """
     global chat_history
     while not stop_event.is_set(): # when stop isn't True it runs
@@ -138,6 +147,16 @@ def chat_listener(player_id: int, server: socket, active_terminal: ss.Terminal, 
 def handle(data, client_socket, messages, id, name):
     """
     Handles chat messages and player-related commands sent by a client.
+
+    Args:
+    data: Data incoming from client.
+    client_socket: Client connection.
+    messages: Chat history global variable from banker.
+    id: Client id. 
+    name: Client
+
+    Returns:
+        None
     """
     data = data.split(',', 2)
     ret_val = ""
