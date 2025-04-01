@@ -5,13 +5,13 @@ import sys
 sys.path.append('..') # Path to the directory
 from style import set_cursor, set_cursor_str
 
-from screenspace import Terminal
+from screenspace import Terminal, overwrite
 from style import MYCOLORS as COLORS
 from socket import socket
 
 name = "Maze Attack Module"
 command = "maze"
-author = "https://github.com/adamgulde"
+author = "https://github.com/AmariN12"
 description = "Trap another player in a maze."
 version = "1.0"
 help_text = "Type WASD to move and escape the maze!."
@@ -20,6 +20,38 @@ persistent = True
 maze_off = 18
 num_rows = 9
 num_cols = 19
+
+
+
+theme = rand.choices(
+    ["CLASSIC", "BLOCK", "FADED", "SINGLE", "DOUBLE"],
+    weights=[0.4, 0.1, 0.1, 0.2, 0.2],
+    k=1
+)[0]
+if theme == "CLASSIC":
+    corner = "+"
+    verticalBar = "|"
+    horizontalBar = "-"
+    color = None
+elif theme == "FADED":
+    corner = "▓"
+    verticalBar = "▒"
+    horizontalBar = "▒"
+    color = COLORS.LIGHTGRAY
+elif theme == "DOUBLE":
+    corner = "╬"
+    verticalBar = "║"
+    horizontalBar = "═"
+    color = COLORS.BLUE
+elif theme == "SINGLE":
+    corner = "┼"
+    verticalBar = "│"
+    horizontalBar = "─"
+    color = COLORS.ORANGE
+elif theme == "BLOCK":
+    corner = horizontalBar = verticalBar = "█"
+    color = COLORS.RED
+
 
 class MazeNode:
     def __init__(self, row, col):
@@ -104,9 +136,7 @@ maze_nodes: list[list[MazeNode]]
 def maze_data_to_string() -> list[list[str]]:
     #maze_str = [[' '] * 75]*20
     maze_str = [[' ' for i in range(75)] for j in range(20)]
-    corner = '+'
-    verticalBar = '|'
-    horizontalBar = '-'
+    
     space = ' '
     maze_nodes : list[list[MazeNode]] = maze_generator()
 
@@ -168,44 +198,45 @@ def char_array_to_str(maze_str: list[list[str]]) -> str:
 
 #The main problem seems to be the translation from screenspace to mazespace. 
 def run(player_id: int, server: socket, active_terminal: Terminal):
-    print("You've been trapped in a maze! Use the arrow keys to move and escape!")
+    overwrite("You've been trapped in a maze! Use the arrow keys to move and escape!")
+    active_terminal.indicate_keyboard_hook()
+    active_terminal.busy(server, player_id)
+
     maze_str = maze_data_to_string()
     #print_maze(maze_str)
-    active_terminal.update(char_array_to_str(maze_str), padding=True)
-    
+    ret_val = color + char_array_to_str(maze_str) if color else char_array_to_str(maze_str)
+    active_terminal.update(ret_val, padding=False) # Add color if specified in Themes
 
     xPos = [17, maze_off+1]
     in_maze = True
     while in_maze == True:
         if maze_str[1][39+maze_off] == "@":
-            active_terminal.clear
-            active_terminal.update("You escaped!")
             break
         set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
         print("@")
         key = keyboard.read_key()
-        if key == 'up' and maze_str[xPos[0]-1][xPos[1]] != "-":
+        if key == 'up' and maze_str[xPos[0]-1][xPos[1]] != horizontalBar and xPos[0] > 1:
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
             print(" ")
             maze_str[xPos[0] - 2][xPos[1]] = "@"
             maze_str[xPos[0]][xPos[1]] = " "
             xPos[0] -= 2
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
-        elif key == 'down' and maze_str[xPos[0]+1][xPos[1]] != "-":
+        elif key == 'down' and maze_str[xPos[0]+1][xPos[1]] != horizontalBar and xPos[0] < 17:
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
             print(" ")
             maze_str[xPos[0] + 2][xPos[1]] = "@"
             maze_str[xPos[0]][xPos[1]] = " "
             xPos[0] += 2
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
-        elif key == 'left' and maze_str[xPos[0]][xPos[1]-1] != "|":
+        elif key == 'left' and maze_str[xPos[0]][xPos[1]-1] != verticalBar and xPos[1] > maze_off + 1:
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
             print(" ")
             maze_str[xPos[0]][xPos[1] - 2] = "@"
             maze_str[xPos[0]][xPos[1]] = " "
             xPos[1] -= 2
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
-        elif key == 'right' and maze_str[xPos[0]][xPos[1]+1] != "|":
+        elif key == 'right' and maze_str[xPos[0]][xPos[1]+1] != verticalBar and xPos[1] < 73:
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
             print(" ")
             maze_str[xPos[0]][xPos[1] + 2] = "@"
@@ -213,9 +244,14 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
             xPos[1] += 2
             set_cursor(active_terminal.x+xPos[1], active_terminal.y+xPos[0])
         elif key == 'esc':
-            print(xPos)
-            break
+            # print(xPos)
+            # break
+            pass
         time.sleep(0.2)
+
+    active_terminal.enable(False, server, player_id)
+    active_terminal.update("\n\n\n\n\n\n\n\n" + "You escaped!".center(75))
+    active_terminal.indicate_keyboard_hook(True)
 
 def print_maze(maze):
     for i in range(0, 20):

@@ -118,7 +118,7 @@ class CRAZY_THEME:
     dispRED = fore_prefix + "7;0;255m"
     dispBLUE = fore_prefix + "255;251;0m"
     backBROWN = back_prefix + "132;25;25m"
-    backLIGHTBLUE = back_prefix + "25;127;132m"
+    backLIGHTBLUE = back_prefix + "215;127;132m"
     backROUGE = back_prefix + "132;25;130m"
     backORANGE = back_prefix + "132;93;25m"
     backRED = back_prefix + "132;25;25m"
