@@ -403,7 +403,13 @@ def get_input() -> None:
                     active_terminal.update(g.get('help'), padding=True)
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
                 active_terminal.oof_callable = None
-
+            elif stdIn == "clear": # Clear the given Terminal to allow other commands to be ran
+                active_terminal.clear()
+                active_terminal.update("")
+                active_terminal.display()
+                active_terminal.oof_callable = None
+                active_terminal.persistent = False
+                active_terminal.command = ""
             elif stdIn in cmds.keys(): # Check if the command is in the available commands
                 usable = True
                 for t in TERMINALS:

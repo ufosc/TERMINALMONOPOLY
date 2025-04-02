@@ -7,7 +7,12 @@ class Inventory():
         The inventory is a dictionary of items and their quantities.
         All items are stored here, to be extracted by the shop module.
         """
-        self.items = {"fish": {"Carp": 0, "Bass": 0, "Salmon": 0}, "module_modifiers": {}, "board_upgrades": {}, "defensive_items": {}} # Initialize with empty inventory.
+        self.items = {
+            "fish": {"Carp": 10, "Bass": 0, "Salmon": 0},
+            "module_modifiers": {},
+            "board_upgrades": {},
+            "defensive_items": {}
+        }  # Initialize with empty inventory.
     
     def getinventory(self) -> dict:
         """
@@ -32,11 +37,12 @@ class Inventory():
         If the item does not exist, it does nothing.
         If the quantity is greater than the quantity of the item, it removes all of the item.
         """
-        if item in self.items:
-            if self.items[item] > quantity:
-                self.items[item] -= quantity
-            else:
-                del self.items[item]
+        for category in self.items:
+            if item in self.items[category]:
+                if self.items[category][item] > quantity:
+                    self.items[category][item] -= quantity
+                else:
+                    del self.items[category][item]
 
     def get_inventory_str(self) -> str:
         """
@@ -92,7 +98,7 @@ def oof() -> str:
 
     net.send_message(server, f"{player_id}get_inventory_str") # Request inventory from banker
     inv_str = net.receive_message(server) # Receive inventory from banker
-    return inv_str
+    return "Inventory".center(75, "═") + f"\n\n{inv_str}"
     
 def handle(data: str, client_socket: socket, client_inventory: Inventory) -> None:
     """

@@ -340,7 +340,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         handle_inventory(data, client, current_client.inventory)
 
     elif "chat" not in data and "shop" in data: # Ensure the chat module is not being called
-        handle_shop(data, client, current_client.inventory)
+        handle_shop(data, client, current_client.inventory, current_client.money)
 
     elif data.startswith('deed'):
         handle_deed(data, client, mply)
