@@ -7,6 +7,7 @@ HEIGHT = 40
 INPUTLINE = 45
 import os
 from style import MYCOLORS as COLORS, choose_colorset, set_cursor, set_cursor_str, colortest, graphics as g
+import networking as net
 import platform
 import ctypes
 import shutil
@@ -64,6 +65,7 @@ class Terminal:
         self.data = []
         self.command = ""
         self.padded_data = False
+        self.status = "ACTIVE"
         self.persistent = False
         self.has_new_data = False
         self.oof_callable = None
@@ -163,11 +165,95 @@ class Terminal:
             print(" " * cols)
 
     def kill(self):
-        skull = g.get("skull").split("\n")
+        """
+        Description:
+            Kills a terminal, triggered by a netcommand.
+        Parameters: 
+            None
+        Returns: 
+            None
+        """
+        self.status = "DISABLED"
+        skull = g.get("skull")
         print(COLORS.RED)
-        for i in range(rows):
-            set_cursor(self.x,self.y+i)
-            print(skull[i])
+        self.update(skull)
+        print(COLORS.RESET)
+        set_cursor(0, INPUTLINE)
+
+    def disable(self):
+        """
+        Description:
+            Disables a terminal, triggered by a netcommand.
+        Parameters: 
+            None
+        Returns: 
+            None
+        """
+        self.status = "DISABLED"
+        print(COLORS.RED)
+        result = (('X ' * round(cols/2+0.5) + '\n' + 
+                (' X' * round(cols/2+0.5)) + '\n'
+                ) * (rows//2))
+        self.update(result)
+        print(COLORS.RESET)
+        set_cursor(0, INPUTLINE)
+
+    def enable(self, isFromDisable, socket, player_id):
+        """
+        Description:
+            Enables a terminal, triggered either by the client or by a netcommand.
+        Parameters: 
+            isFromDisable(bool): Whether it is triggered from a disable.
+            socket(socket): The socket to update the banker's statuses.
+            player_id(int): The player's ID for the message send.
+        Returns: 
+            None
+        """
+        self.status = "ACTIVE"
+        net.send_message(socket, str(player_id) + "active " + str(self.index))
+        if(isFromDisable):
+            self.update("This terminal is now enabled!")
+    
+    def busy(self, socket, player_id):
+        """
+        Description:
+            Busies a terminal.
+        Parameters: 
+            socket(socket): The socket to update the banker's statuses.
+            player_id(int): The player's ID for the message send.
+        Returns:
+            None
+        """
+        self.status = "BUSY"
+        net.send_message(socket, str(player_id) + "busy " + str(self.index))
+
+    def indicate_keyboard_hook(self, off=False):
+        """
+        Indicates that the keyboard hook is active for a certain terminal. 
+        Changes the color of the terminal border.
+        This is important for the player to know why they can't type on the input line.
+        """
+        border_chars = [('╔','╦','╠','╬'),
+                        ('╦','╗','╬','╣'),
+                        ('╠','╬','╚','╩'),
+                        ('╬','╣','╩','╝')]
+        
+        t = self.index - 1
+        if off:
+            c = COLORS.GREEN
+        else:
+            c = COLORS.LIGHTBLUE
+        set_cursor(self.x-1,self.y-1)
+        print(c, end='')
+        print(border_chars[t][0] + '═' * cols + border_chars[t][1], end='')
+        set_cursor(self.x-1,self.y+rows)
+        print(border_chars[t][2] + '═' * cols + border_chars[t][3], end='')
+        for i in range(self.y, self.y + rows):
+            set_cursor(self.x-1, i)
+            print('║')
+            set_cursor(self.x+cols, i)
+            print('║')
+
 
 def notification(message: str, n: int, color: str, custom_x: int, custom_y: int) -> str:
     """
@@ -291,39 +377,6 @@ def debug_note():
         set_cursor(WIDTH-10-len(message),0)
         print(f'{COLORS.GREEN}{message}{COLORS.RESET}')
         set_cursor(0,INPUTLINE)
-
-def indicate_keyboard_hook(t: int):
-    """
-    Indicates that the keyboard hook is active for a certain terminal. 
-    Changes the color of the terminal border.
-    This is important for the player to know why they can't type on the input line.
-    """
-    x,y = -1,-1
-    border_chars = [('╔','╦','╠','╬'),
-                    ('╦','╗','╬','╣'),
-                    ('╠','╬','╚','╩'),
-                    ('╬','╣','╩','╝')]
-    
-    if (t == 1):
-        x,y = 0,1
-    elif (t == 2):
-        x,y = cols+2, 1
-    elif (t == 3):
-        x,y = 0, rows+2
-    elif (t == 4):
-        x,y = cols+2, rows+2
-    t = t - 1 # 0-indexed
-    c = COLORS.LIGHTBLUE
-    set_cursor(x,y)
-    print(c, end='')
-    print(border_chars[t][0] + '═' * cols + border_chars[t][1], end='')
-    set_cursor(x,y+rows+1)
-    print(border_chars[t][2] + '═' * cols + border_chars[t][3], end='')
-    for i in range(y, y + rows):
-        set_cursor(x, i+1)
-        print('║')
-        set_cursor(x+cols + (1 if (t + 1) % 2 == 0 else 2), i+1)
-        print('║')
 
 def overwrite(text: str = ""):
     """

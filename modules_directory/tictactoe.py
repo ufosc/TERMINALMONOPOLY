@@ -146,7 +146,7 @@ def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
         active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
 
         # Only hook the keyboard after you are definitely IN a game. 
-        ss.indicate_keyboard_hook(active_terminal.index) # update terminal border to show keyboard is hooked
+        # ss.indicate_keyboard_hook(active_terminal.index) # update terminal border to show keyboard is hooked
 
         while True:
 

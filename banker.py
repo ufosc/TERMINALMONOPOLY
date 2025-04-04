@@ -46,6 +46,7 @@ class Client:
         self.properties = properties
         self.can_roll = True
         self.num_rolls = 0
+        self.terminal_statuses = ["ACTIVE", "ACTIVE", "ACTIVE", "ACTIVE"]
 
 def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
     """
@@ -343,6 +344,81 @@ def handle_data(data: str, client: socket.socket) -> None:
 
     elif data.startswith('chat'):
         handle_chat(data, client, messages, current_client.id, current_client.name)
+        
+    elif data.startswith('term_status'):
+        command_data = data.split(' ')
+        term = int(command_data[1])
+        net.send_message(client, str(current_client.terminal_statuses[term]))
+    
+    elif data.startswith('kill') or data.startswith('disable') or data.startswith('active') or data.startswith('busy'):
+        """
+        Should be called by a player (1) to disable another player (2).
+        Player 1 expects value of success/fail (busy or already dead).
+        Player 2 doesn't know unless it is successful.
+        """
+        handle_term(data, current_client, client)
+
+def handle_term(cmds: str, current_client: Client, client: socket.socket) -> None:
+    """
+    Command Structure:
+        action player term length
+        (Ex. DISABLE 0 5 15)
+    
+    Args:
+        action: Type of action on term (ACTIVE/DISABLE/KILL/BUSY)
+        player: ID of player to change
+        term:   Terminal to Set
+        length: Length of DISABLE
+    """
+    command_data = cmds.split(' ')
+    if(command_data[0] == 'disable'):
+        try:
+            opponent = int(command_data[1])
+            if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == current_client:
+                net.send_message(client, "\nInvalid opponent. Please select another player.")
+                return
+            if(int(command_data[2]) <= 0 or int(command_data[2]) > len(clients[opponent].terminal_statuses)):
+                net.send_message(client, "\nInvalid terminal. Please enter a valid terminal ID.")
+                return
+            if((clients[opponent]).terminal_statuses[int(command_data[2]) - 1] != "ACTIVE"):
+                net.send_message(client, "\nThis terminal is not active at the moment.")
+                return
+            if(int(command_data[3]) < 10):
+                net.send_message(client, "\nInvalid time. Must be greater than 10 seconds.")
+                return
+            else:
+                net.send_notif(clients[opponent].socket, "disable " + str(int(command_data[2]) - 1), "TERM:")
+                clients[opponent].terminal_statuses[int(command_data[2]) - 1] = "DISABLED"
+                add_to_output_area("", f"{clients[opponent].name}'s terminal was disabled. Current Statuses: {clients[opponent].terminal_statuses}")
+                threading.Timer(float(command_data[3]), net.send_notif, (clients[opponent].socket, f"enable {str(int(command_data[2]) - 1)}", "TERM:")).start()
+                net.send_message(client, "\nTerminal disabled.")
+        except:
+            net.send_message(client, "\nInvalid opponent. Please select another player.")
+    elif(command_data[0] == 'active'):
+        current_client.terminal_statuses[int(command_data[1]) - 1] = "ACTIVE"
+        add_to_output_area("", f"{current_client.name}'s terminal is active. Current Statuses: {current_client.terminal_statuses}")
+    elif(command_data[0] == 'kill'):
+        try:
+            opponent = int(command_data[1])
+            if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == current_client:
+                net.send_message(client, "\nInvalid opponent. Please select another player.")
+                return
+            if(int(command_data[2]) <= 0 or int(command_data[2]) > len(clients[opponent].terminal_statuses)):
+                net.send_message(client, "\nInvalid terminal. Please enter a valid terminal ID.")
+                return
+            if(clients[opponent].terminal_statuses[int(command_data[2]) - 1] != "ACTIVE"):
+                net.send_message(client, "\nThis terminal is not active at the moment.")
+                return
+            else:
+                net.send_notif(clients[opponent].socket, "kill " + str(int(command_data[2]) - 1), "TERM:")
+                clients[opponent].terminal_statuses[int(command_data[2]) - 1] = "DISABLED"
+                add_to_output_area("", f"{clients[opponent].name}'s terminal was killed. Current Statuses: {clients[opponent].terminal_statuses}")
+                net.send_message(client, "\nTerminal killed.")
+        except:
+            net.send_message(client, "\nInvalid opponent. Please select another player.")
+    elif(command_data[0] == 'busy'):
+        current_client.terminal_statuses[int(command_data[1]) - 1] = "BUSY"
+        add_to_output_area("", f"{current_client.name}'s terminal is busy. Current Statuses: {current_client.terminal_statuses}")
 
 def handshake(client_socket: socket.socket, handshakes: list) -> None:
     """
@@ -424,7 +500,7 @@ def monopoly_controller(unit_test) -> None:
         return
     sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
     mply.unittest(unit_test)
-    net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.")
+    net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.", "MPLY:")
     add_to_output_area("Monopoly", "Sent gameboard to player 0.")
     last_turn = 0
     while True:
@@ -432,7 +508,7 @@ def monopoly_controller(unit_test) -> None:
         if mply.turn != last_turn:
             ss.set_cursor(0, 20)
             last_turn = mply.turn
-            net.send_monopoly(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.")
+            net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.", "MPLY:")
             clients[mply.turn].can_roll = True
             ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
             add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
@@ -460,7 +536,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
         action = cmd.split(',')[1]
         if action == None or action == '':
             ret_val = mply.request_roll()
-            net.send_monopoly(client.socket, ret_val)
+            net.send_notif(client.socket, ret_val, "MPLY:")
         elif action == 'roll' and client.can_roll:
             dice = mply.roll()
             client.num_rolls += 1
@@ -468,21 +544,21 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
             if ret_val.startswith("player_choice"):
                 ret_val.replace("player_choice", "")
                 client.can_roll = False
-            net.send_monopoly(client.socket, ret_val)
+            net.send_notif(client.socket, ret_val, "MPLY:")
         elif action == 'trybuy': #TODO Better handling of locations would be nice. 
             mply.buy_logic("banker", "b")
             ret_val = mply.get_gameboard()
             # Need to check if doubles were rolled, otherwise end the rolling phase
             if dice[0] != dice[1]:
                 client.can_roll = False
-            net.send_monopoly(client.socket, ret_val)
+            net.send_notif(client.socket, ret_val, "MPLY:")
         elif action == 'propmgmt': #TODO This is almost complete. Still somewhat buggy.
             try: 
                 property_id = cmd.split(',')[2]
             except:
                 property_id = ""
             ret_val = mply.housing_logic(mply.players[0], "banker", property_id)
-            net.send_monopoly(client.socket, ret_val)
+            net.send_notif(client.socket, ret_val, "MPLY:")
         elif action == 'deed': #TODO This is not yet complete. Very buggy. 
             try: 
                 property_id = cmd.split(',')[2]
@@ -491,11 +567,11 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
             mply.update_status(mply.players[0], "deed", [], "banker", property_id)
         elif action == 'continue':
             ret_val = mply.get_gameboard()
-            net.send_monopoly(client.socket, ret_val)
+            net.send_notif(client.socket, ret_val, "MPLY:")
         elif action == 'endturn':
             mply.end_turn()
             ret_val = "ENDOFTURN" + mply.get_gameboard()
-            net.send_monopoly(client.socket, ret_val)
+            net.send_notif(client.socket, ret_val, "MPLY:")
 
 if __name__ == "__main__":
 
