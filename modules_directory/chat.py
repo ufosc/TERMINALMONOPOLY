@@ -102,8 +102,8 @@ def oof() -> str:
         lines = chat_history.split('\n')
         lines = [line if len(line) <= 75 else line[:75] for line in lines]
         lines = lines[-19:]
-        while len(lines) < 19:
-            lines.insert(0, "")  # pad lines if needed
+        # while len(lines) < 19:
+        #     lines.insert(0, "")  # pad lines if needed
 
         output = title + '\n'.join(lines)
         return output
