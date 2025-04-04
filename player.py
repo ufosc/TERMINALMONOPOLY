@@ -18,6 +18,7 @@ sockets = (socket.socket(socket.AF_INET, socket.SOCK_STREAM), socket.socket(sock
 ADDRESS = ""
 PORT = 0
 player_id: int
+name: str = ''
 DEBUG = False
 NET_COMMANDS_ENABLED = False
 TERMINALS = [ss.Terminal(1, (2, 2)), ss.Terminal(2, (ss.cols+3, 2)), ss.Terminal(3, (2, ss.rows+3)), ss.Terminal(4, (ss.cols+3, ss.rows+3))]
@@ -94,7 +95,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
     Parameters: None
     Returns: None
     """
-    global sockets, ADDRESS, PORT
+    global sockets, ADDRESS, PORT, name
     ss.clear_screen()
     if not debug:
         banker_check()
@@ -126,6 +127,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
             while not validation.validate_port(PORT):
                 print("Invalid port. Please enter a valid port.")
                 PORT = input("Enter Host Port: ")
+
 
         print(f"Welcome, {name}!")
 
