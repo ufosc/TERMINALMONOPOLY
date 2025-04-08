@@ -22,6 +22,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
     Gamble your money away!
     A basic menu loader for casino_games.
     """
+
     active_terminal.persistent = persistent
     wrong = 0
     while True:
@@ -31,8 +32,9 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
         balance = int(net.receive_message(server))
         net.player_mtrw = False
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
+        game_list = "".join(__modules)
         active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\n\nSelect a game by typing the command and wager.\n\n"
-                       + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + __modules + "\n☒ Exit (e)")
+                       + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + game_list + "\n☒ Exit (e)")
         if(wrong == 1):
             ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
         elif(wrong == 2):
@@ -94,6 +96,7 @@ def get_submodules():
     Returns:
         None
     """
+    global __modules
     modules_list = ""
     for file in os.listdir("casino_games"):
         if file.endswith(".py"):
