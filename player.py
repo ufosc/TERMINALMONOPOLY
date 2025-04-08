@@ -234,6 +234,7 @@ def print_queue():
                                 keyboard.block_key(i) # Naively block all calls to the keyboard when updating Terminals OOF
                             for i in range(150):
                                 keyboard.unblock_key(i)
+                            t.clear() # Clear the terminal before updating it.
                             t.update(data, padding=False) # Update the terminal with new data.
                             t.has_new_data = False # Reset the flag.
                 else: 
@@ -292,7 +293,6 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 gameboard.replace("ENDOFTURN", "")
                 ss.clear_screen()
                 print(gameboard)
-                # ss.set_cursor(0, ss.INPUTLINE)
                 # print("End of turn. Press enter to return to terminal.")
                 screen = 'terminal'
                 # ss.initialize_terminals()

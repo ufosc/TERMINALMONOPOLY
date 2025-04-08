@@ -1,5 +1,5 @@
 import keyboard
-import os
+import textwrap
 from time import sleep
 import screenspace as ss
 from socket import socket
@@ -113,9 +113,18 @@ class Shop():
                 while keyboard.is_pressed("enter"):
                     pass # Wait for the user to release the enter key before proceeding.
 
-                display_text += set_cursor_str(cursor_x, 10) + " " * (70 - cursor_x) # Clear the line for the cat's response. 
-                response = set_cursor_str(cursor_x, 10) + net.receive_message(server) # Receive the cat's response to the purchase.
-                display_text += response
+                display_text += set_cursor_str(cursor_x, 9) + " " * (74 - cursor_x) # Clear the line for the cat's response. 
+                display_text += set_cursor_str(cursor_x, 10) + " " * (74 - cursor_x) # Clear the line for the cat's response. Give 2 lines for the cat's response, total.
+                cat_message = net.receive_message(server) # Receive the cat's response to the purchase.
+
+                if len(cat_message) + cursor_x > 74: # If the message is too long, wrap it to the next line.
+                    wrapped_lines = textwrap.wrap(cat_message, 74 - cursor_x)
+                    y = 0
+                    for line in wrapped_lines:
+                        display_text += set_cursor_str(cursor_x, 9 + y) + line
+                        y += 1
+                else:
+                    display_text += set_cursor_str(cursor_x, 10) + cat_message # Add the cat's response to the display text.
 
                 active_terminal.update(display_text, padding=False)  # Update the terminal with the response
 
@@ -176,20 +185,53 @@ persistent = False
 shop_object = Shop()
 
 def run(player_id: int, server: socket, active_terminal: ss.Terminal):
-    ss.indicate_keyboard_hook(active_terminal.index)
+    """
+    Run the shop module.
+    
+    Parameters:
+        player_id (int): The player's ID.
+        server (socket): The server socket for communication.
+        active_terminal (ss.Terminal): The active terminal object.
+    """
+    active_terminal.indicate_keyboard_hook() 
     active_terminal.persistent = persistent
     shop_object.shop_interface(server, active_terminal, player_id) # Run the shop interface.
 
-    ss.update_terminal(active_terminal.index, active_terminal.index) # Turn off the keyboard hook indication
+    active_terminal.indicate_keyboard_hook(True) # Indicate that the keyboard hook is no longer active.
     active_terminal.update(g.get("shop_exit"))
-
-def handle(data: str, client_socket: socket, player_inventory: Inventory, player_balance: int) -> None:
+def process_purchase(subshop: str, item: str, prices: dict, player_balance: int, player_inventory: Inventory, player_id: int, change_balance: callable, client_socket: socket) -> None:
     """
-    Data is received of form "shop,select,SUBSHOP,ITEM" or "shop,exit" where SUBSHOP is the name 
-    of the shop type and ITEM is the name of the item to be bought.
+    Handles the purchase logic for a given subshop.
 
-    Always make sure to send a net.send_message to client socket even if a purchase is unsuccessful. 
-    This is what the cat says. It can be empty string.
+    Parameters:
+        subshop (str): The name of the subshop.
+        item (str): The item being purchased.
+        prices (dict): A dictionary of items and their prices for the subshop.
+        player_balance (int): The player's current balance.
+        player_inventory (Inventory): The player's inventory object.
+        player_id (int): The player's ID.
+        change_balance (callable): A function to update the player's balance.
+        client_socket (socket): The client socket to send messages to.
+    """
+    if player_balance >= prices[item]:
+        change_balance(player_id, -prices[item])
+        player_inventory.add_item(item, 1)
+        net.send_message(client_socket, f"Meow! Bought {item} for ${prices[item]}")
+    else:
+        net.send_message(client_socket, f"Prrr... Not enough money to buy {item}")
+
+
+def handle(data: str, client_socket: socket, player_inventory: Inventory, player_balance: int, player_id: int, change_balance: callable) -> None:
+    """
+    Handles shop-related commands.
+
+    Parameters:
+        data (str): The command data received from the client.
+        client_socket (socket): The client socket to send messages to.
+        player_inventory (Inventory): The player's inventory object.
+        player_balance (int): The player's current balance.
+        player_id (int): The player's ID.
+        change_balance (callable): A function to update the player's balance.
     """
     cmds = data.split(",")
     if cmds[1] == "exit":
@@ -197,18 +239,22 @@ def handle(data: str, client_socket: socket, player_inventory: Inventory, player
     elif cmds[1] == "select":
         subshop = cmds[2]
         item = cmds[3]
-        if subshop == "Salmon Pro Shop":
-            if player_inventory.getinventory()["fish"].get(item) > 0:
-                player_inventory.remove_item(item, 1)
-                player_balance += shop_object.fishprices[item]
-                net.send_message(client_socket, f"Meow! Sold {item} for ${shop_object.fishprices[item]}")
-            else:
-                net.send_message(client_socket, f"Prrr... No {item} to sell")
-        elif subshop == "Module Modifiers":
-            pass
-        elif subshop == "Board Upgrades":
-            pass
-        elif subshop == "Defensive Items":
-            pass
 
-    
+        # Map subshop names to their respective price dictionaries
+        subshop_prices = {
+            "Salmon Pro Shop": shop_object.fishprices,
+            "Module Modifiers": shop_object.module_modifiers,
+            "Board Upgrades": shop_object.board_upgrades,
+            "Defensive Items": shop_object.defensive_items,
+            }
+        
+        if subshop == "Salmon Pro Shop": # Handle separately because you sell here, not buy
+            if player_inventory.getinventory()['fish'][item] > 0:
+                player_inventory.remove_item(item, 1)
+                change_balance(player_id, shop_object.fishprices[item])
+                net.send_message(client_socket, f"Meow! That's the good stuff. Here's ${shop_object.fishprices[item]}")
+            else:
+                net.send_message(client_socket, f"Prrr... You don't have any {item} to sell.")
+
+        elif subshop in subshop_prices: # Handle all the purchases using the generic process_purchase function
+            process_purchase(subshop,item,subshop_prices[subshop],player_balance,player_inventory,player_id,change_balance,client_socket,)

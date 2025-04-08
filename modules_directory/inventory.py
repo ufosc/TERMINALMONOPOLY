@@ -9,9 +9,14 @@ class Inventory():
         """
         self.items = {
             "fish": {"Carp": 10, "Bass": 0, "Salmon": 0},
-            "module_modifiers": {},
-            "board_upgrades": {},
-            "defensive_items": {}
+            "module_modifiers": {"[FISH] Reinforced Fishing Rod": 0, 
+                                 "[STOCKS] Sway the Quants": 0,
+                                 "[STOCKS] Invest in Regulation Agencies": 0,
+                                 "[CASINO] Bottle of Felix Felicis": 0,},
+            "board_upgrades": {"Build a Story": 0, 
+                               "Move Token": 0,
+                                "Bribe the Warden": 0},
+            "defensive_items": {"Terminal Shield": 0,}
         }  # Initialize with empty inventory.
     
     def getinventory(self) -> dict:
@@ -26,11 +31,13 @@ class Inventory():
         If the item already exists, it adds the quantity to the existing item.
         This could be a fish, or a Terminal upgrade, or an attack Module. 
         """
-        if item in self.items:
-            self.items[item] += quantity
-        else:
-            self.items[item] = quantity
-    
+        for category in self.items:
+            if item in self.items[category]:
+                self.items[category][item] += quantity
+                return
+        # If the item does not exist, add it to the inventory.
+        self.items[category][item] = quantity
+
     def remove_item(self, item: str, quantity: int) -> None:
         """
         Removes an item from the inventory.
@@ -47,17 +54,16 @@ class Inventory():
     def get_inventory_str(self) -> str:
         """
         Returns a string representation of the inventory.
+
+        #TODO: will need to add multiple pages for the inventory, as it can get long.
         """
         ret_val = ""
         for item in self.items:
-            ret_val += f"{item.upper()}: " # Add the item name.
-            items_unsplit = ""
+            item_text = item.upper().replace("_", " ").center(75, "─") # Center the item name
+            ret_val += f"{item_text}\n" # Add the item name.
             for item_name in self.items[item]:
-                items_unsplit += f"{item_name}: {self.items[item][item_name]} " # Wrap the text to 75 characters, with the subsequent lines indented.
-            lines = textwrap.wrap(items_unsplit, 75 - (len(item) + 1), subsequent_indent=" ")
-            for line in lines:
-                ret_val += line + "\n" if line != lines[-1] else line # Add a newline if there are multiple lines
-            ret_val += "\n"
+                ret_val += f"{item_name}: {self.items[item][item_name]}\n" # Wrap the text to 75 characters, with the subsequent lines indented.
+
         return ret_val
 
 from socket import socket
@@ -68,7 +74,7 @@ name = "Inventory Module"
 command = "inv"
 author = "https://github.com/adamgulde"
 description = "View all inventory items."
-version = "1.3 - Integrating with banker and more robust object handling" 
+version = "1.4 - Fixing inventory with non-fish items" 
 help_text = "Type INV to view your inventory."
 persistent = False # No need to run additional commands after switching
 oof_params = {"player_id": None, "server": None} # Global parameters for out of focus function
