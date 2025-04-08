@@ -1,6 +1,6 @@
-from properties import Property
+from monopoly_directory.properties import Property
 from style import MYCOLORS as COLORS
-from player_class import MonopolyPlayer
+from monopoly_directory.player_class import MonopolyPlayer
 
 class Board:
     """

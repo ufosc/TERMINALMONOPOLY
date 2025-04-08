@@ -11,6 +11,7 @@ import screenspace as ss
 import networking as net
 import validation
 import modules_directory.inventory as inv
+import keyboard
 
 game_running = False
 screen = "terminal"
@@ -207,7 +208,17 @@ def print_queue():
     Responsible for updating all Terminal screens with persistent modules, i.e. modules that may be updated while not as the active terminal.
     Ran in its independent thread.
     """
-    while True:
+    while True: # TODO: updating certain terminals with networking commands CAN crash the game because the player
+                # receives a message for some module that is not the terminal being updated in this loop, or vice versa.
+                # 
+                # Steps to recreate:
+                # Run a module that has a oof callable that is not the active terminal, and then, in another terminal,
+                # run a module that has a different oof callable. Have the other 2 terminals also have oof callables.
+                # Then, run a command that updates the active terminal. The game may crash because the data is not in sync.
+                #  
+                # The data becomes out of sync, or not a 1-to-1 mapping. A better solution is to have a queue of messages 
+                # to parse through as they're received, and then update the terminal with the correct data based on a 
+                # tag or identifier. 
         if screen == 'terminal': # Only update if we are in the terminal screen.
             for t in TERMINALS:
                 if t.status == "DISABLED" or t.status == "BUSY": # Skip disabled or (just in case) busy terminals.
@@ -215,11 +226,17 @@ def print_queue():
                 sleep(0.5) # Delay to prevent overwhelming the system with print calls. Change to lower value when done debugging.
                 # Also important to delay to ensure calls to banker are not overwhelming.
                 if not t.oof_callable == None and t.index != active_terminal.index: # Only update if the terminal is not active and has an out-of-focus callable.
-                    data = t.oof_callable() # Call the out-of-focus function to get the new data.
-                    t.check_new_data(data) # Check if new data is available.
-                    if t.has_new_data and t.oof_callable is not None: # Only update terminal if there is new data, to avoid unnecessary prints.
-                        t.update(t.oof_callable(), padding=False) # Update the terminal with new data.
-                        t.has_new_data = False # Reset the flag.
+                    if not net.player_mtrw: # Ensure the main thread is not waiting on receiving new data
+                        data = t.oof_callable() # Call the out-of-focus function to get the new data.
+                        t.check_new_data(data) # Check if new data is available.
+                        if t.has_new_data and t.oof_callable is not None: # Only update terminal if there is new data, to avoid unnecessary prints.
+                            for i in range(150):
+                                keyboard.block_key(i) # Naively block all calls to the keyboard when updating Terminals OOF
+                            for i in range(150):
+                                keyboard.unblock_key(i)
+                            t.clear() # Clear the terminal before updating it.
+                            t.update(data, padding=False) # Update the terminal with new data.
+                            t.has_new_data = False # Reset the flag.
                 else: 
                     continue # No need to update if no callable or terminal is active.
 
@@ -276,7 +293,6 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 gameboard.replace("ENDOFTURN", "")
                 ss.clear_screen()
                 print(gameboard)
-                # ss.set_cursor(0, ss.INPUTLINE)
                 # print("End of turn. Press enter to return to terminal.")
                 screen = 'terminal'
                 # ss.initialize_terminals()
@@ -386,7 +402,14 @@ def get_input() -> None:
                 else: 
                     active_terminal.update(g.get('help'), padding=True)
                     ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
-
+                active_terminal.oof_callable = None
+            elif stdIn == "clear": # Clear the given Terminal to allow other commands to be ran
+                active_terminal.clear()
+                active_terminal.update("")
+                active_terminal.display()
+                active_terminal.oof_callable = None
+                active_terminal.persistent = False
+                active_terminal.command = ""
             elif stdIn in cmds.keys(): # Check if the command is in the available commands
                 usable = True
                 for t in TERMINALS:
@@ -407,6 +430,8 @@ def get_input() -> None:
             
             # Reset screen calibration logic
             elif stdIn.startswith('reset'):
+                if "auto" in stdIn:
+                    ss.auto_calibrate_screen()
                 ss.calibrate_screen('player')
                 ss.clear_screen()
                 print(g.get('terminals'))
@@ -495,6 +520,11 @@ if __name__ == "__main__":
     ss.clear_screen()
     ss.initialize_terminals(TERMINALS)
     ss.update_terminal(active_terminal.index, active_terminal.index)
+
+    if "-debug" in sys.argv:
+        for i in range(ss.HEIGHT + 10):
+            ss.set_cursor(155, i)
+            print(i)
     
     # Prints help in quadrant 2 to orient player.
     TERMINALS[1].update(g.get('help'), padding=True)

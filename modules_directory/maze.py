@@ -22,36 +22,10 @@ num_rows = 9
 num_cols = 19
 
 
-
-theme = rand.choices(
-    ["CLASSIC", "BLOCK", "FADED", "SINGLE", "DOUBLE"],
-    weights=[0.4, 0.1, 0.1, 0.2, 0.2],
-    k=1
-)[0]
-if theme == "CLASSIC":
-    corner = "+"
-    verticalBar = "|"
-    horizontalBar = "-"
-    color = None
-elif theme == "FADED":
-    corner = "▓"
-    verticalBar = "▒"
-    horizontalBar = "▒"
-    color = COLORS.LIGHTGRAY
-elif theme == "DOUBLE":
-    corner = "╬"
-    verticalBar = "║"
-    horizontalBar = "═"
-    color = COLORS.BLUE
-elif theme == "SINGLE":
-    corner = "┼"
-    verticalBar = "│"
-    horizontalBar = "─"
-    color = COLORS.ORANGE
-elif theme == "BLOCK":
-    corner = horizontalBar = verticalBar = "█"
-    color = COLORS.RED
-
+corner = "+"
+verticalBar = "|"
+horizontalBar = "-"
+color = None
 
 class MazeNode:
     def __init__(self, row, col):
@@ -196,11 +170,45 @@ def char_array_to_str(maze_str: list[list[str]]) -> str:
     
     return maze_string
 
+def randomize_theme():
+    global corner, verticalBar, horizontalBar, color    
+    theme = rand.choices(
+        ["CLASSIC", "BLOCK", "FADED", "SINGLE", "DOUBLE"],
+        weights=[0.4, 0.1, 0.1, 0.2, 0.2],
+        k=1
+    )[0]
+    if theme == "CLASSIC":
+        corner = "+"
+        verticalBar = "|"
+        horizontalBar = "-"
+        color = None    
+    elif theme == "FADED":
+        corner = "▓"
+        verticalBar = "▒"
+        horizontalBar = "▒"
+        color = COLORS.LIGHTGRAY
+    elif theme == "DOUBLE":
+        corner = "╬"
+        verticalBar = "║"
+        horizontalBar = "═"
+        color = COLORS.BLUE
+    elif theme == "SINGLE":
+        corner = "┼"
+        verticalBar = "│"
+        horizontalBar = "─"
+        color = COLORS.ORANGE
+    elif theme == "BLOCK":
+        corner = horizontalBar = verticalBar = "█"
+        color = COLORS.RED
+
+
 #The main problem seems to be the translation from screenspace to mazespace. 
 def run(player_id: int, server: socket, active_terminal: Terminal):
     overwrite("You've been trapped in a maze! Use the arrow keys to move and escape!")
     active_terminal.indicate_keyboard_hook()
     active_terminal.busy(server, player_id)
+
+    randomize_theme()
 
     maze_str = maze_data_to_string()
     #print_maze(maze_str)
@@ -247,7 +255,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
             # print(xPos)
             # break
             pass
-        time.sleep(0.2)
+        time.sleep(0.15)
 
     active_terminal.enable(False, server, player_id)
     active_terminal.update("\n\n\n\n\n\n\n\n" + "You escaped!".center(75))
@@ -267,4 +275,3 @@ def print_maze(maze):
 +-+
 input as string, resolves in "for" loop to be able to type many directions at once (use wait or sleep command to force it to stop between)
 '''
-

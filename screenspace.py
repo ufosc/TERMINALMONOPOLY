@@ -90,11 +90,6 @@ class Terminal:
         """
 
         self.padded_data = padding
-        # If you're really desparate to add padding, for some edge case you can add it to the data string.
-        if not padding:
-            if not callable(data) and 'PAD ME PLEASE!' in data:
-                data = data.replace('PAD ME PLEASE!', '')
-                self.padded_data = True
 
         # These lines are taking any additional string fragments that use "set_cursor_string()" from 
         # style.py and update the x,y coordinates to the current quadrant.
@@ -391,6 +386,7 @@ def overwrite(text: str = ""):
     """
     set_cursor(0, INPUTLINE)
     print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r')
+    set_cursor(0, INPUTLINE)
 
 def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowed = [], allowed = []): # arbitrary large numbers
     """

@@ -10,7 +10,7 @@ command = "list"
 help_text = "Type LIST to view all properties on the board."
 persistent = False
     
-def run(player_id:int = None, server: socket = None, active_terminal: ss.Terminal = None):
+def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     """
     Lists all properties on the board by calling the property list stored in graphics.
     
