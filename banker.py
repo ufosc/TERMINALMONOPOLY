@@ -372,38 +372,46 @@ def handle_attack(cmds: str, current_client: Client, client: socket.socket) -> N
     command_data = cmds.split(' ')
     if(command_data[0] == 'attack'):
         #send game to opponent
+        #add_to_output_area("", f"attack status")
         opponent = int(command_data[1])
         attacker = int(command_data[4])
         try:
-            if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == current_client:
+            if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == clients[attacker]:
+                net.send_message(client, "\nInvalid opponent. Please select another player.")
                 return
         except:
             net.send_message(client, "\nInvalid opponent. Please select another player.")
-        try:
-            #check if game works
-            i = __import__('attack_modules.' + command_data[2], fromlist=[''])
-            if((int(command_data[3])) < 1):
-                net.send_message(client, "\nInvalid penalty amount")
+        if str(command_data[2].strip()) == 'lose':
+            money = change_balance(opponent, 0 - (int(command_data[3])))
+            net.send_message(clients[opponent].socket, str(money))
+            money = change_balance(attacker, int(command_data[3]))
+            net.send_message(clients[attacker].socket, str(money))
+            add_to_output_area("",
+                               f"{clients[opponent].name}'s balance was reduced by {command_data[3]} as a result of an attack %. Current Statuses: {clients[opponent].money}")
+            add_to_output_area("",
+                               f"{clients[attacker].name}'s balance was increased by {command_data[3]} as a result of an attack %. Current Statuses: {clients[attacker].money}")
+        else:
+            try:
+                #check if game works
+                i = __import__('attack_modules.' + command_data[2], fromlist=[''])
+                if((int(command_data[3])) < 1):
+                    net.send_message(client, "\nInvalid penalty amount")
+                    return
+
+                else:
+                    #set attack penalty on opponent balance (need to transfer)
+                    add_to_output_area("", f"{clients[opponent].name} has been attacked")
+                    net.send_notif(clients[opponent].socket, command_data[4] + " " + command_data[2] + " " + command_data[3], "ATTACK: ")
+                    return
+
+                    #clients[opponent].balance += amount
+
+                    #net.send_message(client, "\nPenalty applied.")
+
+            except ImportError:
+                net.send_message(client, "\nInvalid attack. Please select another attack.")
                 return
 
-            else:
-                #set attack penalty on opponent balance (need to transfer)
-                net.send_notif(clients[opponent].socket, command_data[4] + " " + command_data[2] + " " + command_data[3], "ATTACK: ")
-                #
-                #clients[opponent].balance += amount
-                #threading.Timer(float(command_data[2]), net.send_notif, (clients[opponent].socket, f"enable {str(int(command_data[1]) - 1)}", "ATTACK:")).start()
-                #add_to_output_area("", f"{clients[opponent].name} has been attacked")
-                #net.send_message(client, "\nPenalty applied.")
-
-        except ImportError:
-            if command_data[2] == "lose":
-                change_balance(opponent,0 - (int(command_data[3])))
-                change_balance(attacker,int(command_data[3]))
-                #add_to_output_area("", f"{clients[opponent].name}'s balance was reduced by {command_data[3]} as a result of an attack %. Current Statuses: {clients[opponent].balance}")
-                #add_to_output_area("", f"{clients[attacker].name}'s balance was increased by {command_data[3]} as a result of an attack %. Current Statuses: {clients[opponent].balance}")
-
-            else:
-                net.send_message(client, "\nInvalid attack. Please select another attack.")
 
 
 

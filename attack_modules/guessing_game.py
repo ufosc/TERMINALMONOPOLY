@@ -45,12 +45,14 @@ def play(active_terminal: Terminal, bet) -> int:
     """
     score = [0, 0, 0, 0]
     active_terminal.update(header + "\n" + g['coin_flip_heads'])
+    flip = random.choice(['l', 'r'])
+    #ss.overwrite(COLORS.RED + flip)
     choice = ""
     choice = input(c.backYELLOW + c.BLACK + f"\rYou have been attacked! Left or Right? (L/R) ")
     while (not (choice.lower() == "r" or choice.lower() == "l")):
-        choice = input(c.backYELLOW + c.BLACK + f"\rInvalid choice! You have been attacked! Left or Right? (L/R) ")
-    ss.overwrite("\r" + " " * 40)
-    flip = random.choice(['l', 'r'])
+        ss.overwrite(COLORS.RED + "Invalid Choice!")
+        choice = input(c.backYELLOW + c.BLACK + f"\rYou have been attacked! Left or Right? (L/R) ")
+        ss.overwrite("\r" + " " * 40)
 
     # TODO - Make the animation asynchrnous.
     active_terminal.update(header + "\n" + g['coin_flip_heads'])
@@ -62,20 +64,15 @@ def play(active_terminal: Terminal, bet) -> int:
     active_terminal.update(header + "\n" + g['coin_flip_middle'])
     sleep(0.2)
     active_terminal.update(header + "\n" + g['coin_flip_heads' if flip == 'heads' else 'coin_flip_tails'])
-    if (choice.lower() == "l" and flip == 'l'):
-        input(c.backYELLOW + c.BLACK + f"\rYou got the right hand! You avoided the penalty!")
+    if (choice.lower() == flip):
+        ss.overwrite(c.backYELLOW + c.BLACK + f"\rYou got the right hand! You avoided the penalty!")
         ss.overwrite("\r" + " " * 40)
         score[0] += 1
-    elif (choice.lower() == "l" and flip == 'r'):
-        input(c.backYELLOW + c.BLACK + f"\rYou got the wrong hand...")
+    else:
+        ss.overwrite(c.backYELLOW + c.BLACK + f"\rYou got the wrong hand...")
         ss.overwrite("\r" + " " * 40)
-    elif (flip == 'l' and choice.lower() == "r"):
-        input(c.backYELLOW + c.BLACK + f"\rYou got the wrong hand...")
-        ss.overwrite("\r" + " " * 40)
-    elif (flip == 'l' and choice.lower() == "r"):
-        input(c.backYELLOW + c.BLACK + f"\rYou got the right Hand! You avoided the penalty!")
-        ss.overwrite("\r" + " " * 40)
-        score[0] += 1
+        score[0] = 0
+
 
     if (score[0] == 1):
         active_terminal.update(header + "\n" + g['casino_win'])
@@ -83,7 +80,7 @@ def play(active_terminal: Terminal, bet) -> int:
     else:
         active_terminal.update(header + "\n" + g['casino_lose'])
         bet *= 1
-    input("\r")
+    #input("\r")
     ss.overwrite("\r" + " " * 40)
     return bet
 

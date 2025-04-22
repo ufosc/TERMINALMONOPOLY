@@ -270,7 +270,6 @@ def start_notification_listener(my_socket: socket.socket) -> None:
             for t in TERMINALS:
                 if not t.status == "DISABLED":  # If terminal is not busy
                     ss.overwrite(COLORS.RED + "Incoming!")
-                    usable = False
                     break
             commands = notif[7:]
             attack_info = commands.split(" ")
@@ -280,7 +279,7 @@ def start_notification_listener(my_socket: socket.socket) -> None:
             i = __import__('attack_modules.' + attack_game, fromlist=[''])
             penalty = i.play(t, amount);
             #problem with socket
-            net.send_message(sockets[1], f"{player_id} attack {player_id} {"lose"} {penalty} {attacker}")
+            net.send_message(sockets[1], f"{player_id}attack {player_id} lose {penalty} {attacker}")
         elif "MPLY:" in notif: # Get the Monopoly board state. Overwrite the entire screen.
             gameboard = notif[5:]
             ss.clear_screen()
