@@ -6,6 +6,8 @@ import socket
 import platform
 import threading
 from time import sleep
+
+from banker import server_socket
 from style import MYCOLORS as COLORS, graphics as g, print_w_dots
 import screenspace as ss
 import networking as net
@@ -264,6 +266,21 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 TERMINALS[int(term[1])].disable()
             elif(term[0] == "enable"):
                 TERMINALS[int(term[1])].enable(True, sockets[1], player_id)
+        elif "ATTACK:" in notif:
+            for t in TERMINALS:
+                if not t.status == "DISABLED":  # If terminal is not busy
+                    ss.overwrite(COLORS.RED + "Incoming!")
+                    usable = False
+                    break
+            commands = notif[7:]
+            attack_info = commands.split(" ")
+            amount = attack_info[3]
+            attack_game = attack_info[2]
+            attacker = attack_info[1]
+            i = __import__('attack_modules.' + attack_game, fromlist=[''])
+            penalty = i.play(t, amount);
+            #problem with socket
+            net.send_message(sockets[1], f"{player_id} attack {player_id} {"lose"} {penalty} {attacker}")
         elif "MPLY:" in notif: # Get the Monopoly board state. Overwrite the entire screen.
             gameboard = notif[5:]
             ss.clear_screen()
@@ -414,7 +431,7 @@ def get_input() -> None:
                 ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
             
-            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "deed", "kill", "disable"]:
+            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "attack", "deed", "kill", "disable"]:
                 ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode." + COLORS.RESET)
 
             #elif stdIn == "kill":
@@ -438,7 +455,6 @@ def get_input() -> None:
                     for t in TERMINALS:
                         t.display()
                     ss.update_terminal(active_terminal.index, active_terminal.index)
-
                 elif stdIn.startswith("kill"):
                     if(len(stdIn.split(" ")) == 3):
                         net.send_message(sockets[1], f'{player_id}' + stdIn)
