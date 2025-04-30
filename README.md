@@ -82,3 +82,5 @@ Interested in adding to Terminal Monopoly? This is a beginner-friendly project t
 All code contributions should also be sure to adhere to the [style guide](StyleGuide.md).
 
 The base Terminal Monopoly game will have a large collection of modules which should promote a large number of playstyles, but if you have ideas for modules, code them up and create a pull request! This game is always looking for creative additions. 
+
+See [CONTRIBUTIONS.md](./CONTRIBUTIONS.md) for details about my personal contributions to this project.
