@@ -81,11 +81,4 @@ Interested in adding to Terminal Monopoly? This is a beginner-friendly project t
 
 All code contributions should also be sure to adhere to the [style guide](StyleGuide.md).
 
-
-With regards to troubleshooting, this program logs errors to an `errorlog.txt` file using the `log_error()` function.
-This records error messages along with the current date and time, making it easier to identify and debug issues.
-If for any reason you encounter an error while testing, the error will automatically be logged here.
-
 The base Terminal Monopoly game will have a large collection of modules which should promote a large number of playstyles, but if you have ideas for modules, code them up and create a pull request! This game is always looking for creative additions. 
-
-In the future, Terminal Monopoly may support "direct modding," that is, an interface will be available which will make module creation very simple. 

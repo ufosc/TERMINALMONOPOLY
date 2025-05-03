@@ -1,27 +1,33 @@
+# Python Builtin Utilities
 import socket
 import threading
 import os
 import sys
 import random
-
-from style import MYCOLORS as COLORS, print_w_dots, choose_colorset
-import screenspace as ss 
+import select
+from time import sleep
 import importlib
 
+# Our Utilities
+from style import MYCOLORS as COLORS, print_w_dots, choose_colorset
+import screenspace as ss 
 import gamemanager as gm
 import networking as net
 import validation as valid
 
+# Modules
 import modules_directory.tictactoe as tictactoe
+import modules_directory.inventory as inv
+from modules_directory.inventory import handle as handle_inventory
 from modules_directory.deed_viewer import handle as handle_deed
 from modules_directory.balance import handle as handle_balance
 from modules_directory.casino import handle as handle_casino
+from modules_directory.chat import handle as handle_chat
+from modules_directory.shop import handle as handle_shop
 
 
-import monopoly as mply
-
-import select
-from time import sleep
+# Monopoly Game
+import monopoly_directory.monopoly as mply
 
 STARTING_CASH = 1500
 clients = []
@@ -30,6 +36,7 @@ port = 3131
 num_players = 0
 play_monopoly = True
 handle_cmds = {}
+messages = []
 
 TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
 Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
@@ -37,12 +44,13 @@ Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES,
 Main_Output = ss.OutputArea("Main", ss.MAIN_OUTPUT_COORDINATES, 79, 12)
 
 class Client:
-    def __init__(self, socket: socket.socket, id: int, name: str, money: int, properties: list):
+    def __init__(self, socket: socket.socket, id: int, name: str, money: int, properties: list, inventory_object: inv.Inventory):
         self.socket = socket
         self.id = id
         self.name = name
         self.money = money
         self.properties = properties
+        self.inventory = inventory_object
         self.can_roll = True
         self.num_rolls = 0
         self.terminal_statuses = ["ACTIVE", "ACTIVE", "ACTIVE", "ACTIVE"]
@@ -120,10 +128,7 @@ def start_server() -> socket.socket:
         else: 
             game_full = True
         sleep(0.5) 
-    print_w_dots("Game is full. Starting game...")
-    print_w_dots("")
-    print_w_dots("")
-    print_w_dots("")
+    print_w_dots("Game is full. Starting game")
     # Send a message to each client that the game is starting, allowing them to see their terminals screen
     for i in range(len(clients)): 
         clients[i].id = i
@@ -332,6 +337,12 @@ def handle_data(data: str, client: socket.socket) -> None:
     # elif data.startswith('ttt'):
     #     handle_ttt(data, current_client)
 
+    elif "chat" not in data and "inventory" in data: # Ensure the chat module is not being called
+        handle_inventory(data, client, current_client.inventory)
+
+    elif "chat" not in data and "shop" in data: # Ensure the chat module is not being called
+        handle_shop(data, client, current_client.inventory, current_client.money, current_client.id, change_balance)
+
     elif data.startswith('deed'):
         handle_deed(data, client, mply)
 
@@ -344,6 +355,9 @@ def handle_data(data: str, client: socket.socket) -> None:
         #run the attack similar to casino on client side and send game to player attacked, then send resulting command back
         handle_attack(data, current_client, client)
 
+    elif data.startswith('chat'):
+        handle_chat(data, client, messages, current_client.id, current_client.name)
+        
     elif data.startswith('term_status'):
         command_data = data.split(' ')
         term = int(command_data[1])
@@ -498,7 +512,7 @@ def handshake(client_socket: socket.socket, handshakes: list) -> None:
         handshakes[len(clients)-1] = True
         name = message.split(',')[1]
         
-        clients.append(Client(client_socket, None, name, 2000, [])) # Append the client to the list of clients with a temporary id of None
+        clients.append(Client(client_socket, None, name, 2000, [], inv.Inventory())) # Append the client to the list of clients with a temporary id of None
 
     else: 
         handshakes[len(clients)-1] = False

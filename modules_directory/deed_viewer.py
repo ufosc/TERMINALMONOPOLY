@@ -14,7 +14,7 @@ oof_params = {"player_id": None, "server": None, "index": None} # Global paramet
     
 def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     active_terminal.persistent = persistent
-    index = ss.get_valid_int("Enter a property ID: ", 1, 39, disallowed=[0,2,4,7,10,17,20,22,30,33,36,38], allowed=[" "])
+    index = ss.get_valid_int("Enter a property ID (or ENTER to skip): ", 1, 39, disallowed=[0,2,4,7,10,17,20,22,30,33,36,38], allowed=[" "])
     if not index == "":
         active_terminal.persistent = persistent
         active_terminal.oof_callable = oof # Set the out of focus callable function
@@ -25,13 +25,10 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
         net.send_message(server, f'{player_id}deed {index}')
 
         # Wait for server to send back the deed, then display it on the active terminal.
+        net.player_mtrw = True
         deed = net.receive_message(server)
+        net.player_mtrw = False
         active_terminal.update(deed, padding=False)
-    else: #  
-        active_terminal.is_retrieved = False # Allow player to use deeds again.
-        stdIn = ""
-        active_terminal.update("Return to this Terminal to use deeds.", padding=True)
-
 
 def set_oof_params(player_id:int, server: socket, index: int) -> None: 
     """

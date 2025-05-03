@@ -1,5 +1,6 @@
 HEADERSIZE = 10 # Max length of the header, meaning the max length of the message is 10^10 bytes
 import socket
+player_mtrw = False # Store here if the player associated with this script is waiting on messages in their main thread
 
 # Credit to sentdex's video @ https://www.youtube.com/watch?v=8A4dqoGL62E 
 # for helping me understand how to send and receive messages over sockets.
