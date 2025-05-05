@@ -90,11 +90,6 @@ class Terminal:
         """
 
         self.padded_data = padding
-        # If you're really desparate to add padding, for some edge case you can add it to the data string.
-        if not padding:
-            if not callable(data) and 'PAD ME PLEASE!' in data:
-                data = data.replace('PAD ME PLEASE!', '')
-                self.padded_data = True
 
         # These lines are taking any additional string fragments that use "set_cursor_string()" from 
         # style.py and update the x,y coordinates to the current quadrant.
@@ -227,6 +222,34 @@ class Terminal:
         self.status = "BUSY"
         net.send_message(socket, str(player_id) + "busy " + str(self.index))
 
+    def indicate_keyboard_hook(self, off=False):
+        """
+        Indicates that the keyboard hook is active for a certain terminal. 
+        Changes the color of the terminal border.
+        This is important for the player to know why they can't type on the input line.
+        """
+        border_chars = [('╔','╦','╠','╬'),
+                        ('╦','╗','╬','╣'),
+                        ('╠','╬','╚','╩'),
+                        ('╬','╣','╩','╝')]
+        
+        t = self.index - 1
+        if off:
+            c = COLORS.GREEN
+        else:
+            c = COLORS.LIGHTBLUE
+        set_cursor(self.x-1,self.y-1)
+        print(c, end='')
+        print(border_chars[t][0] + '═' * cols + border_chars[t][1], end='')
+        set_cursor(self.x-1,self.y+rows)
+        print(border_chars[t][2] + '═' * cols + border_chars[t][3], end='')
+        for i in range(self.y, self.y + rows):
+            set_cursor(self.x-1, i)
+            print('║')
+            set_cursor(self.x+cols, i)
+            print('║')
+
+
 def notification(message: str, n: int, color: str, custom_x: int, custom_y: int) -> str:
     """
     Generates a notification popup message for the player.
@@ -350,39 +373,6 @@ def debug_note():
         print(f'{COLORS.GREEN}{message}{COLORS.RESET}')
         set_cursor(0,INPUTLINE)
 
-def indicate_keyboard_hook(t: int):
-    """
-    Indicates that the keyboard hook is active for a certain terminal. 
-    Changes the color of the terminal border.
-    This is important for the player to know why they can't type on the input line.
-    """
-    x,y = -1,-1
-    border_chars = [('╔','╦','╠','╬'),
-                    ('╦','╗','╬','╣'),
-                    ('╠','╬','╚','╩'),
-                    ('╬','╣','╩','╝')]
-    
-    if (t == 1):
-        x,y = 0,1
-    elif (t == 2):
-        x,y = cols+2, 1
-    elif (t == 3):
-        x,y = 0, rows+2
-    elif (t == 4):
-        x,y = cols+2, rows+2
-    t = t - 1 # 0-indexed
-    c = COLORS.LIGHTBLUE
-    set_cursor(x,y)
-    print(c, end='')
-    print(border_chars[t][0] + '═' * cols + border_chars[t][1], end='')
-    set_cursor(x,y+rows+1)
-    print(border_chars[t][2] + '═' * cols + border_chars[t][3], end='')
-    for i in range(y, y + rows):
-        set_cursor(x, i+1)
-        print('║')
-        set_cursor(x+cols + (1 if (t + 1) % 2 == 0 else 2), i+1)
-        print('║')
-
 def overwrite(text: str = ""):
     """
     Writes text over 2nd to last line of the terminal (input line).
@@ -396,6 +386,7 @@ def overwrite(text: str = ""):
     """
     set_cursor(0, INPUTLINE)
     print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r')
+    set_cursor(0, INPUTLINE)
 
 def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowed = [], allowed = []): # arbitrary large numbers
     """

@@ -1,6 +1,7 @@
 from screenspace import Terminal
 from style import MYCOLORS as COLORS
 from socket import socket
+from style import set_cursor, set_cursor_str
 
 name = "Calculator Module"
 command = "calc"
@@ -15,6 +16,11 @@ calculator_history_queue = []
 calculator_history_current_capacity = 15
 
 def run(server: socket, active_terminal: Terminal, player_id: int):
+    #Clears "calc" from command line.
+    for i in range (0, 5):
+            set_cursor(i,45)
+            print(" ")
+    
     """
     A command-line calculator module that supports basic arithmetic operations.
 
@@ -34,7 +40,7 @@ def run(server: socket, active_terminal: Terminal, player_id: int):
 
     # Helper function that contructs terminal printing.
     def calculator_terminal_response(footer_option: int) -> str:
-        calculator_header = "\nCALCULATOR TERMINAL\nHistory:\n"
+        calculator_header = "\nCALCULATOR TERMINAL\nHistory: (Enter 'c' to clear)\n"
         footer_options = ["Awaiting an equation...\nPress 'e' to exit the calculator terminal.", 
                       COLORS.BLUE+"Type 'calc' to begin the calculator!", 
                       COLORS.RED+"Equation either malformed or undefined! Try again!\nPress 'e' to exit the calculator terminal"+COLORS.RESET]
@@ -110,10 +116,19 @@ def run(server: socket, active_terminal: Terminal, player_id: int):
         digit_result = 0
         print("\r", end='')
         equation = input(COLORS.GREEN)
+
+        for i in range (0, len(equation)+1):
+            set_cursor(i,45)
+            print(" ")
+
         print(COLORS.RESET, end="")
         if(equation == "e"):
             active_terminal.update(calculator_terminal_response(1), padding=True)
             break
+        elif(equation == "c"):
+            calculator_history_queue.clear()
+            active_terminal.update(calculator_terminal_response(0))
+            continue
 
         #Trims unnecessary spaces and pads operators with spaces
         equation = equation.replace(" ", "")
