@@ -361,13 +361,14 @@ def handle_attack(cmds: str, current_client: Client, client: socket.socket) -> N
     """
     Command Structure:
         action player term length
-        (Ex. Attack 0 5 15)
+        (Ex. Attack 0 5 15 1)
 
     Args:
         action: Type of action (attack)
-        player: ID of player to change
+        player: ID of player attacked
         pType:penalty game (e.g. guessing game)
         pNum: penalty amount
+        player: ID of player attacking
     """
     command_data = cmds.split(' ')
     if(command_data[0] == 'attack'):
