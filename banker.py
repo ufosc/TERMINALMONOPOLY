@@ -40,7 +40,7 @@ messages = []
 TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
 Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
 Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES, 191, 6)
-Main_Output = ss.OutputArea("Main", ss.MAIN_OUTPUT_COORDINATES, 79, 12)
+Main_Output = ss.OutputArea("Main", ss.MAIN_OUTPUT_COORDINATES, 73, 12)
 
 class Client:
     def __init__(self, socket: socket.socket, id: int, name: str, money: int, properties: list, inventory_object: inv.Inventory):
@@ -266,15 +266,10 @@ def set_unittest() -> None:
         play_monopoly = True
         num_players = 1
         STARTING_CASH = 2000
-        gm.add_game(gm.Game('Fake Game', [Client(None, -1, "Null", 0, [])] * 4, 'board', 'other_data'))
     elif (test == 2):
         play_monopoly = True
         num_players = 2
         STARTING_CASH = 1500
-        gm.add_game(gm.Game('Battleship', [Client(None, -99, "Null", 0, [])] * 4, 'board', 'other_data'))
-        gm.add_game(gm.Game('Battleship', [Client(None, -98, None, 0, [])] * 2, 'board', 'other_data'))
-        gm.add_game(gm.Game('Battleship', [Client(None, -97, "Name", 0, [])] * 3, 'board', 'other_data'))
-        gm.add_game(gm.Game('TicTacToe', [Client(None, -96, "nada", 0, [])] * 2, 'board', None))
     elif (test == 3):
         play_monopoly = False
         num_players = 4

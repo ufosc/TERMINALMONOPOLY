@@ -26,7 +26,7 @@ VERBOSE = True # Set to True to see all output in the output areas. If the user 
 MONOPOLY_OUTPUT_COORDINATES = (1, 47) # (0, 47) is the top left corner of the monopoly output frame. Add 1 to x and y to print within in the frame.
 TTT_OUTPUT_COORDINATES = (157, 13) # (157, 11) is the top left corner of the ttt output frame. Add 1 to x and y to print within in the frame.
 CASINO_OUTPUT_COORDINATES = (157, 0) # (157, 0) is the top left corner of the casino output frame. Add 1 to x and y to print within in the frame.
-MAIN_OUTPUT_COORDINATES = (0, 36) # (0, 0) is the top left corner of the main output frame. Add 1 to x and y to print within in the frame.
+MAIN_OUTPUT_COORDINATES = (121, 36) # (121, 0) is the top left corner of the main output frame. Add 1 to x and y to print within in the frame.
 
 class OutputArea:
     def __init__(self, name: str, coordinates: tuple, max_length: int, max_lines: int):
@@ -51,7 +51,7 @@ class OutputArea:
                 print(self.color_list[i], end="")
                 if self.name == "Main": # Main output area is special, it doesn't have a border
                     set_cursor(self.coordinates[0] + 1, self.coordinates[1] + i)
-                    print(line + " " * (self.max_length - len(line) - 2), end="") # print line and clear extra old text
+                    print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
                 else:
                     set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 2 + i)
                     print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
