@@ -1,5 +1,3 @@
-import math
-from idlelib.debugger_r import close_remote_debugger
 import random
 from time import sleep
 import screenspace as ss

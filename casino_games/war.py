@@ -1,4 +1,3 @@
-import player
 import random
 import screenspace as ss
 from screenspace import Terminal
