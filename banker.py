@@ -1,11 +1,25 @@
+import itertools
+from time import sleep
+import sys
+import os
+# Start the loading animation in a separate thread
+loading = True
+def loading_animation(text="Loading"):
+    for frame in itertools.cycle(['|', '/', '-', '\\']):
+        if not loading:
+            break
+        sys.stdout.write(f'\r{text} {frame}')
+        sys.stdout.flush()
+        sleep(0.1)
+    sys.stdout.write('\rLoading complete!     \n')
+import threading
+animation_thread = threading.Thread(target=loading_animation, args=["Loading imports"])
+animation_thread.start()
+
 # Python Builtin Utilities
 import socket
-import threading
-import os
-import sys
 import random
 import select
-from time import sleep
 import importlib
 
 # Our Utilities
@@ -18,15 +32,21 @@ import validation as valid
 # Modules
 import modules_directory.tictactoe as tictactoe
 import modules_directory.inventory as inv
-from modules_directory.inventory import handle as handle_inventory
-from modules_directory.deed_viewer import handle as handle_deed
-from modules_directory.balance import handle as handle_balance
-from modules_directory.casino import handle as handle_casino
-from modules_directory.chat import handle as handle_chat
-from modules_directory.shop import handle as handle_shop
+# Dynamically import handle functions from modules in modules_directory as handle_<module_name>
+modules_path = "modules_directory"
+for filename in os.listdir(modules_path):
+    if filename.endswith(".py") and filename != "__init__.py":
+        module_name = filename[:-3]  # Remove the .py extension
+        module = importlib.import_module(f"{modules_path}.{module_name}")
+        if hasattr(module, "handle"):
+            globals()[f"handle_{module_name}"] = getattr(module, "handle")
 
 # Monopoly Game
 import monopoly_directory.monopoly as mply
+
+# Stop the loading animation after imports are complete
+loading = False
+animation_thread.join()
 
 STARTING_CASH = 1500
 clients = []
@@ -331,6 +351,7 @@ def handle_data(data: str, client: socket.socket) -> None:
     # elif data.startswith('ttt'):
     #     handle_ttt(data, current_client)
 
+    # These handle functions are all defined in their respective modules as handle
     elif "chat" not in data and "inventory" in data: # Ensure the chat module is not being called
         handle_inventory(data, client, current_client.inventory)
 
@@ -348,6 +369,9 @@ def handle_data(data: str, client: socket.socket) -> None:
 
     elif data.startswith('chat'):
         handle_chat(data, client, messages, current_client.id, current_client.name)
+
+    elif data.startswith('trade'):
+        handle_trading(data, client, clients, mply, current_client.money, current_client.properties)
         
     elif data.startswith('term_status'):
         command_data = data.split(' ')

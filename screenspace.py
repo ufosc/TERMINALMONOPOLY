@@ -598,6 +598,34 @@ def calibrate_screen(type: str) -> None:
     input("Press enter to continue...")
 
     clear_screen()
+    print("Character set test. If characters are not displaying correctly, please change your terminal font to a monospace font.\n")
+    print("If you are using Windows, please use the 'Consolas' font.\n")
+    print("If you are using Linux, please use the 'DejaVu Sans Mono' font.\n")
+    print("If you are using macOS, please use the 'Menlo' font.\n")
+    print("In addition, please ensure that your terminal is set to use UTF-8 encoding.\n")
+    print("If you are using Windows, please use the 'Terminal' application.\n")
+    print("If you are using Linux, please use the 'Gnome Terminal' application.\n")
+    print("If you are using macOS, please use the 'Terminal' application.\n")
+    print(g.get('.chartest'))
+
+    c = input("\n\nIf none of the above options work, type 1 to submit an issue on GitHub, or press enter to continue.\n")
+    if c == "1":
+        clear_screen()
+        print("If you are using a different terminal, please let us know and we will try to add support for it.")
+        print("Please submit an issue on GitHub at \n https://github.com/ufosc/TERMINALMONOPOLY/issues \nwith the details of your terminal and OS.")
+        print("Include the following information:\n")
+        print(f"Operating System: {platform.system()} {platform.release()} ({platform.version()})")
+        print(f"Terminal Type: {os.name}")
+        print(f"Terminal Name: {os.getenv('TERM', 'Unknown')}")
+        print(f"Terminal Size: {shutil.get_terminal_size().columns}x{shutil.get_terminal_size().lines}")
+        print(f"Python Version: {platform.python_version()}")
+        print(f"Terminal Encoding: {os.device_encoding(1) or 'Unknown'}")
+        print("Please include a screenshot of the terminal with the issue.")
+
+        input("Press enter to continue...")
+
+    clear_screen()
+
     if current_os == "Darwin":
         # Print out instructions for macOS users
         print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")
