@@ -25,6 +25,7 @@ import importlib
 # Our Utilities
 from style import MYCOLORS as COLORS, print_w_dots, choose_colorset
 import screenspace as ss 
+from screenspace import Trading_Output, Main_Output, Monopoly_Game_Output, Casino_Output
 import gamemanager as gm
 import networking as net
 import validation as valid
@@ -57,11 +58,6 @@ num_players = 0
 play_monopoly = True
 monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
 messages = []
-
-TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
-Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
-Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES, 191, 6)
-Main_Output = ss.OutputArea("Main", ss.MAIN_OUTPUT_COORDINATES, 73, 12)
 
 def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
     """
@@ -528,23 +524,6 @@ def monopoly_controller(unit_test) -> None:
     """
     add_to_output_area("Monopoly", "About to start Monopoly game.")
     mply.unittest(unit_test)
-    # # Unit testing does not work for purchasing properties. TODO 
-    # # So I'm going to do this instead: 
-    # if unit_test == 5:
-    #     mply.players[0].buy(1, mply.board)
-    #     mply.players[0].buy(3, mply.board)
-    #     mply.players[0].buy(5, mply.board)
-    #     mply.players[0].buy(6, mply.board)
-    #     mply.players[0].buy(8, mply.board)
-    #     mply.players[0].buy(9, mply.board)
-    #     mply.players[1].buy(11,mply.board)
-    #     mply.players[1].buy(12,mply.board)
-    #     mply.players[1].buy(13,mply.board)
-    #     mply.players[1].buy(14,mply.board)
-    #     mply.players[1].buy(15,mply.board)
-    #     mply.players[1].buy(16,mply.board)
-    #     mply.players[1].buy(18,mply.board)
-    #     mply.players[1].buy(19,mply.board)
 
     if not play_monopoly:
         add_to_output_area("Monopoly", "No players in the game. Not attempting to run Monopoly.")
@@ -562,7 +541,7 @@ def monopoly_controller(unit_test) -> None:
             last_turn = mply.turn
             net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.", "MPLY:")
             clients[mply.turn].can_roll = True
-            ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
+            # ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
             add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
 
 def monopoly_game(client: Client = None, cmd: str = None) -> None:

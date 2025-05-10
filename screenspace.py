@@ -23,11 +23,6 @@ cols = WIDTH//2
 DEBUG = False
 VERBOSE = True # Set to True to see all output in the output areas. If the user does not need to see the output (any privacy concerns or in a tournament game), set to False via -silent sys.argv.
 
-MONOPOLY_OUTPUT_COORDINATES = (1, 47) # (0, 47) is the top left corner of the monopoly output frame. Add 1 to x and y to print within in the frame.
-TTT_OUTPUT_COORDINATES = (157, 13) # (157, 11) is the top left corner of the ttt output frame. Add 1 to x and y to print within in the frame.
-CASINO_OUTPUT_COORDINATES = (157, 0) # (157, 0) is the top left corner of the casino output frame. Add 1 to x and y to print within in the frame.
-MAIN_OUTPUT_COORDINATES = (121, 36) # (121, 0) is the top left corner of the main output frame. Add 1 to x and y to print within in the frame.
-
 class OutputArea:
     def __init__(self, name: str, coordinates: tuple, max_length: int, max_lines: int):
         self.name = name
@@ -36,6 +31,25 @@ class OutputArea:
         self.color_list = []
         self.max_length = max_length
         self.max_lines = max_lines
+
+    def draw(self): # Draw the border and title
+        x = self.coordinates[0]
+        y = self.coordinates[1]
+         # Center name
+        for i in range(self.max_lines):
+            set_cursor(x,y+1+i)
+            print("║" + " " * self.max_length + "║")
+        set_cursor(x, y) # Top left
+        print("╔" + "═" * self.max_length)  
+        set_cursor(x+self.max_length+1,y) # Top left
+        print("╗")
+        set_cursor(x,y+self.max_lines) # Bottom left
+        print("╚" + "═" * self.max_length)
+        set_cursor(x+self.max_length+1,y+self.max_lines) # Bottom right
+        print("╝")
+        name_x = x + self.max_length//2 - len(self.name)//2
+        set_cursor(name_x, y)
+        print(f" {self.name.upper()} ")
 
     def add_output(self, output: str, color):
         if VERBOSE:
@@ -56,6 +70,13 @@ class OutputArea:
                     set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 2 + i)
                     print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
                 print(COLORS.RESET, end="", flush=True) # reset color
+
+# Output areas for Banker
+Casino_Output = OutputArea("Casino Output", (157, 0), 36, 17)
+Trading_Output = OutputArea(name="Trade Network Output", coordinates=(157, 18), max_length=36, max_lines=17)
+Monopoly_Game_Output = OutputArea("Monopoly Output", (1, 48), 119, 11)
+Main_Output = OutputArea("Main Output", (122, 36), 71, 23)
+OUTPUT_AREAS = [Trading_Output, Casino_Output, Monopoly_Game_Output, Main_Output]
 
 class Terminal:
     def __init__(self, index: int, coordinates: tuple):
@@ -222,11 +243,9 @@ class Terminal:
         self.status = "BUSY"
         net.send_message(socket, str(player_id) + "busy " + str(self.index))
 
-    def indicate_keyboard_hook(self, off=False):
+    def change_border_color(self, c):
         """
-        Indicates that the keyboard hook is active for a certain terminal. 
-        Changes the color of the terminal border.
-        This is important for the player to know why they can't type on the input line.
+        Changes the border color of a terminal. Very handy.
         """
         border_chars = [('╔','╦','╠','╬'),
                         ('╦','╗','╬','╣'),
@@ -234,10 +253,6 @@ class Terminal:
                         ('╬','╣','╩','╝')]
         
         t = self.index - 1
-        if off:
-            c = COLORS.GREEN
-        else:
-            c = COLORS.LIGHTBLUE
         set_cursor(self.x-1,self.y-1)
         print(c, end='')
         print(border_chars[t][0] + '═' * cols + border_chars[t][1], end='')
@@ -248,6 +263,19 @@ class Terminal:
             print('║')
             set_cursor(self.x+cols, i)
             print('║')
+
+    def indicate_keyboard_hook(self, off=False):
+        """
+        Indicates that the keyboard hook is active for a certain terminal. 
+        Changes the color of the terminal border.
+        This is important for the player to know why they can't type on the input line.
+        """
+        if off:
+            c = COLORS.GREEN
+        else:
+            c = COLORS.LIGHTBLUE
+
+        self.change_border_color(c)
 
 
 def notification(message: str, n: int, color: str, custom_x: int, custom_y: int) -> str:
@@ -499,24 +527,26 @@ def print_banker_frames():
             for j in range(len(border[i])):
                 print(border[i][j], end="")
     calibrate_print_commands()        
-    casino_frame = g.get('casino_output_frame')
-    i = 0
-    for line in casino_frame.split('\n'):
-        set_cursor(CASINO_OUTPUT_COORDINATES[0], CASINO_OUTPUT_COORDINATES[1]+i)
-        print(line, end="")
-        i += 1
-    i -= 1
-    ttt_frame = g.get('ttt_output_frame')
-    for line in ttt_frame.split('\n'):
-        set_cursor(TTT_OUTPUT_COORDINATES[0], i)
-        print(line, end="")
-        i += 1
-    monopoly_output_frame = g.get('monopoly_output_frame')
-    i = 0
-    for line in monopoly_output_frame.split('\n'):
-        set_cursor(MONOPOLY_OUTPUT_COORDINATES[0], MONOPOLY_OUTPUT_COORDINATES[1]+i)
-        print(line, end="")
-        i += 1
+    for OA in OUTPUT_AREAS:
+        OA.draw()
+    # casino_frame = g.get('casino_output_frame')
+    # i = 0
+    # for line in casino_frame.split('\n'):
+    #     set_cursor(CASINO_OUTPUT_COORDINATES[0], CASINO_OUTPUT_COORDINATES[1]+i)
+    #     print(line, end="")
+    #     i += 1
+    # i -= 1
+    # ttt_frame = g.get('ttt_output_frame')
+    # for line in ttt_frame.split('\n'):
+    #     set_cursor(TTT_OUTPUT_COORDINATES[0], i)
+    #     print(line, end="")
+    #     i += 1
+    # monopoly_output_frame = g.get('monopoly_output_frame')
+    # i = 0
+    # for line in monopoly_output_frame.split('\n'):
+    #     set_cursor(MONOPOLY_OUTPUT_COORDINATES[0], MONOPOLY_OUTPUT_COORDINATES[1]+i)
+    #     print(line, end="")
+    #     i += 1
 
 def auto_calibrate_screen(mode: str = "player") -> None:
     """

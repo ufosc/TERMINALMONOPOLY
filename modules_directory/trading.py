@@ -17,7 +17,23 @@ help_text = "Type TRADE to trade assets with other players."
 persistent = False
 oof_params = {"player_id": None, "server": None} # Global parameters for out of focus function
 
-auctions = {} # Auctions for the players. This will be a dictionary with player who opened the auction, property name, auction price, and current highest bidder.
+# The auctions are a list of dictionaries, where each dictionary is an auction.
+# Each auction has a name, an object (the item being auctioned), a price, and a bidder, and a time remaining.
+class Temp:
+    def __init__(self, l, n):
+        self.location = l
+        self.name = n
+
+o1 = Temp(3, "Player")
+o2 = Temp(4, "four")
+o3 = Temp(5, "five")
+o4 = Temp(39, "yeah")
+
+
+auctions = [{"name": o1.name, "obj": o1, "price": 0, "bidder": "", "remaining": 0}, 
+            {"name": o2.name, "obj": o2, "price": 0, "bidder": "", "remaining": 0},
+            {"name": o3.name, "obj": o3, "price": 0, "bidder": "", "remaining": 0},
+            {"name": o4.name, "obj": o4, "price": 0, "bidder": "", "remaining": 0},] 
 
 def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     """
@@ -53,29 +69,32 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
 
     # Navigate the trading menu.
     while True:
-        choice = navigate([(2, 11), (2, 12), (2, 13), (2, 16), (2, 17), (2, 18), (53, 11), (53, 12), (53, 13)], active_terminal, ret_val) # Get the coordinates of the options in the menu.
+        choice = navigate([(2, 11), (2, 12), (2, 13), (2, 16), (2, 17), (2, 18), (48, 11), (48, 12), (58, 11), (58, 12)], active_terminal, ret_val) # Get the coordinates of the options in the menu.
 
         net.send_message(server, f"{player_id}trade,eval,{choice}") # Send the choice to the server.
         server_choice = net.receive_message(server) # Receive the choice from the server.
         
         if server_choice == "invalid": # If the choice is invalid, update the terminal with the error message.
-            ret_val += COLORS.RED + set_cursor_str(27, 10) + "Invalid choice." + COLORS.ORANGE + set_cursor_str(27, 11) + "Please try again." + COLORS.RESET
+            ret_val += COLORS.RED + set_cursor_str(22, 10) + "Invalid choice." + COLORS.ORANGE + set_cursor_str(22, 11) + "Please try again." + COLORS.RESET
         elif server_choice == "-1": # Player pressed "q" to quit the menu.
-            ret_val += set_cursor_str(27, 10) + " " * 22 + set_cursor_str(27, 11) + " " * 22
-            ret_val += COLORS.BLUE + set_cursor_str(27, 10) + "Come again soon!" + COLORS.GREEN + set_cursor_str(27, 11) + "Come again soon!" + COLORS.RESET
+            ret_val += set_cursor_str(22, 10) + " " * 22 + set_cursor_str(22, 11) + " " * 22
+            ret_val += COLORS.BLUE + set_cursor_str(22, 10) + "Come again soon!" + COLORS.GREEN + set_cursor_str(22, 11) + "Come again soon!" + COLORS.RESET
             active_terminal.update(ret_val, False) # Paste exit message onto terminal
             break
         else:
-            ret_val += set_cursor_str(27, 10) + " " * 22 + set_cursor_str(27, 11) + " " * 22
-            if server_choice != "trading_screen" and server_choice != "trading_auctions":
-                ret_val += client_parse_menu(server_choice)
+            ret_val += set_cursor_str(22, 10) + " " * 22 + set_cursor_str(22, 11) + " " * 22
+            if server_choice.startswith("trading_screen") and server_choice.startswith("trading_auctions"):
+                ret_val = img + client_parse_menu(server_choice)
             else: 
-                img = g.get(server_choice) # get either the trading screen or the trading auctions.
+                img_name = server_choice.split(",")[0] # Get the image name from the server choice.
+                trade_auction_data = server_choice.split(",", 1)[1:] # Get the trade or auction data from the server choice.
+                img = g.get(img_name) # get either the trading screen or the trading auctions.
                 active_terminal.update(img, True) # Update the terminal with the image. 
                 break # Exit the loop if the choice is valid. 
             # data = net.receive_message(server) 
             # active_terminal.update(data, False) # Update the terminal with the specific data from the server.
     
+    # trade_auction_data
     # Navigate the new trade menu
     # while True:
         # choice = navigate([(0,2), (0,3), (24, 2), (24, 3)]) # This will be dependent on what's received from Banker
@@ -159,14 +178,14 @@ def client_parse_menu(info: str) -> str:
         players = info.split("__players:")[1].split("__;")[0].split(",")
         for player in players:
             if player != "":
-                ret_val += set_cursor_str(33, 15 + players.index(player)) + f"{player}" # Offset the players.
+                ret_val += set_cursor_str(28, 15 + players.index(player)) + f"{player}" # Offset the players.
 
     if "__ads:" in info: # If there is an ad, position them in the string.
         ad = info.split("__ads:")[1].split("__;")[0] # Get the ad from the string.
         text_list = textwrap.wrap(ad, 22)
         for i, line in enumerate(text_list):
             if i == 3: break # Limit to 3 lines of ads.
-            ret_val += set_cursor_str(52, 16 + i) + line # Offset the ads.
+            ret_val += set_cursor_str(48, 16 + i) + line # Offset the ads.
 
     if "__pending:" in info: # If there are pending trades, add them to the string.
         pending = info.split("__pending:")[1].split("__;")[0].split(",")
@@ -182,9 +201,13 @@ def client_parse_menu(info: str) -> str:
     
     if "__auctions:" in info: # If there are open auctions, add them to the string.
         auctions = info.split("__auctions:")[1].split("__;")[0].split(",")
+        i = 0
+        coords = [(50, 11), (50, 12), (60, 11), (60, 12)] # Auction locations are not linear =(
         for auction in auctions:
             if auction != "":
-                ret_val += set_cursor_str(59, 15 + auctions.index(auction)) + f"{auction}"
+                ret_val += set_cursor_str(coords[i][0], coords[i][1]) + f"{auction}" 
+            i += 1
+                    
 
 
     message = info.split("__msg:")[1].split("__;")[0] # Get the message from the string.
@@ -279,8 +302,8 @@ def handle(data, player_id: int, client_socket: socket, clients: list[Client]):
 
         ret_val += "__auctions:" # List all open auctions in the network.
         for auction in auctions:
-            if auction["name"] != client_obj.name:
-                ret_val += f"{auction['property']},"
+            if auction["name"] != "":
+                ret_val += f"Lot {auction.get('obj').location}," # Get the location index of the property. 
         ret_val += "__;"
         if randint(0, 14400) == 3100: ret_val += "``__f"
     
@@ -313,6 +336,29 @@ def handle(data, player_id: int, client_socket: socket, clients: list[Client]):
                                 ret_val += f"__msg:Trade request found with {each_player.name}.__;"
                             break
                 ret_val += "invalid" # Invalid choice.
+            
+        elif 6 <= choice <= 9: # Open an auction.
+                if choice - 6 == player_id:
+                    if auctions[player_id]["name"] == client_obj.name:
+                        ret_val += "__msg:You already have an open auction.\n"
+                        ret_val += "Time remaining: " + str(auctions[choice - 6]["remaining"]) + " seconds.\n"
+                        ret_val += "__;"
+                    elif auctions[player_id]["name"] != client_obj.name:
+                        ret_val += "__msg:You have no open auction.\n"
+                        ret_val += "Press enter again if you like to open an auction."
+                        ret_val += "__;"
+                else:
+                    if auctions[choice - 6]["name"] == "":
+                        ret_val += "invalid" # Invalid choice because the auction (another player's auction) is not open.
+                    else:
+                        ret_val += "trading_auctions," # Valid choice, return the name of the auction screen. 
+
+                        # Add auction details to the ret_val for client to parse.
+                        ret_val += "__msg:Auction found with " + auctions[choice - 6]["name"] + ".\n"
+                        ret_val += "Time remaining: " + str(auctions[choice - 6]["remaining"]) + " seconds.\n"
+                        ret_val += "__;"
+                    
+            
 
     elif "next" in data:
         """

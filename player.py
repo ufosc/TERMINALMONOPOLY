@@ -296,7 +296,8 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 # print("End of turn. Press enter to return to terminal.")
                 screen = 'terminal'
                 # ss.initialize_terminals()
-                ss.update_terminal(active_terminal.index, active_terminal.index)
+                # ss.update_terminal(active_terminal.index, active_terminal.index)
+                active_terminal.indicate_keyboard_hook(off=True) # workaround to get green 'active terminal' bars surrounding it
                 ss.set_cursor(0, ss.INPUTLINE)
 
 import importlib
@@ -380,8 +381,9 @@ def get_input() -> None:
             if stdIn.startswith("term "): 
                 if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                     n = int(stdIn.strip().split(" ")[1])
-                    ss.update_terminal(n = n, o = active_terminal.index)
+                    active_terminal.change_border_color(COLORS.WHITE) # Turn off old terminal
                     active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
+                    active_terminal.change_border_color(COLORS.GREEN)
                     ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
