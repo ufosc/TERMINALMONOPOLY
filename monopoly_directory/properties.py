@@ -11,6 +11,7 @@ class Property:
     owner = -10
     owner_name = "Unowned"
     position = (32, 72)
+    location = -1
     x = position[0]
     y = position[1]
     color = COLORS.LIGHTGRAY
@@ -55,7 +56,7 @@ class Property:
             rent_values = [self.rent, self.rent1H, self.rent2H, self.rent3H, self.rent4H, self.rentHotel]
             return rent_values[self.houses] * self.modifier
 
-    def get_deed_str(self, is_terminal: bool) -> str:
+    def get_deed_str(self, display_type: int) -> str:
         """
         Description: 
             Returns a string representation of the deed for the property.
@@ -67,7 +68,7 @@ class Property:
             str: A string representation of the deed for the property.
         """
         deed_str = ""  
-        if is_terminal:
+        if display_type == 0: # Terminal display
             deed_str += self.color + "▓▒▓" * 8 + "█" + "▀" * 25 + "█" + self.color + "▓▒▓" * 8 + "\n" + COLORS.RESET
             deed_str += "=== Property Deed ===".center(75) + "\n"
             deed_str += self.color + "▓▒▓" * 8 + "█" + "▄" * 25 + "█" + self.color + "▓▒▓" * 8 + "\n" + COLORS.RESET
@@ -82,4 +83,13 @@ class Property:
             deed_str += f"Rent w 3 Houses: {self.rent3H}\n"
             deed_str += f"Rent w 4 Houses: {self.rent4H}\n"
             deed_str += f"Rent w Hotel: {self.rentHotel}\n"
+        elif display_type == 1: # Auction display
+            deed_str += self.color + "▓▒▓" * 3 + "█" + "▀" * 25 + "█" + self.color + "▓▒▓" * 3 + "\n" + COLORS.RESET
+            deed_str += "=== Property Deed ===".center(43) + "\n"
+            deed_str += self.color + "▓▒▓" * 3 + "█" + "▄" * 25 + "█" + self.color + "▓▒▓" * 3 + "\n" + COLORS.RESET
+            deed_str += f"Property: {self.color}{self.name}{COLORS.RESET}\n"
+            deed_str += f"Purchase Price: {self.purchasePrice}\n"
+        elif display_type == 2: # Trading display
+            deed_str += f"Property: {self.color}{self.name[:10]}{COLORS.RESET}\n"
+            deed_str += f"Purchase Price: {self.purchasePrice}\n"
         return deed_str
