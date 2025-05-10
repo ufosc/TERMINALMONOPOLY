@@ -1,9 +1,12 @@
 import screenspace as ss
 from socket import socket
 import networking as net
-from style import graphics as g, set_cursor_str
+from style import graphics as g, set_cursor_str, MYCOLORS as COLORS
 from random import randint
+from utils import Client
 import textwrap
+import keyboard
+from time import sleep
 
 name = "Trading Module"
 author = "https://github.com/adamgulde"
@@ -13,6 +16,8 @@ command = "trade"
 help_text = "Type TRADE to trade assets with other players."
 persistent = False
 oof_params = {"player_id": None, "server": None} # Global parameters for out of focus function
+
+auctions = {} # Auctions for the players. This will be a dictionary with player who opened the auction, property name, auction price, and current highest bidder.
 
 def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     """
@@ -41,22 +46,146 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     info = net.receive_message(server)
     net.player_mtrw = False
 
+    # Get initial trading menu. 
+    img += client_parse_menu(info) # Parse the data from the client, add to the image.
+    ret_val = img # Add the image to the return value.
+    active_terminal.update(ret_val, False) # Update the terminal with the information, without overwriting the entire image.
+
+    # Navigate the trading menu.
+    while True:
+        choice = navigate([(2, 11), (2, 12), (2, 13), (2, 16), (2, 17), (2, 18), (53, 11), (53, 12), (53, 13)], active_terminal, ret_val) # Get the coordinates of the options in the menu.
+
+        net.send_message(server, f"{player_id}trade,eval,{choice}") # Send the choice to the server.
+        server_choice = net.receive_message(server) # Receive the choice from the server.
+        
+        if server_choice == "invalid": # If the choice is invalid, update the terminal with the error message.
+            ret_val += COLORS.RED + set_cursor_str(27, 10) + "Invalid choice." + COLORS.ORANGE + set_cursor_str(27, 11) + "Please try again." + COLORS.RESET
+        elif server_choice == "-1": # Player pressed "q" to quit the menu.
+            ret_val += set_cursor_str(27, 10) + " " * 22 + set_cursor_str(27, 11) + " " * 22
+            ret_val += COLORS.BLUE + set_cursor_str(27, 10) + "Come again soon!" + COLORS.GREEN + set_cursor_str(27, 11) + "Come again soon!" + COLORS.RESET
+            active_terminal.update(ret_val, False) # Paste exit message onto terminal
+            break
+        else:
+            ret_val += set_cursor_str(27, 10) + " " * 22 + set_cursor_str(27, 11) + " " * 22
+            if server_choice != "trading_screen" and server_choice != "trading_auctions":
+                ret_val += client_parse_menu(server_choice)
+            else: 
+                img = g.get(server_choice) # get either the trading screen or the trading auctions.
+                active_terminal.update(img, True) # Update the terminal with the image. 
+                break # Exit the loop if the choice is valid. 
+            # data = net.receive_message(server) 
+            # active_terminal.update(data, False) # Update the terminal with the specific data from the server.
+    
+    # Navigate the new trade menu
+    # while True:
+        # choice = navigate([(0,2), (0,3), (24, 2), (24, 3)]) # This will be dependent on what's received from Banker
+
+    
+    active_terminal.indicate_keyboard_hook(off=True) # Stop the keyboard hook.
+
+
+def navigate(option_coords: list, active_terminal: ss.Terminal, static_menu: str) -> int:
+
+    """
+    Navigates the trading menu.
+
+    Args:
+        options (int): The number of options in the menu to navigate through.
+        option_coords (list): The coordinates of the options in the menu to move the cursor to.
+        
+    Returns:
+        int: The selected option index.
+    """
+    active_terminal.indicate_keyboard_hook()
+    selecting = True
+    selected_option = 0 # The option that is currently selected.
+    # sleep(0.25) # Sleep to prevent an accidental purchase from pressing "enter" too fast.
+    while keyboard.is_pressed("enter"):
+        pass  # Wait for the user to release the enter key before proceeding.
+
+    old_x = option_coords[selected_option][0] # Get the x coordinate of the selected option.
+    old_y = option_coords[selected_option][1] # Get the y coordinate of the selected option.
+    active_terminal.update(static_menu + COLORS.BLUE + set_cursor_str(old_x, old_y) + ">>", False) # Update the terminal with the default option.
+
+    while selecting:
+        if keyboard.is_pressed('w') or keyboard.is_pressed('up'):  # Move up in the menu
+            old_x = option_coords[selected_option][0] # Get the x coordinate of the selected option.
+            old_y = option_coords[selected_option][1] # Get the y coordinate of the selected option.
+            selected_option -= 1 # Move up in the menu.
+            if selected_option < 0: # If the selected option is less than 0, wrap around to the last option.
+                selected_option = len(option_coords) - 1 # Wrap around to the last option.
+
+            while keyboard.is_pressed('w') or keyboard.is_pressed('up'):
+                pass # Wait for the user to release the up key before proceeding.
+        elif keyboard.is_pressed('s') or keyboard.is_pressed('down'):  # Move down in the menu
+            old_x = option_coords[selected_option][0] # Get the x coordinate of the selected option.
+            old_y = option_coords[selected_option][1] # Get the y coordinate of the selected option.
+            selected_option += 1 # Move down in the menu.
+            if selected_option >= len(option_coords): # If the selected option is greater than the number of options, wrap around to the first option.
+                selected_option = 0 # Wrap around to the first option.
+
+            while keyboard.is_pressed('s') or keyboard.is_pressed('down'):
+                pass # Wait for the user to release the down key before proceeding.
+
+        elif keyboard.is_pressed("enter"):  # Select item
+            selecting = False  # Exit the loop 
+
+        elif keyboard.is_pressed("q"):  # Quit menu
+            selecting = False  # Exit the loop
+            selected_option = -1 # Set the selected option to -1 to indicate quitting.
+        
+        x = option_coords[selected_option][0] # Get the x coordinate of the selected option.
+        y = option_coords[selected_option][1] # Get the y coordinate of the selected option.
+
+        if old_x != x or old_y != y:  # If the cursor has moved, update the terminal.
+            active_terminal.update(static_menu + COLORS.BLUE + set_cursor_str(x, y) + ">>", False) # Update the terminal with the selected option.
+            old_x = x # Update the old x coordinate.
+            old_y = y 
+    
+    return selected_option # Return the selected option.
+
+def client_parse_menu(info: str) -> str:
+    """
+    Parses the data from the client and returns the string to be displayed.
+    The data will be of form "__key:", and will be separated by commas. It will end with __;.
+    """
+    ret_val = ""
+
     if "``__f" in info: 
         info = info.replace("``__f", "") 
-        img += (set_cursor_str(62, 7) + "." + set_cursor_str(65, 7) + "." + set_cursor_str(62, 9) + "----")
+        ret_val += (set_cursor_str(62, 7) + "." + set_cursor_str(65, 7) + "." + set_cursor_str(62, 9) + "----")
 
     if "__players:" in info: # If the players are in the network, add them to the string.
         players = info.split("__players:")[1].split("__;")[0].split(",")
         for player in players:
             if player != "":
-                img += set_cursor_str(33, 15 + players.index(player)) + f"{player}" # Offset the players.
+                ret_val += set_cursor_str(33, 15 + players.index(player)) + f"{player}" # Offset the players.
 
     if "__ads:" in info: # If there is an ad, position them in the string.
         ad = info.split("__ads:")[1].split("__;")[0] # Get the ad from the string.
         text_list = textwrap.wrap(ad, 22)
         for i, line in enumerate(text_list):
             if i == 3: break # Limit to 3 lines of ads.
-            img += set_cursor_str(52, 16 + i) + line # Offset the ads.
+            ret_val += set_cursor_str(52, 16 + i) + line # Offset the ads.
+
+    if "__pending:" in info: # If there are pending trades, add them to the string.
+        pending = info.split("__pending:")[1].split("__;")[0].split(",")
+        for trade in pending:
+            if trade != "":
+                ret_val += set_cursor_str(8, 15 + pending.index(trade)) + f"{trade}"
+    
+    if "__requests:" in info: # If there are requested trades, add them to the string.
+        requests = info.split("__requests:")[1].split("__;")[0].split(",")
+        for trade in requests:
+            if trade != "":
+                ret_val += set_cursor_str(8, 20 + requests.index(trade)) + f"{trade}"
+    
+    if "__auctions:" in info: # If there are open auctions, add them to the string.
+        auctions = info.split("__auctions:")[1].split("__;")[0].split(",")
+        for auction in auctions:
+            if auction != "":
+                ret_val += set_cursor_str(59, 15 + auctions.index(auction)) + f"{auction}"
+
 
     message = info.split("__msg:")[1].split("__;")[0] # Get the message from the string.
     
@@ -67,14 +196,20 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
             wrapped_lines = textwrap.wrap(line, 49)  # Wrap each line to 49 characters
             for i, wrapped_line in enumerate(wrapped_lines):
                 if i == 7: break  # Limit to 7 lines of messages
-                img += set_cursor_str(1, n + 1 + i) + wrapped_line  # Adjust cursor for each wrapped line
+                ret_val += set_cursor_str(1, n + 1 + i) + wrapped_line  # Adjust cursor for each wrapped line
             n += 1
     else:
-        img += set_cursor_str(1, 1) + message  # Single-line message
+        ret_val += set_cursor_str(1, 1) + message  # Single-line message
 
-    ret_val = img # Add the image to the return value.
+    return ret_val
 
-    active_terminal.update(ret_val, False) # Update the terminal with the information, without overwriting the entire image.
+def client_trade():
+    """
+    The player trade function. This will be called when the player wants to trade with another player.
+    The player will be able to choose the player they want to trade.
+    They only can initiate one trade per player. They will need to close the trade before they can initiate another one with the same player.
+    """
+    pass # TODO: Implement the client trade function.
 
 def set_oof_params(player_id:int, server: socket) -> None: 
     """
@@ -96,12 +231,14 @@ def oof() -> str:
     ret_val = header
 
     return ret_val
-    
-def handle(data, client_socket, clients, mply, money, properties):
+
+def handle(data, player_id: int, client_socket: socket, clients: list[Client]):
     """
     Handles the trade command for the banker.
     """
     ret_val = ""
+
+    client_obj = clients[player_id] # Get the client object from the list of clients.
 
     # Any data that needs to be parsed by the client will be of form "__key:", and will be separated by commas. It will end with __;.
     # Anything that the player directly prints will be of form "__msg:message__;".
@@ -126,5 +263,65 @@ def handle(data, client_socket, clients, mply, money, properties):
                 "Don't sleep on Mediterranean Avenue, it's an interesting property!", "The Utilities are great for trading!"]
         ret_val += f"__ads:{ads[randint(0, len(ads)-1)]}__;" # Random ad from the list.
 
-    if randint(0, 14400) == 3100: ret_val += "``__f"
+        ret_val += "__pending:" # List all your pending trades in the network.
+        for trade in client_obj.trades:
+            if trade["name"] != "":
+                ret_val += f"{trade['name']},"
+        ret_val += "__;"
+
+        ret_val += "__requests:" # List all requested trades of you in the network.
+        for each_player in clients:
+            if each_player.id != client_obj.id:
+                for trade in each_player.trades:
+                    if trade["name"] == client_obj.name:
+                        ret_val += f"{each_player.name},"
+        ret_val += "__;"
+
+        ret_val += "__auctions:" # List all open auctions in the network.
+        for auction in auctions:
+            if auction["name"] != client_obj.name:
+                ret_val += f"{auction['property']},"
+        ret_val += "__;"
+        if randint(0, 14400) == 3100: ret_val += "``__f"
+    
+    elif "eval" in data:
+        """
+        Evaluates the choice made by the player.
+        This will be of form "trade,eval,choice", where choice (int) is the index of the option in the menu.
+        Index 0 - 2 means open a pending trade according to trades dictionary.
+            This requires checking if the trade is already open. If not, ask the player to open a trade with another player.
+        Index 3 - 5 means open a requested trade with player 0 - 3 excluding you.
+        Index 6 - 8 means check the open auctions, excluding your own. (Each player can only have one auction open at a time.)
+        """
+        choice = int(data.split(",")[2])
+        if choice == -1: # Player quit
+            ret_val += "-1"
+
+        elif 0 <= choice <= 2: # Open a pending trade with another player.
+            if client_obj.trades[choice]["name"] == "":
+                ret_val += "__msg:You have no pending trade.\n" # No pending trades.
+                ret_val += "Press enter again if you like to open a trade with another player." # Ask the player if they want to open a trade.
+                ret_val += "__;"
+            elif client_obj.trades[choice]["name"] != "":
+                pass
+
+        elif 3 <= choice <= 5:
+                for each_player in clients:
+                    if each_player.id != client_obj.id:
+                        for trade in each_player.trades:
+                            if trade["name"] == client_obj.name:
+                                ret_val += f"__msg:Trade request found with {each_player.name}.__;"
+                            break
+                ret_val += "invalid" # Invalid choice.
+
+    elif "next" in data:
+        """
+        Next page of the trading menu.
+        This will be of form "trade,next,choice", where choice (int) is the index of the option in the menu.
+        """
+        choice = int(data.split(",")[2])
+        if 0 <= choice <= 2:
+            pass
+        
+            
     net.send_message(client_socket, ret_val)
