@@ -1,32 +1,54 @@
+import itertools
+from time import sleep
+import sys
+import os
+# Start the loading animation in a separate thread
+loading = True
+def loading_animation(text="Loading"):
+    for frame in itertools.cycle(['|', '/', '-', '\\']):
+        if not loading:
+            break
+        sys.stdout.write(f'\r{text} {frame}')
+        sys.stdout.flush()
+        sleep(0.1)
+    sys.stdout.write('\rLoading complete!     \n')
+import threading
+animation_thread = threading.Thread(target=loading_animation, args=["Loading imports"])
+animation_thread.start()
+
 # Python Builtin Utilities
 import socket
-import threading
-import os
-import sys
 import random
 import select
-from time import sleep
 import importlib
 
 # Our Utilities
 from style import MYCOLORS as COLORS, print_w_dots, choose_colorset
 import screenspace as ss 
+from screenspace import Trading_Output, Main_Output, Monopoly_Game_Output, Casino_Output
 import gamemanager as gm
 import networking as net
 import validation as valid
+from utils import Client
 
 # Modules
 import modules_directory.tictactoe as tictactoe
 import modules_directory.inventory as inv
-from modules_directory.inventory import handle as handle_inventory
-from modules_directory.deed_viewer import handle as handle_deed
-from modules_directory.balance import handle as handle_balance
-from modules_directory.casino import handle as handle_casino
-from modules_directory.chat import handle as handle_chat
-from modules_directory.shop import handle as handle_shop
+# Dynamically import handle functions from modules in modules_directory as handle_<module_name>
+modules_path = "modules_directory"
+for filename in os.listdir(modules_path):
+    if filename.endswith(".py") and filename != "__init__.py":
+        module_name = filename[:-3]  # Remove the .py extension
+        module = importlib.import_module(f"{modules_path}.{module_name}")
+        if hasattr(module, "handle"):
+            globals()[f"handle_{module_name}"] = getattr(module, "handle")
 
 # Monopoly Game
 import monopoly_directory.monopoly as mply
+
+# Stop the loading animation after imports are complete
+loading = False
+animation_thread.join()
 
 STARTING_CASH = 1500
 clients = []
@@ -34,25 +56,8 @@ server_socket = None
 port = 3131
 num_players = 0
 play_monopoly = True
-handle_cmds = {}
+monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
 messages = []
-
-TTT_Output = ss.OutputArea("TicTacToe", ss.TTT_OUTPUT_COORDINATES, 36, 9)
-Casino_Output = ss.OutputArea("Casino", ss.CASINO_OUTPUT_COORDINATES, 36, 22)
-Monopoly_Game_Output = ss.OutputArea("Monopoly", ss.MONOPOLY_OUTPUT_COORDINATES, 191, 6)
-Main_Output = ss.OutputArea("Main", ss.MAIN_OUTPUT_COORDINATES, 79, 12)
-
-class Client:
-    def __init__(self, socket: socket.socket, id: int, name: str, money: int, properties: list, inventory_object: inv.Inventory):
-        self.socket = socket
-        self.id = id
-        self.name = name
-        self.money = money
-        self.properties = properties
-        self.inventory = inventory_object
-        self.can_roll = True
-        self.num_rolls = 0
-        self.terminal_statuses = ["ACTIVE", "ACTIVE", "ACTIVE", "ACTIVE"]
 
 def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
     """
@@ -176,7 +181,7 @@ def start_receiver() -> None:
 
                         # TODO send a message to each player to query who is still connected, then properly remove
                         # the disconnected player from the game. Currently only removing the first player in clients list. 
-                        clients.pop(0)
+                        # clients.pop(0)
 
                     # if not data: # No data indicates disconnect
                     #     add_to_output_area("Main", f"Player at {address[0]} disconnected.", s.COLORS.RED)
@@ -200,7 +205,7 @@ def set_unittest() -> None:
 
     Returns: None
     """
-    global num_players, STARTING_CASH, play_monopoly
+    global num_players, STARTING_CASH, play_monopoly, monopoly_unit_test
     ss.set_cursor_str(0, 0)
     print(f"""
     Enter to skip unit testing.
@@ -236,6 +241,12 @@ def set_unittest() -> None:
     - Does not start the Monopoly game.
     - STARTING_CASH = 100
     - No games added to the game manager.
+
+    Unit test 5: {COLORS.LIGHTBLUE}(Trading unit test, properties and cash available.){COLORS.RESET}:
+    - num_players = 2
+    - Does not start Monopoly game.
+    - STARTING_CASH = 3000
+    - Brown and Light Blue properties bought by player 0, Pink and Orange properties bought by player 1.
     
     Any other number will skip unit tests.
     - Monopoly game will not start.
@@ -243,6 +254,7 @@ def set_unittest() -> None:
     - STARTING_CASH = 1500
     - No games added to the game manager.
           """ if ss.VERBOSE else "")
+    
     if len(sys.argv) > 1:
         if sys.argv[1].isdigit(): # If a test number is provided as a command line argument
             test = int(sys.argv[1])
@@ -266,15 +278,10 @@ def set_unittest() -> None:
         play_monopoly = True
         num_players = 1
         STARTING_CASH = 2000
-        gm.add_game(gm.Game('Fake Game', [Client(None, -1, "Null", 0, [])] * 4, 'board', 'other_data'))
     elif (test == 2):
         play_monopoly = True
         num_players = 2
         STARTING_CASH = 1500
-        gm.add_game(gm.Game('Battleship', [Client(None, -99, "Null", 0, [])] * 4, 'board', 'other_data'))
-        gm.add_game(gm.Game('Battleship', [Client(None, -98, None, 0, [])] * 2, 'board', 'other_data'))
-        gm.add_game(gm.Game('Battleship', [Client(None, -97, "Name", 0, [])] * 3, 'board', 'other_data'))
-        gm.add_game(gm.Game('TicTacToe', [Client(None, -96, "nada", 0, [])] * 2, 'board', None))
     elif (test == 3):
         play_monopoly = False
         num_players = 4
@@ -283,6 +290,12 @@ def set_unittest() -> None:
         play_monopoly = False
         num_players = 1
         STARTING_CASH = 100 
+    elif (test == 5):
+        play_monopoly = False
+        num_players = 2
+        STARTING_CASH = 3000
+        # Add properties to the players for testing purposes
+        monopoly_unit_test = 5
     else:
         play_monopoly = False
         print("Invalid test number." if ss.VERBOSE else "")
@@ -303,8 +316,8 @@ def change_balance(id: int, delta: int) -> int:
     Returns:
         None
     """
-    clients[id].money += delta
-    return clients[id].money
+    clients[id].PlayerObject.cash += delta
+    return clients[id].PlayerObject.cash
 
 def handle_data(data: str, client: socket.socket) -> None:
     """
@@ -319,7 +332,8 @@ def handle_data(data: str, client: socket.socket) -> None:
     """
     current_client = None
     try:
-        current_client = clients[int(data[0])] # Assume the data is prefixed by the client number AKA player_id.
+        pid = int(data[0])
+        current_client = clients[pid] # Assume the data is prefixed by the client number AKA player_id.
         data = data[1:]
     except:
         current_client = get_client_by_socket(client) # This is a backup in case the client data is not prefixed by client.
@@ -336,23 +350,27 @@ def handle_data(data: str, client: socket.socket) -> None:
     # elif data.startswith('ttt'):
     #     handle_ttt(data, current_client)
 
+    # These handle functions are all defined in their respective modules as handle
     elif "chat" not in data and "inventory" in data: # Ensure the chat module is not being called
         handle_inventory(data, client, current_client.inventory)
 
     elif "chat" not in data and "shop" in data: # Ensure the chat module is not being called
-        handle_shop(data, client, current_client.inventory, current_client.money, current_client.id, change_balance)
+        handle_shop(data, client, current_client.inventory, current_client.PlayerObject.cash, current_client.id, change_balance)
 
     elif data.startswith('deed'):
         handle_deed(data, client, mply)
 
     elif data.startswith("bal"):
-        handle_balance(data, client, mply, current_client.money, current_client.properties)
+        handle_balance(data, client, mply, current_client.PlayerObject.cash, current_client.PlayerObject.properties)
 
     elif data.startswith('casino'):
         handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
 
     elif data.startswith('chat'):
         handle_chat(data, client, messages, current_client.id, current_client.name)
+
+    elif data.startswith('trade'):
+        handle_trading(data, pid, client, clients, add_to_output_area)
         
     elif data.startswith('term_status'):
         command_data = data.split(' ')
@@ -449,7 +467,7 @@ def handshake(client_socket: socket.socket, handshakes: list) -> None:
         handshakes[len(clients)-1] = True
         name = message.split(',')[1]
         
-        clients.append(Client(client_socket, None, name, 2000, [], inv.Inventory())) # Append the client to the list of clients with a temporary id of None
+        clients.append(Client(client_socket, None, name, inv.Inventory())) # Append the client to the list of clients with a temporary id of None
 
     else: 
         handshakes[len(clients)-1] = False
@@ -499,16 +517,20 @@ def monopoly_controller(unit_test) -> None:
     current player and prompts them to roll the dice.
 
     This function does nothing if a Monopoly game is not set to play during Banker setup.
+    It will still purchase properties and change player cash, though, if specified in the unit test.
 
     Returns:
         None
     """
     add_to_output_area("Monopoly", "About to start Monopoly game.")
+    mply.unittest(unit_test)
+
     if not play_monopoly:
         add_to_output_area("Monopoly", "No players in the game. Not attempting to run Monopoly.")
+        ss.set_cursor(25, 5)
+        print("Error: Monopoly game not started.")
         return
     sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
-    mply.unittest(unit_test)
     net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.", "MPLY:")
     add_to_output_area("Monopoly", "Sent gameboard to player 0.")
     last_turn = 0
@@ -519,7 +541,7 @@ def monopoly_controller(unit_test) -> None:
             last_turn = mply.turn
             net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.", "MPLY:")
             clients[mply.turn].can_roll = True
-            ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
+            # ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
             add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
 
 def monopoly_game(client: Client = None, cmd: str = None) -> None:
@@ -597,9 +619,7 @@ if __name__ == "__main__":
     # set_gamerules()
     start_server()
     choose_colorset("DEFAULT_COLORS")
+    game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)], clients)
     ss.print_banker_frames()
-    monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
-    game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)])
     threading.Thread(target=monopoly_controller, args=[monopoly_unit_test], daemon=True).start()
     start_receiver()
-

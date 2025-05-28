@@ -65,7 +65,7 @@ def handle(data, client_socket, mply):
         # Get the property data from the Monopoly game instance
         property_data = mply.get_deed(location)
         # Get the deed string representation
-        deed_str = property_data.get_deed_str(True)
+        deed_str = property_data.get_deed_str(0) 
 
         # Send the deed string to the client
         net.send_message(client_socket, deed_str)

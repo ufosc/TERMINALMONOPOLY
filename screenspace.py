@@ -23,11 +23,6 @@ cols = WIDTH//2
 DEBUG = False
 VERBOSE = True # Set to True to see all output in the output areas. If the user does not need to see the output (any privacy concerns or in a tournament game), set to False via -silent sys.argv.
 
-MONOPOLY_OUTPUT_COORDINATES = (1, 47) # (0, 47) is the top left corner of the monopoly output frame. Add 1 to x and y to print within in the frame.
-TTT_OUTPUT_COORDINATES = (157, 13) # (157, 11) is the top left corner of the ttt output frame. Add 1 to x and y to print within in the frame.
-CASINO_OUTPUT_COORDINATES = (157, 0) # (157, 0) is the top left corner of the casino output frame. Add 1 to x and y to print within in the frame.
-MAIN_OUTPUT_COORDINATES = (0, 36) # (0, 0) is the top left corner of the main output frame. Add 1 to x and y to print within in the frame.
-
 class OutputArea:
     def __init__(self, name: str, coordinates: tuple, max_length: int, max_lines: int):
         self.name = name
@@ -36,6 +31,25 @@ class OutputArea:
         self.color_list = []
         self.max_length = max_length
         self.max_lines = max_lines
+
+    def draw(self): # Draw the border and title
+        x = self.coordinates[0]
+        y = self.coordinates[1]
+         # Center name
+        for i in range(self.max_lines):
+            set_cursor(x,y+1+i)
+            print("║" + " " * self.max_length + "║")
+        set_cursor(x, y) # Top left
+        print("╔" + "═" * self.max_length)  
+        set_cursor(x+self.max_length+1,y) # Top left
+        print("╗")
+        set_cursor(x,y+self.max_lines) # Bottom left
+        print("╚" + "═" * self.max_length)
+        set_cursor(x+self.max_length+1,y+self.max_lines) # Bottom right
+        print("╝")
+        name_x = x + self.max_length//2 - len(self.name)//2
+        set_cursor(name_x, y)
+        print(f" {self.name.upper()} ")
 
     def add_output(self, output: str, color):
         if VERBOSE:
@@ -49,13 +63,25 @@ class OutputArea:
                 self.color_list.pop()
             for i, line in enumerate(self.output_list):
                 print(self.color_list[i], end="")
-                if self.name == "Main": # Main output area is special, it doesn't have a border
-                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + i)
-                    print(line + " " * (self.max_length - len(line) - 2), end="") # print line and clear extra old text
+                if "Main" in self.name or "Monopoly" in self.name:
+                    if i > self.max_lines-2: # This is the same variable being used, so this keeps everything in bounds. 
+                        print(COLORS.RESET, end="", flush=True) # reset color
+                        break
+                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 1 + i) # offset title 
                 else:
-                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 2 + i)
-                    print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
+                    if i >= self.max_lines-2: # This is the same variable being used, so this keeps everything in bounds. 
+                        print(COLORS.RESET, end="", flush=True) # reset color
+                        break
+                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 2 + i) # offset title 
+                print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
                 print(COLORS.RESET, end="", flush=True) # reset color
+
+# Output areas for Banker
+Trading_Output = OutputArea(name="Trade Network Output", coordinates=(157, 18), max_length=36, max_lines=17)
+Casino_Output = OutputArea("Casino Output", (157, 0), 36, 17)
+Monopoly_Game_Output = OutputArea("Monopoly Output", (1, 48), 119, 11)
+Main_Output = OutputArea("Main Output", (122, 36), 71, 23)
+OUTPUT_AREAS = [Trading_Output, Casino_Output, Monopoly_Game_Output, Main_Output]
 
 class Terminal:
     def __init__(self, index: int, coordinates: tuple):
@@ -222,11 +248,9 @@ class Terminal:
         self.status = "BUSY"
         net.send_message(socket, str(player_id) + "busy " + str(self.index))
 
-    def indicate_keyboard_hook(self, off=False):
+    def change_border_color(self, c):
         """
-        Indicates that the keyboard hook is active for a certain terminal. 
-        Changes the color of the terminal border.
-        This is important for the player to know why they can't type on the input line.
+        Changes the border color of a terminal. Very handy.
         """
         border_chars = [('╔','╦','╠','╬'),
                         ('╦','╗','╬','╣'),
@@ -234,10 +258,6 @@ class Terminal:
                         ('╬','╣','╩','╝')]
         
         t = self.index - 1
-        if off:
-            c = COLORS.GREEN
-        else:
-            c = COLORS.LIGHTBLUE
         set_cursor(self.x-1,self.y-1)
         print(c, end='')
         print(border_chars[t][0] + '═' * cols + border_chars[t][1], end='')
@@ -248,6 +268,19 @@ class Terminal:
             print('║')
             set_cursor(self.x+cols, i)
             print('║')
+
+    def indicate_keyboard_hook(self, off=False):
+        """
+        Indicates that the keyboard hook is active for a certain terminal. 
+        Changes the color of the terminal border.
+        This is important for the player to know why they can't type on the input line.
+        """
+        if off:
+            c = COLORS.GREEN
+        else:
+            c = COLORS.LIGHTBLUE
+
+        self.change_border_color(c)
 
 
 def notification(message: str, n: int, color: str, custom_x: int, custom_y: int) -> str:
@@ -499,24 +532,26 @@ def print_banker_frames():
             for j in range(len(border[i])):
                 print(border[i][j], end="")
     calibrate_print_commands()        
-    casino_frame = g.get('casino_output_frame')
-    i = 0
-    for line in casino_frame.split('\n'):
-        set_cursor(CASINO_OUTPUT_COORDINATES[0], CASINO_OUTPUT_COORDINATES[1]+i)
-        print(line, end="")
-        i += 1
-    i -= 1
-    ttt_frame = g.get('ttt_output_frame')
-    for line in ttt_frame.split('\n'):
-        set_cursor(TTT_OUTPUT_COORDINATES[0], i)
-        print(line, end="")
-        i += 1
-    monopoly_output_frame = g.get('monopoly_output_frame')
-    i = 0
-    for line in monopoly_output_frame.split('\n'):
-        set_cursor(MONOPOLY_OUTPUT_COORDINATES[0], MONOPOLY_OUTPUT_COORDINATES[1]+i)
-        print(line, end="")
-        i += 1
+    for OA in OUTPUT_AREAS:
+        OA.draw()
+    # casino_frame = g.get('casino_output_frame')
+    # i = 0
+    # for line in casino_frame.split('\n'):
+    #     set_cursor(CASINO_OUTPUT_COORDINATES[0], CASINO_OUTPUT_COORDINATES[1]+i)
+    #     print(line, end="")
+    #     i += 1
+    # i -= 1
+    # ttt_frame = g.get('ttt_output_frame')
+    # for line in ttt_frame.split('\n'):
+    #     set_cursor(TTT_OUTPUT_COORDINATES[0], i)
+    #     print(line, end="")
+    #     i += 1
+    # monopoly_output_frame = g.get('monopoly_output_frame')
+    # i = 0
+    # for line in monopoly_output_frame.split('\n'):
+    #     set_cursor(MONOPOLY_OUTPUT_COORDINATES[0], MONOPOLY_OUTPUT_COORDINATES[1]+i)
+    #     print(line, end="")
+    #     i += 1
 
 def auto_calibrate_screen(mode: str = "player") -> None:
     """
@@ -598,6 +633,34 @@ def calibrate_screen(type: str) -> None:
     input("Press enter to continue...")
 
     clear_screen()
+    print("Character set test. If characters are not displaying correctly, please change your terminal font to a monospace font.\n")
+    print("If you are using Windows, please use the 'Consolas' font.\n")
+    print("If you are using Linux, please use the 'DejaVu Sans Mono' font.\n")
+    print("If you are using macOS, please use the 'Menlo' font.\n")
+    print("In addition, please ensure that your terminal is set to use UTF-8 encoding.\n")
+    print("If you are using Windows, please use the 'Terminal' application.\n")
+    print("If you are using Linux, please use the 'Gnome Terminal' application.\n")
+    print("If you are using macOS, please use the 'Terminal' application.\n")
+    print(g.get('.chartest'))
+
+    c = input("\n\nIf none of the above options work, type 1 to submit an issue on GitHub, or press enter to continue.\n")
+    if c == "1":
+        clear_screen()
+        print("If you are using a different terminal, please let us know and we will try to add support for it.")
+        print("Please submit an issue on GitHub at \n https://github.com/ufosc/TERMINALMONOPOLY/issues \nwith the details of your terminal and OS.")
+        print("Include the following information:\n")
+        print(f"Operating System: {platform.system()} {platform.release()} ({platform.version()})")
+        print(f"Terminal Type: {os.name}")
+        print(f"Terminal Name: {os.getenv('TERM', 'Unknown')}")
+        print(f"Terminal Size: {shutil.get_terminal_size().columns}x{shutil.get_terminal_size().lines}")
+        print(f"Python Version: {platform.python_version()}")
+        print(f"Terminal Encoding: {os.device_encoding(1) or 'Unknown'}")
+        print("Please include a screenshot of the terminal with the issue.")
+
+        input("Press enter to continue...")
+
+    clear_screen()
+
     if current_os == "Darwin":
         # Print out instructions for macOS users
         print("Please use Ctrl + \"Command\" + \"+\" or Ctrl + \"Command\" + \"-\" to zoom in/out and ensure everything is visible. Press enter to continue to scaling screen.")

@@ -54,6 +54,8 @@ class Board:
             38: Property(0, "Luxury Tax", -9, (26,72), COLORS.LIGHTGRAY, 0, 0, 0, 0, 0, 0, 0, 0, 0),
             39: Property(0, "Boardwalk", -1, (29,72), COLORS.BLUE, 400, 200, 50, 200, 600, 1400, 1700, 2000, 200),
         }
+        for i in range(0, 40):
+            self.locations[i].location = i # Set location for each property
 
     def update_location(self, player:MonopolyPlayer, roll: int, new = None) -> None:
         """

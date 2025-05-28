@@ -114,10 +114,15 @@ def handle(data, client_socket, mply, money, properties):
         Build the string list of client's assets.
         """
         assets = ""
+        i = 0
         for prop in properties:
-            deed = mply.get_deed(prop)
+            deed = mply.get_deed(prop.location)
             name = deed.name.split()[0][:3] + " " + deed.name.split()[1][:3] # Get first 3 letters of each word
-            assets += f"{name} - ${deed.getPrice() + deed.housePrice * deed.houses}\n"
+            if i % 2 == 0:
+                assets += f"{name} - ${deed.getPrice() + deed.housePrice * deed.houses}".ljust(15)
+            else:
+                assets += f" | {name} - ${deed.getPrice() + deed.housePrice * deed.houses}\n"
+            i += 1
         if properties == []:
             assets += "You have no properties.\n"
 
@@ -134,7 +139,7 @@ def handle(data, client_socket, mply, money, properties):
         """
         net_worth = money
         for prop in properties:
-            deed = mply.get_deed(prop)
+            deed = mply.get_deed(prop.location)
             deed_value = deed.getPrice() if deed.mortgaged == False else deed.mortgage
             deed_value += deed.housePrice * deed.houses 
             net_worth += deed_value

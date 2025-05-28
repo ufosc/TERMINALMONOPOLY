@@ -158,8 +158,6 @@ def display_games(id: int = -1, name:str = '', player_name: str= '', page:int = 
             game_info = game_info[ss.cols:]
         ret_val += game_info.ljust(ss.cols) + '\n'
 
-    # ret_val += 'PAD ME PLEASE!' # need to pad juuust in case
-
     start_index = page * ss.rows * ss.cols
     end_index = start_index + ss.rows * ss.cols
     return ret_val[start_index:end_index]
