@@ -63,17 +63,22 @@ class OutputArea:
                 self.color_list.pop()
             for i, line in enumerate(self.output_list):
                 print(self.color_list[i], end="")
-                if self.name == "Main": # Main output area is special, it doesn't have a border
-                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + i)
-                    print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
+                if "Main" in self.name or "Monopoly" in self.name:
+                    if i > self.max_lines-2: # This is the same variable being used, so this keeps everything in bounds. 
+                        print(COLORS.RESET, end="", flush=True) # reset color
+                        break
+                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 1 + i) # offset title 
                 else:
-                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 2 + i)
-                    print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
+                    if i >= self.max_lines-2: # This is the same variable being used, so this keeps everything in bounds. 
+                        print(COLORS.RESET, end="", flush=True) # reset color
+                        break
+                    set_cursor(self.coordinates[0] + 1, self.coordinates[1] + 2 + i) # offset title 
+                print(line + " " * (self.max_length - len(line)), end="") # print line and clear extra old text
                 print(COLORS.RESET, end="", flush=True) # reset color
 
 # Output areas for Banker
-Casino_Output = OutputArea("Casino Output", (157, 0), 36, 17)
 Trading_Output = OutputArea(name="Trade Network Output", coordinates=(157, 18), max_length=36, max_lines=17)
+Casino_Output = OutputArea("Casino Output", (157, 0), 36, 17)
 Monopoly_Game_Output = OutputArea("Monopoly Output", (1, 48), 119, 11)
 Main_Output = OutputArea("Main Output", (122, 36), 71, 23)
 OUTPUT_AREAS = [Trading_Output, Casino_Output, Monopoly_Game_Output, Main_Output]

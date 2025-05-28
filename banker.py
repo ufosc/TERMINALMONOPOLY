@@ -370,7 +370,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         handle_chat(data, client, messages, current_client.id, current_client.name)
 
     elif data.startswith('trade'):
-        handle_trading(data, pid, client, clients)
+        handle_trading(data, pid, client, clients, add_to_output_area)
         
     elif data.startswith('term_status'):
         command_data = data.split(' ')
@@ -527,8 +527,8 @@ def monopoly_controller(unit_test) -> None:
 
     if not play_monopoly:
         add_to_output_area("Monopoly", "No players in the game. Not attempting to run Monopoly.")
-        ss.set_cursor(30, 5)
-        print("No gameboard to display.")
+        ss.set_cursor(25, 5)
+        print("Error: Monopoly game not started.")
         return
     sleep(5) # Temporary sleep to give all players time to connect to the receiver TODO remove this and implement a better way to check all are connected to rcvr
     net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "Welcome to Monopoly! It's your turn. Type roll to roll the dice.", "MPLY:")
@@ -619,7 +619,7 @@ if __name__ == "__main__":
     # set_gamerules()
     start_server()
     choose_colorset("DEFAULT_COLORS")
-    ss.print_banker_frames()
     game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)], clients)
+    ss.print_banker_frames()
     threading.Thread(target=monopoly_controller, args=[monopoly_unit_test], daemon=True).start()
     start_receiver()
