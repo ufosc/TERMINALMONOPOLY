@@ -398,7 +398,7 @@ def get_input() -> None:
 
             # Loan commands
             elif stdIn == "loan":
-                load_loan_menu()
+                load_loan_menu(player_id=player_id, server=sockets[1])
                 continue
 
             # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
