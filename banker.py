@@ -523,7 +523,7 @@ def monopoly_controller(unit_test) -> None:
         None
     """
     add_to_output_area("Monopoly", "About to start Monopoly game.")
-    mply.unittest(unit_test)
+    mply.unittest(unit_test, num_players)
 
     if not play_monopoly:
         add_to_output_area("Monopoly", "No players in the game. Not attempting to run Monopoly.")
@@ -621,5 +621,11 @@ if __name__ == "__main__":
     choose_colorset("DEFAULT_COLORS")
     game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)], clients)
     ss.print_banker_frames()
+
+    # TEMPORARY TEST HOOK FOR UNIT TEST FIX
+    if "-testfix" in sys.argv:
+        monopoly_controller(monopoly_unit_test)
+        sys.exit()
+
     threading.Thread(target=monopoly_controller, args=[monopoly_unit_test], daemon=True).start()
     start_receiver()

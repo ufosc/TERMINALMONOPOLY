@@ -403,10 +403,14 @@ def manage_properties(p:MonopolyPlayer):
             print("\033[38;0H" + ' ' * 70)
             print("\033[38;0HInvalid option!")
 
-def unittest(num:int = 5):
+def unittest(num:int = 5, num_players: int = 4):
     global CASH, players # TODO cash should be set by Banker.py and passed to here
-    if not num:
-        num = 4
+    board = Board(num_players)
+    players = []
+
+    for i in range(num_players):
+        players.append(MonopolyPlayer(1500, i, f"Player {i + 1}"))
+        
     if num == 1:
         # Two players, high cash
         CASH = 1500
