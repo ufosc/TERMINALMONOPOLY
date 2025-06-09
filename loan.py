@@ -3,16 +3,20 @@ import os
 import style
 import time
 import re
+import networking as net
+from socket import socket
 
 g = style.get_graphics()
 
 
 class LoanScreen:
-    def __init__(self):
+    def __init__(self, player_id=None, server=None):
         self.__pictures = []
         self.loanScreen = True
         self.gettingLoan = False
         self.low_or_high = None
+        self.player_id = player_id
+        self.server = server
     
     def process_input(self):
         """
@@ -107,12 +111,15 @@ class LoanScreen:
         print(self.buildDisplay())
 
 
-def main():
+def main(player_id=None, server=None):
     """
         Initializes keyboard hook, displays current state, processes input and handles loan amount.
-
+        
+        Args:
+            player_id (int): The ID of the player (for networking)
+            server (socket): The server socket to communicate with (for networking)
     """
-    loan = LoanScreen()
+    loan = LoanScreen(player_id, server)
     
     
     keyboard.hook(lambda e: None)
@@ -128,7 +135,15 @@ def main():
             valid_loan, amount = loan.loanLogic()
             if valid_loan:
                 loan_type = "high" if loan.low_or_high else "low"
+        
+                net.send_message(loan.server, f'{loan.player_id}loan {loan_type} {amount}')
+                net.player_mtrw = True
+                response = net.receive_message(loan.server)
+                net.player_mtrw = False
+                
                 print(f"\nCongratulations! You have taken out a {loan_type} interest loan of ${amount}.")
+                print(f"\n{response}")
+                
                 print("Press any key to continue...")
                 keyboard.read_event()
                 loan.loanScreen = False

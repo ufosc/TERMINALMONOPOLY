@@ -366,6 +366,9 @@ def handle_data(data: str, client: socket.socket) -> None:
     elif data.startswith('casino'):
         handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
 
+    elif data.startswith('loan'):
+        handle_loan(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
+
     elif data.startswith('chat'):
         handle_chat(data, client, messages, current_client.id, current_client.name)
 
@@ -603,6 +606,67 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
             mply.end_turn()
             ret_val = "ENDOFTURN" + mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
+
+def handle_loan(data: str, client_socket: socket.socket, change_balance: callable, add_to_output_area: callable, player_id: int, player_name: str) -> None:
+    """
+    Handles loan requests from players.
+    
+    Args:
+        data (str): The loan command string containing loan details.
+                    Expected format: "loan [loan_type] [amount]"
+        client_socket (socket): The socket connection to the client.
+        change_balance (function): Function to change the client's balance.
+        add_to_output_area (function): Function to add messages to the output area.
+        player_id (int): The ID of the client requesting the loan.
+        player_name (str): The name of the client requesting the loan.
+    
+    Returns:
+        None
+    """
+    try:
+        # Parse the loan command: "loan [loan_type] [amount]"
+        command_data = data.split(' ')
+        
+        if len(command_data) != 3:
+            net.send_message(client_socket, "Invalid loan request format.")
+            return
+            
+        loan_type = command_data[1]  # "high" or "low"
+        amount = int(command_data[2])
+        
+        # Validate loan parameters
+        if loan_type == "high":
+            if amount <= 0 or amount > 2000:
+                net.send_message(client_socket, "High interest loans must be between $1 and $2000.")
+                return
+            interest_rate = 0.15  # 15% interest for high loans
+            
+        elif loan_type == "low":
+            if amount <= 0 or amount > 500:
+                net.send_message(client_socket, "Low interest loans must be between $1 and $500.")
+                return
+            interest_rate = 0.05  # 5% interest for low loans
+            
+        else:
+            net.send_message(client_socket, "Invalid loan type. Choose 'high' or 'low'.")
+            return
+        
+        # Calculate the total amount to be repaid (for informational purposes)
+        total_repayment = int(amount * (1 + interest_rate))
+        
+        # Add the loan amount to the player's balance
+        new_balance = change_balance(player_id, amount)
+        
+        # Log the transaction
+        add_to_output_area("Loans", f"{player_name} took out a {loan_type} interest loan of ${amount}. New balance: ${new_balance}")
+        
+        # Send confirmation message back to the client
+        response = f"Loan approved! You received ${amount}.\nYou will need to repay ${total_repayment} (${amount} + {int(interest_rate*100)}% interest).\nYour new balance is ${new_balance}."
+        net.send_message(client_socket, response)
+        
+    except (ValueError, IndexError) as e:
+        add_to_output_area("Loans", f"Error processing loan for {player_name}: {str(e)}", COLORS.RED)
+        net.send_message(client_socket, "Error processing loan request. Please try again.")
 
 if __name__ == "__main__":
 

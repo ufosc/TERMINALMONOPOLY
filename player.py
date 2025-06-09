@@ -13,6 +13,8 @@ import validation
 import modules_directory.inventory as inv
 import keyboard
 
+from loan import main as load_loan_menu
+
 game_running = False
 screen = "terminal"
 sockets = (socket.socket(socket.AF_INET, socket.SOCK_STREAM), socket.socket(socket.AF_INET, socket.SOCK_STREAM))
@@ -392,6 +394,11 @@ def get_input() -> None:
             # Anything beyond this one should be not crucial, as it will NOT work if disabled.
             elif active_terminal.status == "DISABLED":
                 ss.overwrite(COLORS.RED + "Terminal is disabled! Switch to another terminal with 'term'.")
+                continue
+
+            # Loan commands
+            elif stdIn == "loan":
+                load_loan_menu(player_id=player_id, server=sockets[1])
                 continue
 
             # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
