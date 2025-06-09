@@ -391,6 +391,9 @@ def handle_data(data: str, client: socket.socket) -> None:
         term = int(command_data[1])
         net.send_message(client, str(current_client.terminal_statuses[term]))
     
+    elif data.startswith('plist'):
+        handle_plist(client, clients)
+
     elif data.startswith('kill') or data.startswith('disable') or data.startswith('active') or data.startswith('busy'):
         """
         Should be called by a player (1) to disable another player (2).
