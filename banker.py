@@ -578,6 +578,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
             if ret_val.startswith("player_choice"):
                 ret_val.replace("player_choice", "")
                 client.can_roll = False
+                client.can_end_turn = True
             net.send_notif(client.socket, ret_val, "MPLY:")
         elif action == 'trybuy': #TODO Better handling of locations would be nice. 
             mply.buy_logic("banker", "b")
@@ -602,7 +603,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
         elif action == 'continue':
             ret_val = mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
-        elif action == 'endturn':
+        elif action == 'endturn' and not client.can_roll:
             mply.end_turn()
             ret_val = "ENDOFTURN" + mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")

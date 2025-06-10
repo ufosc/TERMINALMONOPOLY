@@ -668,11 +668,12 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
     """
     done_moving_around = False
     card = ""
+    output = "" #info/msgs to be shown to the user after the board position has been evaluated 
     while not done_moving_around:
         done_moving_around = True
         if board.locations[players[turn].location].owner < 0:
             if (board.locations[players[turn].location].owner == -1): #unowned
-                return get_gameboard() + set_cursor_str(0, 37) + "b to buy, enter to continue?"
+                output += set_cursor_str(0, 37) + "this property is unowned, b to buy"
             elif (board.locations[players[turn].location].owner == -2): #mortgaged
                 pass
             elif (board.locations[players[turn].location].owner == -3): #community chest
@@ -726,7 +727,7 @@ def evaluate_board_location(num_rolls: int, dice: tuple) -> str:
     if dice[0] == dice[1]: # and not was_in_jail:
         num_rolls += 1
         request_roll()
-    return "player_choice" + set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
+    return "player_choice" + output + set_cursor_str(0, 36) + "e to end turn, p to manage properties, d to view a deed?" + get_gameboard()
 
 def end_turn():
     global turn
