@@ -108,7 +108,7 @@ def get_submodules():
 
 get_submodules() # Load the casino games when the module is imported (at start of game)
 
-def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, name) -> None:
+def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, name, is_oof_request=False) -> None:
     """
     Handles casino-related commands for a client by updating their balance.
 

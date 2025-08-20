@@ -91,9 +91,15 @@ def oof() -> str:
     global chat_history
 
     try:
-        # Ask the server for updated chat history
-        net.send_message(server, f'{player_id}chat,recieve_msg')
-        new_history = net.receive_message(server)
+        # Ask the server for updated chat history using OOF messaging
+        net.send_oof_message(server, f'{player_id}chat,recieve_msg')
+        
+        # Wait for OOF response
+        new_history = ""
+        while not net.has_oof_messages():
+            from time import sleep
+            sleep(0.01)  # Small delay to avoid busy waiting
+        new_history = net.receive_oof_message()
 
         # Only update if there's a change
         if new_history != chat_history:
@@ -144,7 +150,7 @@ def chat_listener(player_id: int, server: socket, active_terminal: ss.Terminal, 
             pass
 
 
-def handle(data, client_socket, messages, id, name):
+def handle(data, client_socket, messages, id, name, is_oof_request=False):
     """
     Handles chat messages and player-related commands sent by a client.
 
@@ -154,6 +160,7 @@ def handle(data, client_socket, messages, id, name):
     messages: Chat history global variable from banker.
     id: Client id. 
     name: Client
+    is_oof_request: Whether this is an OOF request.
 
     Returns:
         None
@@ -172,7 +179,10 @@ def handle(data, client_socket, messages, id, name):
                 msg = line[1]
                 ret_val += f"[{username}]: {msg}\n"
             else:
-                net.send_message(client_socket, ret_val)
+                if is_oof_request:
+                    net.send_message(client_socket, f"OOF:{ret_val}")
+                else:
+                    net.send_message(client_socket, ret_val)
 
     if "add_msg" in data: 
         """
@@ -187,7 +197,10 @@ def handle(data, client_socket, messages, id, name):
         """
         ret_val += name
 
-    net.send_message(client_socket, ret_val)
+    if is_oof_request:
+        net.send_message(client_socket, f"OOF:{ret_val}")
+    else:
+        net.send_message(client_socket, ret_val)
 
 
 

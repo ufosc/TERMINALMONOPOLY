@@ -104,13 +104,23 @@ def oof() -> str:
     server = oof_params["server"]
     player_id = oof_params["player_id"]
 
-    net.send_message(server, f"{player_id}get_inventory_str") # Request inventory from banker
-    inv_str = net.receive_message(server) # Receive inventory from banker
+    net.send_oof_message(server, f"{player_id}get_inventory_str") # Request inventory from banker using OOF messaging
+    
+    # Wait for OOF response
+    inv_str = ""
+    while not net.has_oof_messages():
+        from time import sleep
+        sleep(0.01)  # Small delay to avoid busy waiting
+    inv_str = net.receive_oof_message() # Receive inventory from banker
     return "Inventory".center(75, "═") + f"\n\n{inv_str}"
     
-def handle(data: str, client_socket: socket, client_inventory: Inventory) -> None:
+def handle(data: str, client_socket: socket, client_inventory: Inventory, is_oof_request=False) -> None:
     """
     Handles the deed command for the banker.
     """
     if data == "get_inventory_str":  # If the client is requesting the inventory string.
-        net.send_message(client_socket, client_inventory.get_inventory_str()) # Send the inventory string to the client.
+        response = client_inventory.get_inventory_str()
+        if is_oof_request:
+            net.send_message(client_socket, f"OOF:{response}")
+        else:
+            net.send_message(client_socket, response) # Send the inventory string to the client.

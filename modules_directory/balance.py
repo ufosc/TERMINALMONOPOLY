@@ -74,9 +74,15 @@ def oof() -> str:
     player_id = oof_params["player_id"]
 
     header = f"Consolidated Cash and Assets".center(75)
-    # Get the player's cash on hand
-    net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
-    info = header + "\n" + net.receive_message(server)
+    # Get the player's cash on hand using OOF messaging
+    net.send_oof_message(server, f'{player_id}bal,get_assets,get_net_worth')
+    
+    # Wait for OOF response
+    info = ""
+    while not net.has_oof_messages():
+        from time import sleep
+        sleep(0.01)  # Small delay to avoid busy waiting
+    info = header + "\n" + net.receive_oof_message()
 
     # Get moneybag image and create the lists of lines
     image = str(g.get("moneybag"))
@@ -95,7 +101,7 @@ def oof() -> str:
     return ret_val
     
 
-def handle(data, client_socket, mply, money, properties):
+def handle(data, client_socket, mply, money, properties, is_oof_request=False):
     """
     Handles the balance command for the banker.
     """
@@ -148,4 +154,9 @@ def handle(data, client_socket, mply, money, properties):
         #     net_worth += stock.get_value()
 
         ret_val += f"You have a net worth of ${net_worth}.\n"
-    net.send_message(client_socket, ret_val)
+    
+    # Send response with OOF tagging if needed
+    if is_oof_request:
+        net.send_message(client_socket, f"OOF:{ret_val}")
+    else:
+        net.send_message(client_socket, ret_val)

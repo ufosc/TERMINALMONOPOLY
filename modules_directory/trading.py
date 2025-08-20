@@ -255,7 +255,7 @@ def oof() -> str:
 
     return ret_val
 
-def handle(data, player_id: int, client_socket: socket, clients: list[Client], add_to_output_area: callable):
+def handle(data, player_id: int, client_socket: socket, clients: list[Client], add_to_output_area: callable, is_oof_request=False):
     """
     Handles the trade command for the banker.
     """

@@ -331,6 +331,13 @@ def handle_data(data: str, client: socket.socket) -> None:
         None
     """
     current_client = None
+    is_oof_request = False
+    
+    # Check if this is an OOF-tagged request
+    if data.startswith("OOF:"):
+        is_oof_request = True
+        data = data[4:]  # Remove "OOF:" prefix
+    
     try:
         pid = int(data[0])
         current_client = clients[pid] # Assume the data is prefixed by the client number AKA player_id.
@@ -339,7 +346,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         current_client = get_client_by_socket(client) # This is a backup in case the client data is not prefixed by client.
         add_to_output_area("Main", f"Failed to get client from data. Data was not prefixed by client: {data}", COLORS.RED)
 
-    add_to_output_area("Main", f"Received data from {current_client.name}: \"{data}\"")
+    add_to_output_area("Main", f"Received {'OOF ' if is_oof_request else ''}data from {current_client.name}: \"{data}\"")
     
     if data == 'request_board': 
         net.send_message(client, mply.get_gameboard())
@@ -352,28 +359,28 @@ def handle_data(data: str, client: socket.socket) -> None:
 
     # These handle functions are all defined in their respective modules as handle
     elif "chat" not in data and "inventory" in data: # Ensure the chat module is not being called
-        handle_inventory(data, client, current_client.inventory)
+        handle_inventory(data, client, current_client.inventory, is_oof_request)
 
     elif "chat" not in data and "shop" in data: # Ensure the chat module is not being called
-        handle_shop(data, client, current_client.inventory, current_client.PlayerObject.cash, current_client.id, change_balance)
+        handle_shop(data, client, current_client.inventory, current_client.PlayerObject.cash, current_client.id, change_balance, is_oof_request)
 
     elif data.startswith('deed'):
-        handle_deed(data, client, mply)
+        handle_deed(data, client, mply, is_oof_request)
 
     elif data.startswith("bal"):
-        handle_balance(data, client, mply, current_client.PlayerObject.cash, current_client.PlayerObject.properties)
+        handle_balance(data, client, mply, current_client.PlayerObject.cash, current_client.PlayerObject.properties, is_oof_request)
 
     elif data.startswith('casino'):
-        handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
+        handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name, is_oof_request)
 
     elif data.startswith('loan'):
-        handle_loan(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
+        handle_loan(data, client, change_balance, add_to_output_area, current_client.id, current_client.name, is_oof_request)
 
     elif data.startswith('chat'):
-        handle_chat(data, client, messages, current_client.id, current_client.name)
+        handle_chat(data, client, messages, current_client.id, current_client.name, is_oof_request)
 
     elif data.startswith('trade'):
-        handle_trading(data, pid, client, clients, add_to_output_area)
+        handle_trading(data, pid, client, clients, add_to_output_area, is_oof_request)
         
     elif data.startswith('term_status'):
         command_data = data.split(' ')
@@ -387,6 +394,20 @@ def handle_data(data: str, client: socket.socket) -> None:
         Player 2 doesn't know unless it is successful.
         """
         handle_term(data, current_client, client)
+
+def send_oof_response(client_socket: socket.socket, message: str, is_oof_request: bool) -> None:
+    """
+    Send a response, tagging it as OOF if it's a response to an OOF request.
+    
+    Parameters:
+        client_socket (socket.socket): The client socket to send to.
+        message (str): The message to send.
+        is_oof_request (bool): Whether this is a response to an OOF request.
+    """
+    if is_oof_request:
+        net.send_message(client_socket, f"OOF:{message}")
+    else:
+        net.send_message(client_socket, message)
 
 def handle_term(cmds: str, current_client: Client, client: socket.socket) -> None:
     """
@@ -607,7 +628,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
             ret_val = "ENDOFTURN" + mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
 
-def handle_loan(data: str, client_socket: socket.socket, change_balance: callable, add_to_output_area: callable, player_id: int, player_name: str) -> None:
+def handle_loan(data: str, client_socket: socket.socket, change_balance: callable, add_to_output_area: callable, player_id: int, player_name: str, is_oof_request=False) -> None:
     """
     Handles loan requests from players.
     

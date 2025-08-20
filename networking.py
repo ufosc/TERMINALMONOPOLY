@@ -1,6 +1,12 @@
 HEADERSIZE = 10 # Max length of the header, meaning the max length of the message is 10^10 bytes
 import socket
+import threading
+from collections import deque
 player_mtrw = False # Store here if the player associated with this script is waiting on messages in their main thread
+
+# OOF message routing system
+oof_message_queue = deque()  # Queue for OOF-tagged messages
+oof_queue_lock = threading.Lock()  # Thread-safe access to the queue
 
 # Credit to sentdex's video @ https://www.youtube.com/watch?v=8A4dqoGL62E 
 # for helping me understand how to send and receive messages over sockets.
@@ -90,4 +96,48 @@ def receive_message(other: socket.socket) -> str:
         full_msg.extend(msg)
 
         if len(full_msg) == msglen:
-            return full_msg[HEADERSIZE:].decode("utf-8").strip()
+            message = full_msg[HEADERSIZE:].decode("utf-8").strip()
+            
+            # Check if this is an OOF-tagged response
+            if message.startswith("OOF:"):
+                # Add to OOF queue and return empty string to caller
+                with oof_queue_lock:
+                    oof_message_queue.append(message[4:])  # Remove "OOF:" prefix
+                return ""  # Return empty to indicate this was handled
+            
+            return message
+
+def send_oof_message(other: socket.socket, text: str) -> None:
+    """
+    Sends an OOF-tagged message to the server.
+    
+    Parameters:
+        other (socket.socket): The server socket to send the message to.
+        text (str): The message to be sent (will be prefixed with "OOF:").
+        
+    Returns:
+        None
+    """
+    send_message(other, f"OOF:{text}")
+
+def receive_oof_message() -> str:
+    """
+    Receives the next OOF message from the queue.
+    
+    Returns:
+        str: The OOF message, or empty string if none available.
+    """
+    with oof_queue_lock:
+        if oof_message_queue:
+            return oof_message_queue.popleft()
+    return ""
+
+def has_oof_messages() -> bool:
+    """
+    Check if there are pending OOF messages in the queue.
+    
+    Returns:
+        bool: True if there are OOF messages waiting.
+    """
+    with oof_queue_lock:
+        return len(oof_message_queue) > 0

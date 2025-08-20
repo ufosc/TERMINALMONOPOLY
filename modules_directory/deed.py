@@ -47,14 +47,18 @@ def oof() -> str:
     index = oof_params["index"]
 
     # Send the deed request to the server, which will return the deed data.
-    net.send_message(server, f'{player_id}deed {index}')
+    net.send_oof_message(server, f'{player_id}deed {index}')
 
-    # Wait for server to send back the deed, then display it on the active terminal.
-    deed = net.receive_message(server)
+    # Wait for OOF response
+    deed = ""
+    while not net.has_oof_messages():
+        from time import sleep
+        sleep(0.01)  # Small delay to avoid busy waiting
+    deed = net.receive_oof_message()
     return deed
     
 
-def handle(data, client_socket, mply):
+def handle(data, client_socket, mply, is_oof_request=False):
     """
     Handles the deed command for the banker.
     """
@@ -67,5 +71,8 @@ def handle(data, client_socket, mply):
         # Get the deed string representation
         deed_str = property_data.get_deed_str(0) 
 
-        # Send the deed string to the client
-        net.send_message(client_socket, deed_str)
+        # Send the deed string to the client with OOF tagging if needed
+        if is_oof_request:
+            net.send_message(client_socket, f"OOF:{deed_str}")
+        else:
+            net.send_message(client_socket, deed_str)

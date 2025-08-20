@@ -221,7 +221,7 @@ def process_purchase(subshop: str, item: str, prices: dict, player_balance: int,
         net.send_message(client_socket, f"Prrr... Not enough money to buy {item}")
 
 
-def handle(data: str, client_socket: socket, player_inventory: Inventory, player_balance: int, player_id: int, change_balance: callable) -> None:
+def handle(data: str, client_socket: socket, player_inventory: Inventory, player_balance: int, player_id: int, change_balance: callable, is_oof_request=False) -> None:
     """
     Handles shop-related commands.
 
@@ -232,6 +232,7 @@ def handle(data: str, client_socket: socket, player_inventory: Inventory, player
         player_balance (int): The player's current balance.
         player_id (int): The player's ID.
         change_balance (callable): A function to update the player's balance.
+        is_oof_request (bool): Whether this is an OOF request (unused for shop).
     """
     cmds = data.split(",")
     if cmds[1] == "exit":
