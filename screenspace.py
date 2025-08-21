@@ -418,7 +418,7 @@ def overwrite(text: str = ""):
     Returns: None
     """
     set_cursor(0, INPUTLINE)
-    print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r')
+    print(f'\033[1A\r{COLORS.RESET}{text}', end=' ' * (WIDTH - len(text) + 3) + '\n' + ' ' * (WIDTH + 3) + '\r' + COLORS.RESET)
     set_cursor(0, INPUTLINE)
 
 def get_valid_int(prompt, min_val = -1000000000, max_val = 1000000000, disallowed = [], allowed = []): # arbitrary large numbers

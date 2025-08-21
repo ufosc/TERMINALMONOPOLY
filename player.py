@@ -387,6 +387,7 @@ def get_input() -> None:
                     active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
                     active_terminal.change_border_color(COLORS.GREEN)
                     ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
+                    continue
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             elif stdIn == "exit":
@@ -419,6 +420,8 @@ def get_input() -> None:
                 active_terminal.oof_callable = None
                 active_terminal.persistent = False
                 active_terminal.command = ""
+                ss.overwrite(COLORS.GREEN + "Terminal cleared.")
+                continue
             elif stdIn in cmds.keys(): # Check if the command is in the available commands
                 usable = True
                 for t in TERMINALS:
@@ -432,6 +435,8 @@ def get_input() -> None:
                     active_terminal.command = stdIn # Set the command for the active terminal
                     active_terminal.oof_callable = cmds[stdIn] if hasattr(cmds[stdIn], 'oof') else None # Set the out of focus callable function if it exists
                     cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal) # Call the function with the required parameters
+                    ss.overwrite(COLORS.RESET)
+                    continue
 
             elif stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
@@ -490,6 +495,7 @@ def get_input() -> None:
                         ss.overwrite(COLORS.RED + "Invalid command. Syntax is 'disable PLAYER TERM LENGTH' (ex. 'disable 0 3 15)")
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
+                    continue
 
     if stdIn == "exit" and game_running:
         ss.overwrite('\n' + ' ' * ss.WIDTH)
