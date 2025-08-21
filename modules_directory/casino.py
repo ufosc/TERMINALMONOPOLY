@@ -28,9 +28,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
     while True:
         net.send_message(server, f"{player_id}bal")
         # sleep(0.1)
-        net.player_mtrw = True
         balance = int(net.receive_message(server))
-        net.player_mtrw = False
         ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
         game_list = "".join(__modules)
         active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\n\nSelect a game by typing the command and wager.\n\n"
@@ -70,17 +68,13 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
                 if(wager == 0): continue
 
                 net.send_message(server, f"{player_id}casino lose {wager}")
-                net.player_mtrw = True
                 balance = int(net.receive_message(server))
-                net.player_mtrw = False
                 ss.overwrite(c.RESET+"\r" + " " * 40)
                 active_terminal.busy(server, player_id)
                 winnings = i.play(active_terminal,wager)
                 active_terminal.enable(False, server, player_id)
                 net.send_message(server, f"{player_id}casino win {winnings}")
-                net.player_mtrw = True
                 balance = int(net.receive_message(server))
-                net.player_mtrw = False
             except ImportError:
                 wrong = 1
 

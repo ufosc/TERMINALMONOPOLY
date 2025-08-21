@@ -137,9 +137,7 @@ def main(player_id=None, server=None):
                 loan_type = "high" if loan.low_or_high else "low"
         
                 net.send_message(loan.server, f'{loan.player_id}loan {loan_type} {amount}')
-                net.player_mtrw = True
                 response = net.receive_message(loan.server)
-                net.player_mtrw = False
                 
                 print(f"\nCongratulations! You have taken out a {loan_type} interest loan of ${amount}.")
                 print(f"\n{response}")

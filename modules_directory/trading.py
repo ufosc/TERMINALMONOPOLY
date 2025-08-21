@@ -51,16 +51,14 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     Returns:
         None
     """
+    global oof_params
     img = g.get("trading_network")
     active_terminal.update(img, True) # Print the image, with padding to clear old text.
     active_terminal.persistent = persistent
     active_terminal.oof_callable = oof # Set the out of focus callable function
-    set_oof_params(player_id, server) # Set the parameters for the out of focus function
-    
+    oof_params = net.set_oof_params(player_id, server) # Set the parameters for the out of focus function
     net.send_message(server, f'{player_id}trade,open')
-    net.player_mtrw = True
     info = net.receive_message(server)
-    net.player_mtrw = False
 
     # Get initial trading menu. 
     img += client_parse_menu(info) # Parse the data from the client, add to the image.
@@ -234,17 +232,9 @@ def client_trade():
     """
     pass # TODO: Implement the client trade function.
 
-def set_oof_params(player_id:int, server: socket) -> None: 
-    """
-    Sets the parameters for the out of focus function.
-    """
-    oof_params["player_id"] = player_id
-    oof_params["server"] = server
-
 def oof() -> str:
     """
     Update function for when the terminal is out of focus. Does NOT need active_terminal, and returns the string to be displayed.
-    Of course, do NOT update player_mtrw here because this is not called in the main thread.
     """
     server = oof_params["server"]
     player_id = oof_params["player_id"]

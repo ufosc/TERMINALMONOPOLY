@@ -222,25 +222,24 @@ def print_queue():
                 # to parse through as they're received, and then update the terminal with the correct data based on a 
                 # tag or identifier. 
         if screen == 'terminal': # Only update if we are in the terminal screen.
+            # sleep(1)
+            # net.mtp = True # Pause the main thread from sending messages while we update terminals
+            # sleep(1)
             for t in TERMINALS:
                 if t.status == "DISABLED" or t.status == "BUSY": # Skip disabled or (just in case) busy terminals.
                     continue
-                sleep(0.5) # Delay to prevent overwhelming the system with print calls. Change to lower value when done debugging.
+                sleep(0.5)
                 # Also important to delay to ensure calls to banker are not overwhelming.
                 if not t.oof_callable == None and t.index != active_terminal.index: # Only update if the terminal is not active and has an out-of-focus callable.
-                    if not net.player_mtrw: # Ensure the main thread is not waiting on receiving new data
-                        data = t.oof_callable() # Call the out-of-focus function to get the new data.
-                        t.check_new_data(data) # Check if new data is available.
-                        if t.has_new_data and t.oof_callable is not None: # Only update terminal if there is new data, to avoid unnecessary prints.
-                            for i in range(150):
-                                keyboard.block_key(i) # Naively block all calls to the keyboard when updating Terminals OOF
-                            for i in range(150):
-                                keyboard.unblock_key(i)
-                            t.clear() # Clear the terminal before updating it.
-                            t.update(data, padding=False) # Update the terminal with new data.
-                            t.has_new_data = False # Reset the flag.
+                    data = t.oof_callable() # Call the out-of-focus function to get the new data.
+                    t.check_new_data(data) # Check if new data is available.
+                    if t.has_new_data and t.oof_callable is not None: # Only update terminal if there is new data, to avoid unnecessary prints.
+                        t.clear() # Clear the terminal before updating it.
+                        t.update(data, padding=False) # Update the terminal with new data.
+                        t.has_new_data = False # Reset the flag.
                 else: 
                     continue # No need to update if no callable or terminal is active.
+            net.mtp = False # Resume the main thread after updating terminals
 
 def start_notification_listener(my_socket: socket.socket) -> None:
     """

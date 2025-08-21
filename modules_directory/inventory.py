@@ -51,7 +51,7 @@ class Inventory():
                 if self.items[category][item] > quantity:
                     self.items[category][item] -= quantity
                 else:
-                    del self.items[category][item]
+                    self.items[category][item] = 0
 
     def get_inventory_str(self) -> str:
         """
@@ -82,20 +82,14 @@ persistent = False # No need to run additional commands after switching
 oof_params = {"player_id": None, "server": None} # Global parameters for out of focus function
 
 def run(player_id:int, server: socket, active_terminal: Terminal):
-    set_oof_params(player_id, server) # Set the parameters for the out of focus function
+    global oof_params
+    oof_params = net.set_oof_params(player_id, server) # Set the parameters for the out of focus function
     active_terminal.persistent = persistent
     active_terminal.oof_callable = oof # Set the out of focus callable function
 
     net.send_message(server, f"{player_id}get_inventory_str") # Request inventory from banker
     inv_str = net.receive_message(server) # Receive inventory from banker
     active_terminal.update("Inventory".center(75, "═") + f"\n\n{inv_str}", padding=True)
-
-def set_oof_params(player_id:int, server: socket) -> None: 
-    """
-    Sets the parameters for the out of focus function.
-    """
-    oof_params["player_id"] = player_id
-    oof_params["server"] = server
 
 def oof() -> str:
     """

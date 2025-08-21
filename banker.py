@@ -139,7 +139,7 @@ def start_server() -> socket.socket:
         net.send_message(clients[i].socket, f"Game Start!{num_players} {i}")
         sleep(0.5)
 
-def start_receiver() -> None:
+def start_receivers() -> None:
     """
     This function handles all client-to-server requests (not the other way around).
     Function binds an independent receiving socket at the same IP address, one port above. 
@@ -149,18 +149,26 @@ def start_receiver() -> None:
 
     Returns: None
     """
-    global player_data, port
-    add_to_output_area("Main", "[RECEIVER] Receiver started!", COLORS.GREEN) 
-    # Credit to https://stackoverflow.com/a/43151772/19535084 for seamless server-client handling. 
+    global port
+    threading.Thread(target=receiver_loop, args=(port,), name="ReceiverThread").start() # Start the receiver loop in a separate thread
+    threading.Thread(target=receiver_loop, args=(port, True), daemon=True, name="OOFReceiverThread").start() # Start the OOF receiver loop in a separate thread
+    add_to_output_area("Main", "Receivers started!", COLORS.GREEN)  
+    
+def receiver_loop(port:int, is_oof_thread: bool = False) -> None:
     with socket.socket() as server:
         host = socket.gethostname()
         ip_address = socket.gethostbyname(host)
         if "-local" in sys.argv:
             ip_address = "localhost"
             port = 33333
-        server.bind((ip_address,int(port+1)))
+        if is_oof_thread:
+            server.bind((ip_address, int(port + 2)))
+            add_to_output_area("Main", f"OOF Receiver accepting connections at {port+2}", COLORS.GREEN)
+        else:
+            server.bind((ip_address, int(port + 1)))
+            add_to_output_area("Main", f"Receiver accepting connections at {port+1}", COLORS.GREEN)
         server.listen()
-        add_to_output_area("Main", f"[RECEIVER] Receiver accepting connections at {port+1}", COLORS.GREEN)
+        # Credit to https://stackoverflow.com/a/43151772/19535084 for seamless server-client handling.
         to_read = [server]  # add server to list of readable sockets.
         while True:
             # check for a connection to the server or data ready from clients.
@@ -169,14 +177,16 @@ def start_receiver() -> None:
             for reader in readers:
                 if reader is server:
                     player,address = reader.accept()
-                    add_to_output_area("Main", f"Player connected from: {address[0]}", COLORS.GREEN)
+                    if not is_oof_thread:
+                        add_to_output_area("Main", f"Player connected from: {address[0]}", COLORS.GREEN)
                     to_read.append(player) # add client to list of readable sockets
                 else:
                     try:
                         data = net.receive_message(reader)
                         handle_data(data, reader)
                     except ConnectionResetError:
-                        add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
+                        if not is_oof_thread:
+                            add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
                         to_read.remove(reader) # remove from monitoring
 
                         # TODO send a message to each player to query who is still connected, then properly remove
@@ -187,14 +197,15 @@ def start_receiver() -> None:
                     #     add_to_output_area("Main", f"Player at {address[0]} disconnected.", s.COLORS.RED)
                     #     to_read.remove(reader) # remove from monitoring
                 if(len(to_read) == 1):
-                    if "-stayopen" not in sys.argv:
-                        add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver stopped.", COLORS.GREEN)
-                        return
-                    else:
-                        add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver will stay open.", COLORS.GREEN)
-                        # Reopen the server socket
-                        server_socket.close()
-                        start_server()
+                    if not is_oof_thread:
+                        if "-stayopen" not in sys.argv:
+                            add_to_output_area("Main", "All connections dropped. Receiver stopped.", COLORS.GREEN)
+                            return
+                        else:
+                            add_to_output_area("Main", "All connections dropped. Receiver will stay open.", COLORS.GREEN)
+                            # Reopen the server socket
+                            server_socket.close()
+                            start_server()
 
 def set_unittest() -> None:
     """
@@ -686,4 +697,4 @@ if __name__ == "__main__":
     game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)], clients)
     ss.print_banker_frames()
     threading.Thread(target=monopoly_controller, args=[monopoly_unit_test], daemon=True).start()
-    start_receiver()
+    start_receivers()
