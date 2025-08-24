@@ -7,6 +7,9 @@ import networking as net
 from style import set_cursor_str, set_cursor, graphics as g
 from modules_directory.inventory import Inventory
 
+from input_handler import is_pressed
+
+
 class Shop():
     def __init__(self):
         self.x = 38
@@ -86,31 +89,32 @@ class Shop():
         selected_index = 0
         selecting = True
         sleep(0.25) # Sleep to prevent an accidental purchase from pressing "enter" too fast.
-        while keyboard.is_pressed("enter"):
+        
+        while is_pressed("enter"):
             pass  # Wait for the user to release the enter key before proceeding.
 
         while selecting:
-            if keyboard.is_pressed('w') or keyboard.is_pressed('up'):  # Move up in the menu
+            if is_pressed('w') or is_pressed('up'):  # Move up in the menu
                 display_text += set_cursor_str(cursor_x, cursor_y + selected_index) + " "
                 selected_index = (selected_index - 1) % len(items.keys())  # Wrap around to the last menu item if at the top
                 display_text += set_cursor_str(cursor_x, cursor_y + selected_index) + ">" # Set the cursor to the selected menu item.
 
                 active_terminal.update(display_text, padding=False)
-                while keyboard.is_pressed('w') or keyboard.is_pressed('up'):
+                while is_pressed('w') or is_pressed('up'):
                     pass # Wait for the user to release the up key before proceeding.
-            elif keyboard.is_pressed('s') or keyboard.is_pressed('down'):  # Move down in the menu
+            elif is_pressed('s') or is_pressed('down'):  # Move down in the menu
                 display_text += set_cursor_str(cursor_x, cursor_y + selected_index) + " "
                 selected_index = (selected_index + 1) % len(items.keys())  # Wrap around to the last menu item if at the top
                 display_text += set_cursor_str(cursor_x, cursor_y + selected_index) + ">" # Set the cursor to the selected menu item.
                 
                 active_terminal.update(display_text, padding=False)
-                while keyboard.is_pressed('s') or keyboard.is_pressed('down'):
+                while is_pressed('s') or is_pressed('down'):
                     pass # Wait for the user to release the down key before proceeding.
 
-            elif keyboard.is_pressed("enter"):  # Select item
+            elif is_pressed("enter"):  # Select item
                 selected_item = list(items.keys())[selected_index]
                 net.send_message(server, f"{player_id}shop,select,{title},{selected_item}")  # Send the selected item to the server
-                while keyboard.is_pressed("enter"):
+                while is_pressed("enter"):
                     pass # Wait for the user to release the enter key before proceeding.
 
                 display_text += set_cursor_str(cursor_x, 9) + " " * (74 - cursor_x) # Clear the line for the cat's response. 
@@ -128,7 +132,7 @@ class Shop():
 
                 active_terminal.update(display_text, padding=False)  # Update the terminal with the response
 
-            elif keyboard.is_pressed("q"):  # Quit menu
+            elif is_pressed("q"):  # Quit menu
                 selecting = False  # Exit the loop
                 break  # Exit the loop
 
@@ -143,24 +147,24 @@ class Shop():
         selected_index = 0
         selecting = True
         while selecting:
-            if keyboard.is_pressed('w') or keyboard.is_pressed('up'):
+            if is_pressed('w') or is_pressed('up'):
                 ret_val += set_cursor_str(self.x, self.y + selected_index) + " "
                 selected_index = (selected_index - 1) % len(self.menus) # Wrap around to the last menu if at the top.
                 ret_val += set_cursor_str(self.x, self.y + selected_index) + ">" # Set the cursor to the selected menu item.
                 active_terminal.update(ret_val, False) # Inefficient
-                while keyboard.is_pressed('w') or keyboard.is_pressed('up'):
+                while is_pressed('w') or is_pressed('up'):
                     pass # Wait for the user to release the up key before proceeding.
-            if keyboard.is_pressed('s') or keyboard.is_pressed('down'):  # Move down in the menu.
+            if is_pressed('s') or is_pressed('down'):  # Move down in the menu.
                 ret_val += set_cursor_str(self.x, self.y + selected_index) + " "
                 selected_index = (selected_index + 1) % len(self.menus)
                 ret_val += set_cursor_str(self.x, self.y + selected_index) + ">" 
                 active_terminal.update(ret_val, False)
-                while keyboard.is_pressed('s') or keyboard.is_pressed('down'):
+                while is_pressed('s') or is_pressed('down'):
                     pass # Wait for the user to release the down key before proceeding.
-            if keyboard.is_pressed("q"):  # Quit shop.
+            if is_pressed("q"):  # Quit shop.
                 net.send_message(server, f"{player_id}shop,exit")  # Send the exit command to the server.
                 selecting = False  # Exit the loop.
-            if keyboard.is_pressed("enter"):  # Select item.
+            if is_pressed("enter"):  # Select item.
                 
                 if self.menus[selected_index] == "Salmon Pro Shop":
                     self.generic_menu("Salmon Pro Shop", self.fishprices, server, active_terminal, player_id, 23, 4)  # Call the fish menu.
