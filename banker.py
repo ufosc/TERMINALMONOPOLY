@@ -613,7 +613,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
         elif action == 'continue':
             ret_val = mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
-        elif action == 'endturn':
+        elif action == 'endturn' and not client.can_roll:
             mply.end_turn()
             ret_val = "ENDOFTURN" + mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
