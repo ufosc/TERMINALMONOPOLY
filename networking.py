@@ -102,7 +102,6 @@ def set_oof_params(player_id: int, server: socket.socket, **kwargs) -> dict:
     # Create OOF receiver socket
     oof_receiver = socket.socket()
     ip, port = server.getpeername()
-    print(f"Main server: {ip}:{port}")
     oof_receiver.connect((ip, port + 1))  # +1 for OOF port
 
     oof_params["server"] = oof_receiver

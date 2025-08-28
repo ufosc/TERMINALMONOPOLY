@@ -6,8 +6,6 @@ import socket
 import platform
 import threading
 from time import sleep
-
-from banker import server_socket
 from style import MYCOLORS as COLORS, graphics as g, print_w_dots
 import screenspace as ss
 import networking as net
