@@ -43,6 +43,7 @@ for filename in os.listdir(modules_path):
         if hasattr(module, "handle"):
             globals()[f"handle_{module_name}"] = getattr(module, "handle")
 
+
 # Monopoly Game
 import monopoly_directory.monopoly as mply
 
@@ -376,6 +377,9 @@ def handle_data(data: str, client: socket.socket) -> None:
 
     elif data.startswith('casino'):
         handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
+    elif data.startswith('attack'):
+        #run the attack similar to casino on client side and send game to player attacked, then send resulting command back
+        handle_attack(data, current_client, client)
 
     elif data.startswith('loan'):
         handle_loan(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
@@ -402,6 +406,66 @@ def handle_data(data: str, client: socket.socket) -> None:
         Player 2 doesn't know unless it is successful.
         """
         handle_term(data, current_client, client)
+def handle_attack(cmds: str, current_client: Client, client: socket.socket) -> None:
+    net.send_message(client, "\nInvalid you")
+    """
+    Command Structure:
+        action player term length
+        (Ex. Attack 0 5 15 1)
+
+    Args:
+        action: Type of action (attack)
+        player: ID of player attacked
+        pType:penalty game (e.g. guessing game)
+        pNum: penalty amount
+        player: ID of player attacking
+    """
+    command_data = cmds.split(' ')
+    if(command_data[0] == 'attack'):
+        #send game to opponent
+        #add_to_output_area("", f"attack status")
+        opponent = int(command_data[1])
+        attacker = int(command_data[4])
+        try:
+            if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == clients[attacker]:
+                net.send_message(client, "\nInvalid opponent. Please select another player.")
+                return
+        except:
+            net.send_message(client, "\nInvalid opponent. Please select another player.")
+        if str(command_data[2].strip()) == 'lose':
+            money = change_balance(opponent, 0 - (int(command_data[3])))
+            net.send_message(clients[opponent].socket, str(money))
+            money = change_balance(attacker, int(command_data[3]))
+            net.send_message(clients[attacker].socket, str(money))
+            add_to_output_area("",
+                               f"{clients[opponent].name}'s balance was reduced by {command_data[3]} as a result of an attack %. Current Statuses: {clients[opponent].money}")
+            add_to_output_area("",
+                               f"{clients[attacker].name}'s balance was increased by {command_data[3]} as a result of an attack %. Current Statuses: {clients[attacker].money}")
+        else:
+            try:
+                #check if game works
+                i = __import__('attack_modules.' + command_data[2], fromlist=[''])
+                if((int(command_data[3])) < 1):
+                    net.send_message(client, "\nInvalid penalty amount")
+                    return
+
+                else:
+                    #set attack penalty on opponent balance (need to transfer)
+                    add_to_output_area("", f"{clients[opponent].name} has been attacked")
+                    net.send_notif(clients[opponent].socket, command_data[4] + " " + command_data[2] + " " + command_data[3], "ATTACK: ")
+                    return
+
+                    #clients[opponent].balance += amount
+
+                    #net.send_message(client, "\nPenalty applied.")
+
+            except ImportError:
+                net.send_message(client, "\nInvalid attack. Please select another attack.")
+                return
+
+
+
+
 
 def handle_term(cmds: str, current_client: Client, client: socket.socket) -> None:
     """
@@ -617,7 +681,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
         elif action == 'continue':
             ret_val = mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
-        elif action == 'endturn':
+        elif action == 'endturn' and not client.can_roll:
             mply.end_turn()
             ret_val = "ENDOFTURN" + mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
