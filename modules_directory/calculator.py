@@ -1,7 +1,7 @@
-from screenspace import Terminal
-from style import MYCOLORS as COLORS
+from utils.utils import Terminal
+from utils.utils import MYCOLORS as COLORS
 from socket import socket
-from style import set_cursor, set_cursor_str
+from utils.utils import set_cursor
 
 name = "Calculator Module"
 command = "calc"

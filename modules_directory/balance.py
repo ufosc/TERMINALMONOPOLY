@@ -1,7 +1,7 @@
-import screenspace as ss
+from utils.utils import screenspace as ss
 from socket import socket
 import networking as net
-from style import graphics as g, set_cursor_str
+from utils.utils import g, set_cursor_str # g is graphics
 
 name = "Balance Module"
 author = "https://github.com/adamgulde"

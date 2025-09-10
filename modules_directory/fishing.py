@@ -1,6 +1,6 @@
 import time
 import random
-from style import graphics as g, set_cursor, set_cursor_str
+from utils.utils import g, set_cursor_str
 # import modules_directory.inventory as inv
 
 class fishing_game():

@@ -1,7 +1,7 @@
-import screenspace as ss
+from utils.utils import screenspace as ss
 from socket import socket
 import networking as net
-from style import MYCOLORS as c, graphics as g
+from utils.utils import MYCOLORS as c  # graphics is g
 import threading
 import time
 

@@ -6,14 +6,13 @@ import socket
 import platform
 import threading
 from time import sleep
-from style import MYCOLORS as COLORS, graphics as g, print_w_dots
-import screenspace as ss
+from utils.screenspace import MYCOLORS as COLORS, g, print_w_dots
+from utils import screenspace as ss
 import networking as net
-import validation
+import utils
 import modules_directory.inventory as inv
-import keyboard
 
-from loan import main as load_loan_menu
+from modules_directory.loan import main as load_loan_menu
 
 game_running = False
 screen = "terminal"
@@ -114,20 +113,20 @@ def initialize(debug: bool = False, args: list = None) -> None:
         print("2. only contains alpha numeric characters or spaces")
         name = input("Player name: ")
         while not name_validated:
-            name_validated = validation.validate_name(name)
+            name_validated = utils.validate_name(name)
             if not name_validated:
                 print("The input name was not valid")
                 name = input("Player name: ")
         
         if "localhost" not in sys.argv:
             ADDRESS = input("Enter Host IP: ").strip()
-            while not validation.validate_address(ADDRESS):
+            while not utils.validate_address(ADDRESS):
                 print("Invalid IP address. Please enter a valid IP address.")
                 ADDRESS = input("Enter Host IP: ").strip()
 
             PORT = input("Enter Host Port: ")
             # Validate IP address and port
-            while not validation.validate_port(PORT):
+            while not utils.validate_port(PORT):
                 print("Invalid port. Please enter a valid port.")
                 PORT = input("Enter Host Port: ")
 

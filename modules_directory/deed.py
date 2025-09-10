@@ -1,4 +1,4 @@
-import screenspace as ss
+from utils.utils import screenspace as ss
 from socket import socket
 import networking as net
 

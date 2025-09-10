@@ -1,8 +1,8 @@
 # SLOTS MACHINE
 import random
 from time import sleep
-from style import graphics as g
-import screenspace as ss
+from utils.utils import g # g is graphics
+from utils.utils import screenspace as ss
 
 game_title = "♕ Slots Machine"
 header = game_title.center(75,"─")

@@ -1,15 +1,13 @@
 import random
 from time import sleep
-import screenspace as ss
-from screenspace import Terminal
-from style import graphics as g, MYCOLORS as c
+from utils.utils import MYCOLORS as c # graphics is g
 
 game_title = "Guessing Game"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
 
-import screenspace as ss
-from screenspace import Terminal
-from style import MYCOLORS as COLORS, graphics as g
+from utils import utils as ss
+from utils.utils import Terminal
+from utils.utils import MYCOLORS as COLORS, g
 #def render_hand(active_terminal: Terminal, attacker_picked_hand, outcome):
  #   if outcome == "WIN":
         #open hand with trick

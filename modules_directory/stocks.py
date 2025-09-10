@@ -1,10 +1,5 @@
-from time import sleep
-from style import COLORS as c
-import screenspace as ss
-from screenspace import Terminal
-import os
-import networking
-import stock_market as sm
+from utils.screenspace import Terminal
+from modules_directory import stock_market as sm
 from socket import socket
 
 module_name = "Stocks"

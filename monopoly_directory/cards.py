@@ -1,4 +1,4 @@
-from style import graphics as g
+from utils.utils import g # graphics is g
 import random
 from monopoly_directory.board import Board
 from monopoly_directory.player_class import MonopolyPlayer

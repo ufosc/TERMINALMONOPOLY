@@ -1,7 +1,6 @@
-from time import sleep
-from style import MYCOLORS as c, graphics as g
-import screenspace as ss
-from screenspace import Terminal
+from utils.utils import MYCOLORS as c, g # g is graphics
+from utils.utils import screenspace as ss
+from utils.utils import Terminal
 import os
 import networking as net
 from socket import socket

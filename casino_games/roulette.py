@@ -1,8 +1,8 @@
 import asyncio
 import random
 import sys
-from screenspace import Terminal, overwrite, get_valid_int
-from style import set_cursor_str, MYCOLORS as COLORS
+from utils.utils import Terminal, overwrite, get_valid_int
+from utils.utils import set_cursor_str, MYCOLORS as COLORS
 from time import sleep
 
 # Roulette wheel setup

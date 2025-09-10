@@ -18,21 +18,17 @@ animation_thread.start()
 
 # Python Builtin Utilities
 import socket
-import random
 import select
 import importlib
 
 # Our Utilities
-from style import MYCOLORS as COLORS, print_w_dots, choose_colorset
-import screenspace as ss 
-from screenspace import Trading_Output, Main_Output, Monopoly_Game_Output, Casino_Output
-import gamemanager as gm
+from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset
+from utils.screenspace import Main_Output, Monopoly_Game_Output, Casino_Output
 import networking as net
-import validation as valid
-from utils import Client
+import utils as valid
+from utils import Client, screenspace as ss
 
 # Modules
-import modules_directory.tictactoe as tictactoe
 import modules_directory.inventory as inv
 # Dynamically import handle functions from modules in modules_directory as handle_<module_name>
 modules_path = "modules_directory"

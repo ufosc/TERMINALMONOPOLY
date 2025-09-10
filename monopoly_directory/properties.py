@@ -1,4 +1,4 @@
-from style import MYCOLORS as COLORS
+from utils.utils import MYCOLORS as COLORS
 
 class Property:
     """

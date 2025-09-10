@@ -1,10 +1,9 @@
-import keyboard
 import textwrap
 from time import sleep
-import screenspace as ss
+from utils.utils import screenspace as ss
 from socket import socket
 import networking as net
-from style import set_cursor_str, set_cursor, graphics as g
+from utils.utils import set_cursor_str, g # graphics is g
 from modules_directory.inventory import Inventory
 
 from input_handler import is_pressed

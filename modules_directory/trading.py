@@ -1,12 +1,10 @@
-import screenspace as ss
 from socket import socket
 import networking as net
-from style import graphics as g, set_cursor_str, MYCOLORS as COLORS
+from utils.utils import g, set_cursor_str, MYCOLORS as COLORS
 from random import randint
-from utils import Client
+from utils.utils import Client, screenspace as ss
 import textwrap
 import keyboard
-from time import sleep
 
 name = "Trading Module"
 author = "https://github.com/adamgulde"

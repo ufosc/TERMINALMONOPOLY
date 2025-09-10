@@ -1,8 +1,8 @@
 import random
-import screenspace as ss
-from screenspace import Terminal
+from utils.utils import screenspace as ss
+from utils.utils import Terminal
 import time
-from style import graphics as g
+from utils.utils import g # g is graphics
 
 """
     war Module
