@@ -77,10 +77,9 @@ if __name__ == "__main__": # Driver code for
 
 name = "TicTacToe Module"
 author = "https://github.com/adamgulde"
-description = "TicTacToe basis for attack module."
 version = "1.1" # Moved to its own file
 command = "ttt"
-help_text = "Type TTT to play someone in TicTacToe."
+help_text = "Type TTT to play someone in TicTacToe. TicTacToe basis for attack module. If opposing player takes too long to respond, attacking player wins."
 
 def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
     """

@@ -49,10 +49,9 @@ class fishing_game():
 
 name = "Fishing Game"
 author = "https://github.com/adamgulde"
-description = "Go fishing!"
 version = "1.3" # Moved to its own file
 command = "fish"
-help_text = "Type FISH to go fishing, and press ENTER to try to reel something in!"
+help_text = "Type FISH to go fishing, and press ENTER to try to reel something in! Go fishing!"
 persistent = False
 
 fishing_game_obj = fishing_game() 
