@@ -1,11 +1,13 @@
-import textwrap
-
 class Inventory():
     def __init__(self):
         """
         Initializes the inventory of the player.
         The inventory is a dictionary of items and their quantities.
         All items are stored here, to be extracted by the shop module.
+
+        This does not include the player's cash, as that is handled by the balance module.
+        This does not include the player's stocks, as that is handled by the stocks module.
+        This does not include the player's properties, as that is handled by the properties module.
         """
         self.items = {
             "fish": {"Carp": 10, "Bass": 0, "Salmon": 0},

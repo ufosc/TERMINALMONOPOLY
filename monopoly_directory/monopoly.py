@@ -139,7 +139,7 @@ def update_status(p: MonopolyPlayer, update: str, status: list = status, mode: s
         color = COLORS.playerColors[p.order]
         status.append(color + f"{p.name} has properties: " + COLORS.RESET)
         for i in range(len(p.properties)):
-            status.append(f"{p.properties[i]}: {board.locations[p.properties[i]].name}")
+            status.append(f"{p.properties[i].location}: {p.properties[i].name}")
     if(update == "deed"):
         if mode == "normal":
             propertyid = input("What property to view? Enter property #")
@@ -229,7 +229,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
         if propertyid == "e":
             return get_gameboard()
         elif propertyid == "":
-            return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
+            return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {[propObject.location for propObject in p.properties]}" + COLORS.RESET
     flag = True
     exit_flag = False
     try:   
@@ -239,10 +239,10 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
         else:
             propertyid =  int(propertyid)
     except ValueError:
-        add_to_output(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {p.properties}" + COLORS.RESET)
+        add_to_output(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {[propObject.location for propObject in p.properties]}" + COLORS.RESET)
         flag = False
     if flag and not exit_flag:
-        if not propertyid in p.properties:
+        if not propertyid in [propObject.location for propObject in p.properties]:
             print("\033[40;0HYou do not own this property!")
         else: 
             family = board.locations[propertyid].color
@@ -254,7 +254,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
             if flag: 
                 for i in range(propertyid-3 if propertyid > 3 else 0, propertyid+5 if propertyid < 35 else 39): # check only a few properties around for efficiency
                     if board.locations[i].color == family:
-                        if not i in p.properties:
+                        if not i in [propObject.location for propObject in p.properties]:
                             print("\033[40;0HYou do not own a monopoly on these properties!")
                             flag = False
                             if mode == "banker":
@@ -301,7 +301,7 @@ def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "",
         else:
             print("\033[38;0H" + ' ' * 70)
             print("\033[38;0HInvalid option!")
-            return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {p.properties}" + COLORS.RESET
+            return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {[propObject.location for propObject in p.properties]}" + COLORS.RESET
     return get_gameboard()
 
 def mortgage_logic(p:MonopolyPlayer):
@@ -317,10 +317,10 @@ def mortgage_logic(p:MonopolyPlayer):
         else:
             propertyid =  int(propertyid)
     except ValueError: ###AHHHHHHHH clean me please
-        print(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {p.properties}", end=COLORS.RESET)
+        print(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {[propObject.location for propObject in p.properties]}", end=COLORS.RESET)
         flag = False
     if flag and not exit:
-        if not propertyid in p.properties:
+        if not propertyid in [propObject.location for propObject in p.properties]:
             print("\033[42;0HYou do not own this property!")
         elif board.locations[propertyid].mortgage == 0:
             print("\033[42;0HYou cannot mortgage this property!")
@@ -356,10 +356,10 @@ def sell_logic(p:MonopolyPlayer):
         else:
             propertyid =  int(propertyid)
     except ValueError: ###AHHHHHHHH clean me please
-        print(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {p.properties}", end=COLORS.RESET)
+        print(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {[propObject.location for propObject in p.properties]}", end=COLORS.RESET)
         flag = False
     if flag and not exit:
-        if not propertyid in p.properties:
+        if not propertyid in [propObject.location for propObject in p.properties]:
             print("\033[40;0HYou do not own this property!")
         else: 
             family = board.locations[propertyid].color
@@ -404,7 +404,7 @@ def manage_properties(p:MonopolyPlayer):
             print("\033[38;0HInvalid option!")
 
 def unittest(num:int = 5):
-    global CASH
+    global CASH, players # TODO cash should be set by Banker.py and passed to here
     if not num:
         num = 4
     if num == 1:
@@ -420,14 +420,13 @@ def unittest(num:int = 5):
         players[1].buy(16, board)
         players[1].buy(18, board)
         players[1].buy(19, board)
-    if num == 2:
+    elif num == 2:
         # Two players, low cash, will bankrupt if a 4 is rolled due to income tax
         CASH = 401
         players[0].buy(31, board)
         players[1].buy(32, board)
     elif num == 3:
         # Three players, high cash
-        CASH = 1500
         players[0].buy(1, board)
         players[1].buy(15, board)
         players[1].buy(25, board)
@@ -436,9 +435,8 @@ def unittest(num:int = 5):
         players[2].buy(28, board)
     elif num == 4:
         # Four players, high cash, no properties
-        CASH = 2000
+        pass
     elif num == 5: 
-        CASH = 3000
         players[0].buy(1, board)
         players[0].buy(3, board)
         players[0].buy(5, board)
@@ -453,13 +451,6 @@ def unittest(num:int = 5):
         players[1].buy(16, board)
         players[1].buy(18, board)
         players[1].buy(19, board)
-
-    elif num == 6:
-        CASH = 1000
-        players[0].buy(1, board)
-        players[0].buy(3, board)
-    for p in players:
-        p.cash += CASH
     
     # TODO make a more robust unit testing system, using below as a framework. Allow the programmer to 
     # choose which properties to buy for each player, and how much cash to allocate to each. 
@@ -666,7 +657,7 @@ def process_roll(num_rolls: int, dice: tuple) -> str:
         update_history(f"{players[turn].name} landed on {board.locations[players[turn].location].name}")
         refresh_board()
 
-    print("Board updated: " + get_gameboard())
+    # print("Board updated: " + get_gameboard())
 
     return evaluate_board_location(num_rolls, dice)
 
@@ -777,7 +768,7 @@ def player_choice():
     # Wipe the bottom of the screen (input area)
     bottom_screen_wipe()
 
-def start_game(cash: int, num_p: int, names: list[str], test_num = -1) -> str:
+def start_game(cash: int, num_p: int, names: list[str], clients: list) -> str:
     global CASH, num_players, players, gameboard, board, decks, mode
     clear_screen()
     mode = "banker"
@@ -789,6 +780,7 @@ def start_game(cash: int, num_p: int, names: list[str], test_num = -1) -> str:
     players = []
     for i in range(num_players):
         players.append(MonopolyPlayer(CASH, i, names[i]))
+        clients[i].PlayerObject = players[i]
     add_to_output(COLORS.WHITE + "\033[0;0H")
     add_to_output(gameboard)
     return output

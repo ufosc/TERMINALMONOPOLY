@@ -5,7 +5,7 @@ class MonopolyPlayer:
     """
     def __init__(self, cash:int, order:int, name: str) -> None:
         self.cash = cash
-        self.properties = []
+        self.properties = [] # Problem: This is not shared with Client class
         self.order = order
         self.location = 0
         self.jail = False
@@ -28,7 +28,7 @@ class MonopolyPlayer:
         Buy property\n
         @location: int\n
         """
-        self.properties.append(location)
+        self.properties.append(board.locations[location])
         self.cash -= board.locations[location].getPrice()
         if (board.locations[location].owner == -1):
             board.locations[location].owner = self.order

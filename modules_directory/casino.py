@@ -117,7 +117,11 @@ def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, nam
                     Expected format: "casino [casino_id] [change_balance]"
                     - [delta] (str): The player's win or loss string.
                     - [change_balance] (int): The amount to change the client's balance by.
-        current_client (Client): The client whose balance is to be updated.
+        client_socket (socket): The socket connection to the client.
+        change_balance (function): Function to change the client's balance.
+        add_to_output_area (function): Function to add messages to the output area.
+        id (int): The ID of the client whose balance is being updated.
+        name (str): The name of the client whose balance is being updated.
 
     Returns:
         None
