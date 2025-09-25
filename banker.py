@@ -43,6 +43,7 @@ for filename in os.listdir(modules_path):
         if hasattr(module, "handle"):
             globals()[f"handle_{module_name}"] = getattr(module, "handle")
 
+
 # Monopoly Game
 import monopoly_directory.monopoly as mply
 
@@ -58,6 +59,7 @@ num_players = 0
 play_monopoly = True
 monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
 messages = []
+DEBT_OK = False
 
 def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
     """
@@ -139,7 +141,7 @@ def start_server() -> socket.socket:
         net.send_message(clients[i].socket, f"Game Start!{num_players} {i}")
         sleep(0.5)
 
-def start_receiver() -> None:
+def start_receivers() -> None:
     """
     This function handles all client-to-server requests (not the other way around).
     Function binds an independent receiving socket at the same IP address, one port above. 
@@ -149,18 +151,26 @@ def start_receiver() -> None:
 
     Returns: None
     """
-    global player_data, port
-    add_to_output_area("Main", "[RECEIVER] Receiver started!", COLORS.GREEN) 
-    # Credit to https://stackoverflow.com/a/43151772/19535084 for seamless server-client handling. 
+    global port
+    threading.Thread(target=receiver_loop, args=(port,), name="ReceiverThread").start() # Start the receiver loop in a separate thread
+    threading.Thread(target=receiver_loop, args=(port, True), daemon=True, name="OOFReceiverThread").start() # Start the OOF receiver loop in a separate thread
+    add_to_output_area("Main", "Receivers started!", COLORS.GREEN)  
+    
+def receiver_loop(port:int, is_oof_thread: bool = False) -> None:
     with socket.socket() as server:
         host = socket.gethostname()
         ip_address = socket.gethostbyname(host)
         if "-local" in sys.argv:
             ip_address = "localhost"
             port = 33333
-        server.bind((ip_address,int(port+1)))
+        if is_oof_thread:
+            server.bind((ip_address, int(port + 2)))
+            add_to_output_area("Main", f"OOF Receiver accepting connections at {port+2}", COLORS.GREEN)
+        else:
+            server.bind((ip_address, int(port + 1)))
+            add_to_output_area("Main", f"Receiver accepting connections at {port+1}", COLORS.GREEN)
         server.listen()
-        add_to_output_area("Main", f"[RECEIVER] Receiver accepting connections at {port+1}", COLORS.GREEN)
+        # Credit to https://stackoverflow.com/a/43151772/19535084 for seamless server-client handling.
         to_read = [server]  # add server to list of readable sockets.
         while True:
             # check for a connection to the server or data ready from clients.
@@ -169,14 +179,16 @@ def start_receiver() -> None:
             for reader in readers:
                 if reader is server:
                     player,address = reader.accept()
-                    add_to_output_area("Main", f"Player connected from: {address[0]}", COLORS.GREEN)
+                    if not is_oof_thread:
+                        add_to_output_area("Main", f"Player connected from: {address[0]}", COLORS.GREEN)
                     to_read.append(player) # add client to list of readable sockets
                 else:
                     try:
                         data = net.receive_message(reader)
                         handle_data(data, reader)
                     except ConnectionResetError:
-                        add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
+                        if not is_oof_thread:
+                            add_to_output_area("Main", f"Player at {address[0]} disconnected.", COLORS.RED)
                         to_read.remove(reader) # remove from monitoring
 
                         # TODO send a message to each player to query who is still connected, then properly remove
@@ -187,14 +199,15 @@ def start_receiver() -> None:
                     #     add_to_output_area("Main", f"Player at {address[0]} disconnected.", s.COLORS.RED)
                     #     to_read.remove(reader) # remove from monitoring
                 if(len(to_read) == 1):
-                    if "-stayopen" not in sys.argv:
-                        add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver stopped.", COLORS.GREEN)
-                        return
-                    else:
-                        add_to_output_area("Main", "[RECEIVER] All connections dropped. Receiver will stay open.", COLORS.GREEN)
-                        # Reopen the server socket
-                        server_socket.close()
-                        start_server()
+                    if not is_oof_thread:
+                        if "-stayopen" not in sys.argv:
+                            add_to_output_area("Main", "All connections dropped. Receiver stopped.", COLORS.GREEN)
+                            return
+                        else:
+                            add_to_output_area("Main", "All connections dropped. Receiver will stay open.", COLORS.GREEN)
+                            # Reopen the server socket
+                            server_socket.close()
+                            start_server()
 
 def set_unittest() -> None:
     """
@@ -364,7 +377,14 @@ def handle_data(data: str, client: socket.socket) -> None:
         handle_balance(data, client, mply, current_client.PlayerObject.cash, current_client.PlayerObject.properties)
 
     elif data.startswith('casino'):
-        handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
+        handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name, DEBT_OK)
+
+    elif data.startswith('attack'):
+        #run the attack similar to casino on client side and send game to player attacked, then send resulting command back
+        handle_attack(data, current_client, client)
+
+    elif data.startswith('loan'):
+        handle_loan(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
 
     elif data.startswith('chat'):
         handle_chat(data, client, messages, current_client.id, current_client.name)
@@ -372,11 +392,15 @@ def handle_data(data: str, client: socket.socket) -> None:
     elif data.startswith('trade'):
         handle_trading(data, pid, client, clients, add_to_output_area)
         
+    elif data.startswith('plist'):
+        handle_plist(client, clients)
+        
     elif data.startswith('term_status'):
         command_data = data.split(' ')
         term = int(command_data[1])
         net.send_message(client, str(current_client.terminal_statuses[term]))
     
+
     elif data.startswith('kill') or data.startswith('disable') or data.startswith('active') or data.startswith('busy'):
         """
         Should be called by a player (1) to disable another player (2).
@@ -384,6 +408,66 @@ def handle_data(data: str, client: socket.socket) -> None:
         Player 2 doesn't know unless it is successful.
         """
         handle_term(data, current_client, client)
+def handle_attack(cmds: str, current_client: Client, client: socket.socket) -> None:
+    net.send_message(client, "\nInvalid you")
+    """
+    Command Structure:
+        action player term length
+        (Ex. Attack 0 5 15 1)
+
+    Args:
+        action: Type of action (attack)
+        player: ID of player attacked
+        pType:penalty game (e.g. guessing game)
+        pNum: penalty amount
+        player: ID of player attacking
+    """
+    command_data = cmds.split(' ')
+    if(command_data[0] == 'attack'):
+        #send game to opponent
+        #add_to_output_area("", f"attack status")
+        opponent = int(command_data[1])
+        attacker = int(command_data[4])
+        try:
+            if len(clients) <= opponent or clients[opponent] == None or clients[opponent] == clients[attacker]:
+                net.send_message(client, "\nInvalid opponent. Please select another player.")
+                return
+        except:
+            net.send_message(client, "\nInvalid opponent. Please select another player.")
+        if str(command_data[2].strip()) == 'lose':
+            money = change_balance(opponent, 0 - (int(command_data[3])))
+            net.send_message(clients[opponent].socket, str(money))
+            money = change_balance(attacker, int(command_data[3]))
+            net.send_message(clients[attacker].socket, str(money))
+            add_to_output_area("",
+                               f"{clients[opponent].name}'s balance was reduced by {command_data[3]} as a result of an attack %. Current Statuses: {clients[opponent].money}")
+            add_to_output_area("",
+                               f"{clients[attacker].name}'s balance was increased by {command_data[3]} as a result of an attack %. Current Statuses: {clients[attacker].money}")
+        else:
+            try:
+                #check if game works
+                i = __import__('attack_modules.' + command_data[2], fromlist=[''])
+                if((int(command_data[3])) < 1):
+                    net.send_message(client, "\nInvalid penalty amount")
+                    return
+
+                else:
+                    #set attack penalty on opponent balance (need to transfer)
+                    add_to_output_area("", f"{clients[opponent].name} has been attacked")
+                    net.send_notif(clients[opponent].socket, command_data[4] + " " + command_data[2] + " " + command_data[3], "ATTACK: ")
+                    return
+
+                    #clients[opponent].balance += amount
+
+                    #net.send_message(client, "\nPenalty applied.")
+
+            except ImportError:
+                net.send_message(client, "\nInvalid attack. Please select another attack.")
+                return
+
+
+
+
 
 def handle_term(cmds: str, current_client: Client, client: socket.socket) -> None:
     """
@@ -599,10 +683,71 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
         elif action == 'continue':
             ret_val = mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
-        elif action == 'endturn':
+        elif action == 'endturn' and not client.can_roll:
             mply.end_turn()
             ret_val = "ENDOFTURN" + mply.get_gameboard()
             net.send_notif(client.socket, ret_val, "MPLY:")
+
+def handle_loan(data: str, client_socket: socket.socket, change_balance: callable, add_to_output_area: callable, player_id: int, player_name: str) -> None:
+    """
+    Handles loan requests from players.
+    
+    Args:
+        data (str): The loan command string containing loan details.
+                    Expected format: "loan [loan_type] [amount]"
+        client_socket (socket): The socket connection to the client.
+        change_balance (function): Function to change the client's balance.
+        add_to_output_area (function): Function to add messages to the output area.
+        player_id (int): The ID of the client requesting the loan.
+        player_name (str): The name of the client requesting the loan.
+    
+    Returns:
+        None
+    """
+    try:
+        # Parse the loan command: "loan [loan_type] [amount]"
+        command_data = data.split(' ')
+        
+        if len(command_data) != 3:
+            net.send_message(client_socket, "Invalid loan request format.")
+            return
+            
+        loan_type = command_data[1]  # "high" or "low"
+        amount = int(command_data[2])
+        
+        # Validate loan parameters
+        if loan_type == "high":
+            if amount <= 0 or amount > 2000:
+                net.send_message(client_socket, "High interest loans must be between $1 and $2000.")
+                return
+            interest_rate = 0.15  # 15% interest for high loans
+            
+        elif loan_type == "low":
+            if amount <= 0 or amount > 500:
+                net.send_message(client_socket, "Low interest loans must be between $1 and $500.")
+                return
+            interest_rate = 0.05  # 5% interest for low loans
+            
+        else:
+            net.send_message(client_socket, "Invalid loan type. Choose 'high' or 'low'.")
+            return
+        
+        # Calculate the total amount to be repaid (for informational purposes)
+        total_repayment = int(amount * (1 + interest_rate))
+        
+        # Add the loan amount to the player's balance
+        new_balance = change_balance(player_id, amount)
+        
+        # Log the transaction
+        add_to_output_area("Loans", f"{player_name} took out a {loan_type} interest loan of ${amount}. New balance: ${new_balance}")
+        
+        # Send confirmation message back to the client
+        response = f"Loan approved! You received ${amount}.\nYou will need to repay ${total_repayment} (${amount} + {int(interest_rate*100)}% interest).\nYour new balance is ${new_balance}."
+        net.send_message(client_socket, response)
+        
+    except (ValueError, IndexError) as e:
+        add_to_output_area("Loans", f"Error processing loan for {player_name}: {str(e)}", COLORS.RED)
+        net.send_message(client_socket, "Error processing loan request. Please try again.")
 
 if __name__ == "__main__":
 
@@ -615,6 +760,9 @@ if __name__ == "__main__":
     if "-silent" in sys.argv:
         ss.VERBOSE = False
 
+    if "-debtok" in sys.argv:
+        DEBT_OK = True
+
     set_unittest() 
     # set_gamerules()
     start_server()
@@ -622,4 +770,4 @@ if __name__ == "__main__":
     game = mply.start_game(STARTING_CASH, num_players, [clients[i].name for i in range(num_players)], clients)
     ss.print_banker_frames()
     threading.Thread(target=monopoly_controller, args=[monopoly_unit_test], daemon=True).start()
-    start_receiver()
+    start_receivers()

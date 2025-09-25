@@ -10,7 +10,7 @@ version = "1.0" # Moved to its own file
 command = "bal"
 help_text = "Type BAL to view your cash and assets."
 persistent = False
-oof_params = {"player_id": None, "server": None} # Global parameters for out of focus function
+oof_params = {}
 
 def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     """
@@ -26,17 +26,16 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     Returns:
         None
     """
+    global oof_params
     active_terminal.clear()
     active_terminal.persistent = persistent
     active_terminal.oof_callable = oof # Set the out of focus callable function
-    set_oof_params(player_id, server) # Set the parameters for the out of focus function
+    oof_params = net.set_oof_params(player_id, server) # Set the parameters for the out of focus function
     
     header = f"Consolidated Cash and Assets".center(75)
     # Get the player's cash on hand
     net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
-    net.player_mtrw = True
     info = header + "\n" + net.receive_message(server)
-    net.player_mtrw = False
 
     # Get moneybag image and create the lists of lines
     image = str(g.get("moneybag"))
@@ -58,17 +57,9 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
 
     active_terminal.update(ret_val, False) # print the rest of the info, False to print over the moneybags, but not clear the screen
 
-def set_oof_params(player_id:int, server: socket) -> None: 
-    """
-    Sets the parameters for the out of focus function.
-    """
-    oof_params["player_id"] = player_id
-    oof_params["server"] = server
-
 def oof() -> str:
     """
     Update function for when the terminal is out of focus. Does NOT need active_terminal, and returns the string to be displayed.
-    Of course, do NOT update player_mtrw here because this is not called in the main thread.
     """
     server = oof_params["server"]
     player_id = oof_params["player_id"]

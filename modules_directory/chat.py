@@ -32,7 +32,8 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     active_terminal.clear()
     active_terminal.persistent = persistent
     active_terminal.oof_callable = oof
-    set_oof_params(player_id, server)
+    global oof_params
+    oof_params = net.set_oof_params(player_id, server)
 
     # preps the title and welcome message to the chatter and prints to screen
     active_terminal.update(title)
@@ -61,22 +62,6 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
         print(c.RESET, end="") 
         ss.overwrite(c.RESET + "\r" + " " * 40)
         net.send_message(server, f'{player_id}chat,add_msg,{msg}') # adds message to chat when input recieved
-
-
-
-def set_oof_params(player_id: int, server: socket) -> None:
-    """
-    Sets the parameters for the out of focus function.
-
-    Args:
-        player_id (str): The id of the player.
-        server (socket): The server connection.
-
-    Returns:
-        None
-    """
-    oof_params["player_id"] = player_id
-    oof_params["server"] = server
 
 def oof() -> str:
     """

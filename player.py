@@ -13,6 +13,8 @@ import validation
 import modules_directory.inventory as inv
 import keyboard
 
+from loan import main as load_loan_menu
+
 game_running = False
 screen = "terminal"
 sockets = (socket.socket(socket.AF_INET, socket.SOCK_STREAM), socket.socket(socket.AF_INET, socket.SOCK_STREAM))
@@ -220,25 +222,24 @@ def print_queue():
                 # to parse through as they're received, and then update the terminal with the correct data based on a 
                 # tag or identifier. 
         if screen == 'terminal': # Only update if we are in the terminal screen.
+            # sleep(1)
+            # net.mtp = True # Pause the main thread from sending messages while we update terminals
+            # sleep(1)
             for t in TERMINALS:
                 if t.status == "DISABLED" or t.status == "BUSY": # Skip disabled or (just in case) busy terminals.
                     continue
-                sleep(0.5) # Delay to prevent overwhelming the system with print calls. Change to lower value when done debugging.
+                sleep(0.5)
                 # Also important to delay to ensure calls to banker are not overwhelming.
                 if not t.oof_callable == None and t.index != active_terminal.index: # Only update if the terminal is not active and has an out-of-focus callable.
-                    if not net.player_mtrw: # Ensure the main thread is not waiting on receiving new data
-                        data = t.oof_callable() # Call the out-of-focus function to get the new data.
-                        t.check_new_data(data) # Check if new data is available.
-                        if t.has_new_data and t.oof_callable is not None: # Only update terminal if there is new data, to avoid unnecessary prints.
-                            for i in range(150):
-                                keyboard.block_key(i) # Naively block all calls to the keyboard when updating Terminals OOF
-                            for i in range(150):
-                                keyboard.unblock_key(i)
-                            t.clear() # Clear the terminal before updating it.
-                            t.update(data, padding=False) # Update the terminal with new data.
-                            t.has_new_data = False # Reset the flag.
+                    data = t.oof_callable() # Call the out-of-focus function to get the new data.
+                    t.check_new_data(data) # Check if new data is available.
+                    if t.has_new_data and t.oof_callable is not None: # Only update terminal if there is new data, to avoid unnecessary prints.
+                        t.clear() # Clear the terminal before updating it.
+                        t.update(data, padding=False) # Update the terminal with new data.
+                        t.has_new_data = False # Reset the flag.
                 else: 
                     continue # No need to update if no callable or terminal is active.
+            net.mtp = False # Resume the main thread after updating terminals
 
 def start_notification_listener(my_socket: socket.socket) -> None:
     """
@@ -283,6 +284,20 @@ def start_notification_listener(my_socket: socket.socket) -> None:
                 TERMINALS[int(term[1])].disable()
             elif(term[0] == "enable"):
                 TERMINALS[int(term[1])].enable(True, sockets[1], player_id)
+        elif "ATTACK:" in notif:
+            for t in TERMINALS:
+                if not t.status == "DISABLED":  # If terminal is not busy
+                    ss.overwrite(COLORS.RED + "Incoming!")
+                    break
+            commands = notif[7:]
+            attack_info = commands.split(" ")
+            amount = attack_info[3]
+            attack_game = attack_info[2]
+            attacker = attack_info[1]
+            i = __import__('attack_modules.' + attack_game, fromlist=[''])
+            penalty = i.play(t, amount);
+            #problem with socket
+            net.send_message(sockets[1], f"{player_id}attack {player_id} lose {penalty} {attacker}")
         elif "MPLY:" in notif: # Get the Monopoly board state. Overwrite the entire screen.
             gameboard = notif[5:]
             ss.clear_screen()
@@ -385,6 +400,7 @@ def get_input() -> None:
                     active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
                     active_terminal.change_border_color(COLORS.GREEN)
                     ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
+                    continue
                 else:
                     ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             elif stdIn == "exit":
@@ -392,6 +408,11 @@ def get_input() -> None:
             # Anything beyond this one should be not crucial, as it will NOT work if disabled.
             elif active_terminal.status == "DISABLED":
                 ss.overwrite(COLORS.RED + "Terminal is disabled! Switch to another terminal with 'term'.")
+                continue
+
+            # Loan commands
+            elif stdIn == "loan":
+                load_loan_menu(player_id=player_id, server=sockets[1])
                 continue
 
             # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
@@ -412,6 +433,8 @@ def get_input() -> None:
                 active_terminal.oof_callable = None
                 active_terminal.persistent = False
                 active_terminal.command = ""
+                ss.overwrite(COLORS.GREEN + "Terminal cleared.")
+                continue
             elif stdIn in cmds.keys(): # Check if the command is in the available commands
                 usable = True
                 for t in TERMINALS:
@@ -425,6 +448,8 @@ def get_input() -> None:
                     active_terminal.command = stdIn # Set the command for the active terminal
                     active_terminal.oof_callable = cmds[stdIn] if hasattr(cmds[stdIn], 'oof') else None # Set the out of focus callable function if it exists
                     cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal) # Call the function with the required parameters
+                    ss.overwrite(COLORS.RESET)
+                    continue
 
             elif stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump up one console line
@@ -443,7 +468,7 @@ def get_input() -> None:
                 ss.update_terminal(active_terminal.index, active_terminal.index)
                 ss.overwrite(COLORS.GREEN + "Screen calibrated.")
             
-            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "deed", "kill", "disable"]:
+            elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "attack", "deed", "kill", "disable"]:
                 ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode." + COLORS.RESET)
 
             #elif stdIn == "kill":
@@ -467,7 +492,6 @@ def get_input() -> None:
                     for t in TERMINALS:
                         t.display()
                     ss.update_terminal(active_terminal.index, active_terminal.index)
-
                 elif stdIn.startswith("kill"):
                     if(len(stdIn.split(" ")) == 3):
                         net.send_message(sockets[1], f'{player_id}' + stdIn)
@@ -483,6 +507,7 @@ def get_input() -> None:
                         ss.overwrite(COLORS.RED + "Invalid command. Syntax is 'disable PLAYER TERM LENGTH' (ex. 'disable 0 3 15)")
                 else:
                     ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
+                    continue
 
     if stdIn == "exit" and game_running:
         ss.overwrite('\n' + ' ' * ss.WIDTH)
