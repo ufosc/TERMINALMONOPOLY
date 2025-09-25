@@ -621,13 +621,17 @@ def monopoly_controller(unit_test) -> None:
     while True:
         sleep(1)
         if mply.turn != last_turn:
-            ss.set_cursor(0, 20)
-            last_turn = mply.turn
-            net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.", "MPLY:")
-            clients[mply.turn].can_roll = True
-            # ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
-            add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
-
+            # if disconnect, move to next player
+            try:
+                ss.set_cursor(0, 20)
+                last_turn = mply.turn
+                net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.", "MPLY:")
+                clients[mply.turn].can_roll = True
+                # ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
+                add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
+            except:
+                add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Disconnected")
+                mply.end_turn()
 def monopoly_game(client: Client = None, cmd: str = None) -> None:
     """
     Description:
