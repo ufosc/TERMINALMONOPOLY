@@ -399,7 +399,9 @@ def handle_data(data: str, client: socket.socket) -> None:
         command_data = data.split(' ')
         term = int(command_data[1])
         net.send_message(client, str(current_client.terminal_statuses[term]))
-    
+
+    elif data.startswith('fish'):
+        handle_fishing(client,  current_client.inventory)
 
     elif data.startswith('kill') or data.startswith('disable') or data.startswith('active') or data.startswith('busy'):
         """
