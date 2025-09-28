@@ -69,8 +69,8 @@ class Inventory():
         return ret_val
 
 from socket import socket
-from screenspace import Terminal
-import networking as net
+from utils.screenspace import Terminal
+import utils.networking as net
 
 name = "Inventory Module"
 command = "inv"

@@ -1,6 +1,6 @@
-import screenspace as ss
 from socket import socket
-import networking as net
+import utils.networking as net
+import utils.screenspace as ss
 
 name = "Deed Viewer"
 author = "https://github.com/adamgulde"

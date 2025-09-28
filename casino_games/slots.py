@@ -1,8 +1,7 @@
 # SLOTS MACHINE
 import random
 from time import sleep
-from style import graphics as g
-import screenspace as ss
+from utils.screenspace import g, set_cursor, overwrite, set_cursor_str, Terminal
 
 game_title = "♕ Slots Machine"
 header = game_title.center(75,"─")
@@ -45,7 +44,7 @@ machine = [
     [wheel0[2], wheel1[2], wheel2[2]]
 ]
 
-def play(active_terminal: ss.Terminal, bet: int) -> int:
+def play(active_terminal: Terminal, bet: int) -> int:
     """
     Slots Module
     Author: Adam Gulde
@@ -54,12 +53,12 @@ def play(active_terminal: ss.Terminal, bet: int) -> int:
     """
     if mode == "terminal":
         active_terminal.clear()
-    ss.set_cursor(0, 0)
+    set_cursor(0, 0)
 
     # 3. Display the slots
     rng = random.randint(0, 3) # Randomly select a column to rotate
     for t in range(31): # Must be odd
-        ss.set_cursor(0, 0)
+        set_cursor(0, 0)
         sleep_time = exponential_increase(t)
 
         rotate_column(0) if t % 2 == 0 else None
@@ -118,7 +117,7 @@ def play(active_terminal: ss.Terminal, bet: int) -> int:
         #     active_terminal.update(bonus[2], padding=False)
         if lines != "":
             active_terminal.update(lines, padding=False)
-        ss.overwrite("Enter to continue...") 
+        overwrite("Enter to continue...") 
         input() # Wait for the user to press enter
     ret_val = ""
     if winnings > 0:
@@ -126,19 +125,19 @@ def play(active_terminal: ss.Terminal, bet: int) -> int:
             ret_val += g.get("slots_frame_win")
             ret_val = "\n" * 15 + print_results(bet, bonus[1], winnings, ret_val)
         else:
-            ss.set_cursor(0, 20) 
+            set_cursor(0, 20) 
             print(g.get("slots_frame_win"))
     else:
         if mode == "terminal": 
             ret_val += g.get("slots_frame_lose")
             ret_val = "\n" * 15 + print_results(bet, "No Bonus", winnings, ret_val)
         else:
-            ss.set_cursor(0, 20)
+            set_cursor(0, 20)
             print(g.get("slots_frame_lose"), end="") # Print the loss frame
     
     if mode == "terminal":
         active_terminal.update(ret_val, padding=False)
-        ss.overwrite("Enter to continue...") 
+        overwrite("Enter to continue...") 
         input() # Wait for the user to press enter
 
     return winnings
@@ -148,17 +147,17 @@ def print_results(bet: int, bonus: str, winnings: int, ret_val: str = "") -> str
     Prints the winnings in a nice format.
     """
     if mode == "standalone":
-        ss.set_cursor(25, 22) # Bet
+        set_cursor(25, 22) # Bet
         print(bet)
-        ss.set_cursor(43, 22) # Bonus 
+        set_cursor(43, 22) # Bonus 
         print(bonus)
-        ss.set_cursor(28, 23) # Payout
+        set_cursor(28, 23) # Payout
         print(winnings)
         return "" 
     else: 
-        ret_val += ss.set_cursor_str(25, 17) + str(bet) # Bet
-        ret_val += ss.set_cursor_str(43, 17) + bonus
-        ret_val += ss.set_cursor_str(28, 18) + str(winnings)
+        ret_val += set_cursor_str(25, 17) + str(bet) # Bet
+        ret_val += set_cursor_str(43, 17) + bonus
+        ret_val += set_cursor_str(28, 18) + str(winnings)
         return ret_val
 
 def exponential_increase(t):
@@ -204,24 +203,24 @@ def print_square(symbol, is_half_image: bool, top: bool, x_offset:int, y_offset:
     if is_half_image:
         top_left = halve_image(symbol, top)
         # Print a half frame around the symbol.
-        if mode == "standalone": ss.set_cursor(x_offset, y_offset)
-        else: ret_val += ss.set_cursor_str(x_offset, y_offset)
+        if mode == "standalone": set_cursor(x_offset, y_offset)
+        else: ret_val += set_cursor_str(x_offset, y_offset)
         # Ternary operator to determine the frame characters based on the if the symbol is located on the side, top, or bottom of the screen.
         if mode == "standalone": print((("┌" if x_offset < 10 else "┬") if x_offset < 40 else "┬") + "───────────────────────" + ("┐")) if not top else print()
         else: ret_val += (("┌" if x_offset < 10 else "┬") + "───────────────────────" + ("┬" if x_offset < 40 else "┐")) if not top else ""
         for i in range(1, 5):
             if mode == "standalone":
-                ss.set_cursor(x_offset, y_offset + i)
+                set_cursor(x_offset, y_offset + i)
                 print("│")
-                ss.set_cursor(x_offset + 24, y_offset + i)
+                set_cursor(x_offset + 24, y_offset + i)
                 print("│")
             else:
-                ret_val += ss.set_cursor_str(x_offset, y_offset + i)
+                ret_val += set_cursor_str(x_offset, y_offset + i)
                 ret_val += "│"
-                ret_val += ss.set_cursor_str(x_offset + 24, y_offset + i)
+                ret_val += set_cursor_str(x_offset + 24, y_offset + i)
                 ret_val += "│"
-        if mode == "standalone": ss.set_cursor(x_offset, y_offset + 5)
-        else: ret_val += ss.set_cursor_str(x_offset, y_offset + 5)
+        if mode == "standalone": set_cursor(x_offset, y_offset + 5)
+        else: ret_val += set_cursor_str(x_offset, y_offset + 5)
         if mode == "standalone": print(("└" if x_offset < 10 else "┴") + "───────────────────────" + ("┴" if x_offset < 40 else "┘") if top else ("┬" if x_offset < 10 else "┐")) if top else print()
         else: ret_val += (("└" if x_offset < 10 else "┴") + "───────────────────────" + ("┴" if x_offset < 40 else "┘")) if top else ""
     else:
@@ -229,33 +228,33 @@ def print_square(symbol, is_half_image: bool, top: bool, x_offset:int, y_offset:
 
         # Print the full frame around the symbol.
         if mode == "standalone": 
-            ss.set_cursor(x_offset, y_offset)
+            set_cursor(x_offset, y_offset)
             print(("┌" if x_offset < 10 else "┬") + "───────────────────────" + ("┬" if x_offset < 40 else "┐"))
         else: 
-            ret_val += ss.set_cursor_str(x_offset, y_offset)
+            ret_val += set_cursor_str(x_offset, y_offset)
             ret_val += (("┌" if x_offset < 10 else "┬") + "───────────────────────" + ("┬" if x_offset < 40 else "┐"))
         for i in range(1, 9):
             # For efficiency, only print the left and right sides of the frame.
             if mode == "standalone": 
-                ss.set_cursor(x_offset, y_offset + i)
+                set_cursor(x_offset, y_offset + i)
                 print("│")
-                ss.set_cursor(x_offset + 24, y_offset + i)
+                set_cursor(x_offset + 24, y_offset + i)
                 print("│")
             else:
-                ret_val += ss.set_cursor_str(x_offset, y_offset + i)
+                ret_val += set_cursor_str(x_offset, y_offset + i)
                 ret_val += "│"
-                ret_val += ss.set_cursor_str(x_offset + 24, y_offset + i)
+                ret_val += set_cursor_str(x_offset + 24, y_offset + i)
                 ret_val += "│"
-        if mode == "standalone": ss.set_cursor(x_offset, y_offset + 9)
-        else: ret_val += ss.set_cursor_str(x_offset, y_offset + 9)
+        if mode == "standalone": set_cursor(x_offset, y_offset + 9)
+        else: ret_val += set_cursor_str(x_offset, y_offset + 9)
         # 
         if mode == "standalone": print(("└" if x_offset < 10 else "┴") + "───────────────────────" + ("┴" if x_offset < 40 else "┘"))
         else: ret_val += (("└" if x_offset < 10 else "┴") + "───────────────────────" + ("┴" if x_offset < 40 else "┘"))
     
     # Print the symbol in the square
     for line in top_left:
-        if mode == "standalone": ss.set_cursor(x_offset + inc_x, y_offset + inc_y)
-        else: ret_val += ss.set_cursor_str(x_offset + inc_x, y_offset + inc_y)
+        if mode == "standalone": set_cursor(x_offset + inc_x, y_offset + inc_y)
+        else: ret_val += set_cursor_str(x_offset + inc_x, y_offset + inc_y)
         if "\n" in line:
             inc_y += 1
             inc_x = 0
@@ -382,7 +381,7 @@ def check_bonus(bet) -> tuple[int, str, str]:
 def print_number_sidebar():
     # For debugging purposes, print the numbers on the side of the screen.
     for i in range(0, 25):
-        ss.set_cursor(77, i)
+        set_cursor(77, i)
         print(i, end="")
 
 def draw_win_line(start: tuple, end: tuple) -> str:
@@ -394,10 +393,10 @@ def draw_win_line(start: tuple, end: tuple) -> str:
     for point in points:
         x, y = point
         if mode == "standalone": 
-            ss.set_cursor(x, y) 
+            set_cursor(x, y) 
             print("▓", end="")
         else: 
-            ret_val += ss.set_cursor_str(x, y)
+            ret_val += set_cursor_str(x, y)
             ret_val += "▓"
     
     return ret_val
@@ -431,4 +430,4 @@ if __name__ == "__main__":
     print_number_sidebar()
     mode = "standalone"
     play(None, 100)
-    ss.set_cursor(0, 25)
+    set_cursor(0, 25)

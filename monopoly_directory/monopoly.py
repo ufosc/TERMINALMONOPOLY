@@ -2,13 +2,11 @@
 import random
 import os
 import textwrap
-
 from monopoly_directory.properties import Property
 from monopoly_directory.cards import Cards
 from monopoly_directory.board import Board
 from monopoly_directory.player_class import MonopolyPlayer
-from screenspace import calibrate_screen, make_fullscreen, clear_screen
-from style import MYCOLORS as COLORS, set_cursor_str, graphics as g
+from utils.screenspace import calibrate_screen, make_fullscreen, clear_screen, MYCOLORS as COLORS, set_cursor_str, g
 
 mode = "normal"
 output = ""

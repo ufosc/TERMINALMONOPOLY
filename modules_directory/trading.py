@@ -1,12 +1,10 @@
-import screenspace as ss
-from socket import socket
-import networking as net
-from style import graphics as g, set_cursor_str, MYCOLORS as COLORS
-from random import randint
-from utils import Client
 import textwrap
 import keyboard
-from time import sleep
+import utils.networking as net
+from socket import socket
+from utils.screenspace import g, set_cursor_str, MYCOLORS as COLORS, Terminal
+from utils.utils import Client
+from random import randint
 
 name = "Trading Module"
 author = "https://github.com/adamgulde"
@@ -34,7 +32,7 @@ auctions = [{"name": o1.name, "obj": o1, "price": 0, "bidder": "", "remaining": 
             {"name": o3.name, "obj": o3, "price": 0, "bidder": "", "remaining": 0},
             {"name": o4.name, "obj": o4, "price": 0, "bidder": "", "remaining": 0},] 
 
-def run(player_id:int, server: socket, active_terminal: ss.Terminal):
+def run(player_id:int, server: socket, active_terminal: Terminal):
     """
     Trading Module
 
@@ -100,7 +98,7 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     active_terminal.indicate_keyboard_hook(off=True) # Stop the keyboard hook.
 
 
-def navigate(option_coords: list, active_terminal: ss.Terminal, static_menu: str) -> int:
+def navigate(option_coords: list, active_terminal: Terminal, static_menu: str) -> int:
 
     """
     Navigates the trading menu.

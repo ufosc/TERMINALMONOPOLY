@@ -1,15 +1,10 @@
 import random
 from time import sleep
-import screenspace as ss
-from screenspace import Terminal
-from style import graphics as g, MYCOLORS as c
+from utils.screenspace import MYCOLORS as c, g, Terminal, overwrite
+
 
 game_title = "Guessing Game"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
-
-import screenspace as ss
-from screenspace import Terminal
-from style import MYCOLORS as COLORS, graphics as g
 #def render_hand(active_terminal: Terminal, attacker_picked_hand, outcome):
  #   if outcome == "WIN":
         #open hand with trick
@@ -44,13 +39,13 @@ def play(active_terminal: Terminal, bet) -> int:
     score = [0, 0, 0, 0]
     active_terminal.update(header + "\n" + g['coin_flip_heads'])
     flip = random.choice(['l', 'r'])
-    #ss.overwrite(COLORS.RED + flip)
+    #overwrite(COLORS.RED + flip)
     choice = ""
     choice = input(c.backYELLOW + c.BLACK + f"\rYou have been attacked! Left or Right? (L/R) ")
     while (not (choice.lower() == "r" or choice.lower() == "l")):
-        ss.overwrite(COLORS.RED + "Invalid Choice!")
+        overwrite(c.RED + "Invalid Choice!")
         choice = input(c.backYELLOW + c.BLACK + f"\rYou have been attacked! Left or Right? (L/R) ")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
 
     # TODO - Make the animation asynchrnous.
     active_terminal.update(header + "\n" + g['coin_flip_heads'])
@@ -63,12 +58,12 @@ def play(active_terminal: Terminal, bet) -> int:
     sleep(0.2)
     active_terminal.update(header + "\n" + g['coin_flip_heads' if flip == 'heads' else 'coin_flip_tails'])
     if (choice.lower() == flip):
-        ss.overwrite(c.backYELLOW + c.BLACK + f"\rYou got the right hand! You avoided the penalty!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite(c.backYELLOW + c.BLACK + f"\rYou got the right hand! You avoided the penalty!")
+        overwrite("\r" + " " * 40)
         score[0] += 1
     else:
-        ss.overwrite(c.backYELLOW + c.BLACK + f"\rYou got the wrong hand...")
-        ss.overwrite("\r" + " " * 40)
+        overwrite(c.backYELLOW + c.BLACK + f"\rYou got the wrong hand...")
+        overwrite("\r" + " " * 40)
         score[0] = 0
 
 
@@ -79,6 +74,6 @@ def play(active_terminal: Terminal, bet) -> int:
         active_terminal.update(header + "\n" + g['casino_lose'])
         bet *= 1
     #input("\r")
-    ss.overwrite("\r" + " " * 40)
+    overwrite("\r" + " " * 40)
     return bet
 

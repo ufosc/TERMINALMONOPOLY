@@ -1,7 +1,5 @@
-import networking as net
-from screenspace import Terminal
-import screenspace as ss
-from style import MYCOLORS as COLORS
+import utils.networking as net
+import utils.screenspace as ss
 from socket import socket
 import keyboard
 import time
@@ -81,7 +79,7 @@ version = "1.1" # Moved to its own file
 command = "ttt"
 help_text = "Type TTT to play someone in TicTacToe. TicTacToe basis for attack module. If opposing player takes too long to respond, attacking player wins."
 
-def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
+def run(server: socket, active_terminal: ss.Terminal, player_id: int) -> None:
     """
     Manages the client-side logic for joining and playing a Tic-Tac-Toe game.
 
@@ -162,7 +160,7 @@ def run(server: socket, active_terminal: Terminal, player_id: int) -> None:
             if keyboard.is_pressed('d'):
                 x = max(0, min(x+1, 2))
 
-            simple_board[y][x] = COLORS.backYELLOW + original_board[y][x] + COLORS.RESET
+            simple_board[y][x] = ss.COLORS.backYELLOW + original_board[y][x] + ss.COLORS.RESET
             time.sleep(0.05)
             b = construct_board(simple_board)
             active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))

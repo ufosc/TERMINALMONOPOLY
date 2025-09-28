@@ -3,10 +3,7 @@ import keyboard
 import time
 import sys
 sys.path.append('..') # Path to the directory
-from style import set_cursor, set_cursor_str
-
-from screenspace import Terminal, overwrite
-from style import MYCOLORS as COLORS
+from utils.screenspace import MYCOLORS as COLORS, set_cursor, Terminal, overwrite
 from socket import socket
 
 name = "Maze Attack Module"
@@ -202,7 +199,7 @@ def randomize_theme():
         color = COLORS.RED
 
 
-#The main problem seems to be the translation from screenspace to mazespace. 
+#The main problem seems to be the translation from utils.screenspace to mazespace. 
 def run(player_id: int, server: socket, active_terminal: Terminal):
     overwrite("You've been trapped in a maze! Use the arrow keys to move and escape!")
     active_terminal.indicate_keyboard_hook()

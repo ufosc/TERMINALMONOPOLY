@@ -1,8 +1,6 @@
 import random
-import screenspace as ss
-from screenspace import Terminal
-import time
-from style import graphics as g
+from utils.screenspace import Terminal, g, overwrite
+from time import sleep
 
 """
     war Module
@@ -57,26 +55,26 @@ def draw_cards(wins, losses, total_rounds, active_terminal: Terminal):
     render(banker_card, card, wins, losses, total_rounds, active_terminal)
 
     input("Draw a card (press any key)")
-    ss.overwrite("\r" + " " * 40)
+    overwrite("\r" + " " * 40)
 
     card = cards[random.randint(0, 51)]
     render(banker_card, card, wins, losses, total_rounds, active_terminal)
-    time.sleep(1)
+    sleep(1)
     banker_card = cards[random.randint(0, 51)]
     render(banker_card, card, wins, losses, total_rounds, active_terminal)
-    time.sleep(1)
+    sleep(1)
 
     if card_value(banker_card) > card_value(card):
-        ss.overwrite("You lose")
-        time.sleep(1)
+        overwrite("You lose")
+        sleep(1)
         return "LOSE"
     elif card_value(banker_card) < card_value(card):
-        ss.overwrite("You win!")
-        time.sleep(1)
+        overwrite("You win!")
+        sleep(1)
         return "WIN"
     else:
-        ss.overwrite("War!")
-        time.sleep(1)
+        overwrite("War!")
+        sleep(1)
         return draw_cards(wins, losses, total_rounds, active_terminal)
 
 def end(wins, losses, total_rounds, active_terminal: Terminal):
@@ -89,11 +87,11 @@ def end(wins, losses, total_rounds, active_terminal: Terminal):
 
     if wins > total_rounds//2:
         active_terminal.update(win_gfx)
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "WIN"
     else:
         active_terminal.update(lose_gfx)
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "LOSE"
 
 def play(active_terminal: Terminal, bet: int) -> int:
@@ -114,9 +112,9 @@ def play(active_terminal: Terminal, bet: int) -> int:
         bet *= 2
     else:
         bet = 0
-    time.sleep(1.5)
+    sleep(1.5)
     # active_terminal.update(data=None)
-    ss.overwrite("\r")
+    overwrite("\r")
     return bet
 
 

@@ -1,50 +1,43 @@
-import itertools
 from time import sleep
 import sys
 import os
+import threading
+import itertools
 # Start the loading animation in a separate thread
 loading = True
-def loading_animation(text="Loading"):
+def loading_animation() -> None:
     for frame in itertools.cycle(['|', '/', '-', '\\']):
         if not loading:
             break
-        sys.stdout.write(f'\r{text} {frame}')
+        sys.stdout.write(f'\rLoading imports {frame}')
         sys.stdout.flush()
         sleep(0.1)
-    sys.stdout.write('\rLoading complete!     \n')
-import threading
-animation_thread = threading.Thread(target=loading_animation, args=["Loading imports"])
+    sys.stdout.write(f'\rLoading imports complete!     \n')
+animation_thread = threading.Thread(target=loading_animation)
 animation_thread.start()
 
 # Python Builtin Utilities
 import socket
-import random
 import select
-import importlib
 
-# Our Utilities
-from style import MYCOLORS as COLORS, print_w_dots, choose_colorset
-import screenspace as ss 
-from screenspace import Trading_Output, Main_Output, Monopoly_Game_Output, Casino_Output
-import gamemanager as gm
-import networking as net
-import validation as valid
-from utils import Client
-from loan import Loan
-
+# Our Utilities 
+import utils.screenspace as ss 
+from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset, Main_Output, Monopoly_Game_Output, Casino_Output # specific imports, helpful on their own
+import utils.networking as net
+from utils.utils import Client, validate_port, is_port_unused, loading_animation
 # Modules
-import modules_directory.tictactoe as tictactoe
 import modules_directory.inventory as inv
-
-# Dynamically import handle functions from modules in modules_directory as handle_<module_name>
-modules_path = "modules_directory"
-for filename in os.listdir(modules_path):
-    if filename.endswith(".py") and filename != "__init__.py":
-        module_name = filename[:-3]  # Remove the .py extension
-        module = importlib.import_module(f"{modules_path}.{module_name}")
-        if hasattr(module, "handle"):
-            globals()[f"handle_{module_name}"] = getattr(module, "handle")
-
+from modules_directory.loan import Loan
+# Import all Module handle functions - add here as you create more modules
+from modules_directory.shop import handle as handle_shop
+from modules_directory.deed import handle as handle_deed
+from modules_directory.balance import handle as handle_balance
+from modules_directory.chat import handle as handle_chat
+from modules_directory.trading import handle as handle_trading
+from modules_directory.plist import handle as handle_plist
+from modules_directory.inventory import handle as handle_inventory
+from modules_directory.casino import handle as handle_casino
+from modules_directory.fishing import handle as handle_fishing
 
 # Monopoly Game
 import monopoly_directory.monopoly as mply
@@ -77,8 +70,6 @@ def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -
     """
     if output_type == "Monopoly":
         Monopoly_Game_Output.add_output(text, color)
-    elif output_type == "TicTacToe":
-        TTT_Output.add_output(text, color)
     elif output_type == "Casino":
         Casino_Output.add_output(text, color)
     else:
@@ -112,7 +103,7 @@ def start_server() -> socket.socket:
         # Choose a port that is free
         port = input("Choose a port, such as 3131: ")
     
-        while not valid.validate_port(port) or not valid.is_port_unused(int(port)):
+        while not validate_port(port) or not is_port_unused(int(port)):
             port = input("Invalid port. Choose a port, such as 3131: ")
 
     port = int(port) # Convert port to int for socket binding
@@ -403,7 +394,7 @@ def handle_data(data: str, client: socket.socket) -> None:
         net.send_message(client, str(current_client.terminal_statuses[term]))
 
     elif data.startswith('fish'):
-        handle_fishing(client,  current_client.inventory)
+        handle_fishing(client, current_client.inventory)
 
     elif data.startswith('kill') or data.startswith('disable') or data.startswith('active') or data.startswith('busy'):
         """
@@ -735,12 +726,13 @@ def handle_loan(data: str, client_socket: socket.socket, change_balance: callabl
             if amount <= 0 or amount > 500:
                 net.send_message(client_socket, "Low interest loans must be between $1 and $500.")
                 return
-            play_loan = Loan(amount, False)
+            player_loan = Loan(amount, False)
             
         else:
             net.send_message(client_socket, "Invalid loan type. Choose 'high' or 'low'.")
             return
         
+        interest_rate = player_loan.interest_rate
         # Calculate the total amount to be repaid (for informational purposes)
         total_repayment = int(amount * (1 + interest_rate))
         

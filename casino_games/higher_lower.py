@@ -1,7 +1,6 @@
 # BLACKJACK
 import random
-from screenspace import Terminal, overwrite
-from style import get_graphics, MYCOLORS as COLORS 
+from utils.screenspace import MYCOLORS as COLORS, Terminal, overwrite
 
 """
     Higher/Lower Casino Game

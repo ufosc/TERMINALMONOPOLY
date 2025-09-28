@@ -1,6 +1,6 @@
-import screenspace as ss
+import utils.screenspace as ss
 from socket import socket
-import networking as net
+import utils.networking as net
 
 name = "Player List"
 author = "https://github.com/adamgulde"

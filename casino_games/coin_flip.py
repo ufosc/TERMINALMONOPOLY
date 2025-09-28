@@ -1,9 +1,7 @@
 # COIN FLIP
 import random
 from time import sleep
-import screenspace as ss
-from screenspace import Terminal
-from style import graphics as g
+from utils.screenspace import Terminal, g, overwrite
 
 game_title = "⛁ Coin Flip"
 header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len(game_title)) // 2)
@@ -21,7 +19,7 @@ def play(active_terminal: Terminal, bet: int):
     active_terminal.update(header + "\n" + g['coin_flip_heads'])
     
     choice = input(f"\rHeads or Tails? (h/T) ")
-    ss.overwrite("\r" + " " * 40)
+    overwrite("\r" + " " * 40)
     flip = random.choice(['heads', 'tails'])
     
     #TODO - Make the animation asynchrnous.
@@ -37,17 +35,17 @@ def play(active_terminal: Terminal, bet: int):
 
     if(choice.lower() == "h" and flip == 'heads'):
         input(f"\rYou got heads!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         score[0] += 1
     elif(choice.lower() == "h" and flip == 'tails'):
         input(f"\rYou got tails...")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
     elif(flip == 'heads'):
         input(f"\rYou got heads...")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
     else:
         input(f"\rYou got tails!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         score[0] += 1
 
     if(score[0] == 1):
@@ -57,5 +55,5 @@ def play(active_terminal: Terminal, bet: int):
         active_terminal.update(header + "\n" + g['casino_lose'])
         bet = 0
     input("\r")
-    ss.overwrite("\r" + " " * 40)
+    overwrite("\r" + " " * 40)
     return bet

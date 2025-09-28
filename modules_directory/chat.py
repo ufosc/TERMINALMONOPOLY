@@ -1,7 +1,6 @@
-import screenspace as ss
 from socket import socket
-import networking as net
-from style import MYCOLORS as c, graphics as g
+import utils.networking as net
+from utils.screenspace import MYCOLORS as c, Terminal, overwrite, set_cursor
 import threading
 import time
 
@@ -13,7 +12,7 @@ persistent = True
 oof_params = {"player_id": None, "server": None}
 chat_history = ""
 
-def run(player_id: int, server: socket, active_terminal: ss.Terminal):
+def run(player_id: int, server: socket, active_terminal: Terminal):
     """
     Chat Module
     Author: Hiral Shukla (github.com/hiralshukla)
@@ -22,7 +21,7 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     Args:
         player_id (int): The ID of the player.
         server (socket): The server socket to communicate with.
-        active_terminal (ss.Terminal): The terminal to display the information.
+        active_terminal (Terminal): The terminal to display the information.
 
     Returns:
         None
@@ -49,18 +48,18 @@ def run(player_id: int, server: socket, active_terminal: ss.Terminal):
     # while main thread waits for user input
 
     while True: # main loop
-        ss.overwrite(c.RESET + f"\rEnter your message here: ") # ability to send message 
-        ss.set_cursor(45, 0) # !!! should move the cursor back to the right location
+        overwrite(c.RESET + f"\rEnter your message here: ") # ability to send message 
+        set_cursor(45, 0) # !!! should move the cursor back to the right location
         msg = input(c.LIGHTBLUE + f"\r") # takes user input
         
         if msg.lower() == "e": # quits chat
             print(c.RESET, end="") # clear everything 
-            ss.overwrite(c.RESET + "\r" + " " * 40)
+            overwrite(c.RESET + "\r" + " " * 40)
             stop_event.set()  # signal thread to stop
             break
 
         print(c.RESET, end="") 
-        ss.overwrite(c.RESET + "\r" + " " * 40)
+        overwrite(c.RESET + "\r" + " " * 40)
         net.send_message(server, f'{player_id}chat,add_msg,{msg}') # adds message to chat when input recieved
 
 def oof() -> str:
@@ -97,14 +96,14 @@ def oof() -> str:
         return title + '\n'.join(chat_history.split('\n')[-19:]) if chat_history else title
 
 
-def chat_listener(player_id: int, server: socket, active_terminal: ss.Terminal, stop_event): 
+def chat_listener(player_id: int, server: socket, active_terminal: Terminal, stop_event): 
     """
     Threading function that ensures any time a message is entered by anyone chat is updated for all. 
 
     Args:
     player_id (str): The id of the player.
     server (socket): The server connection.
-    active_terminal (ss.Terminal): The terminal to display the information.
+    active_terminal (Terminal): The terminal to display the information.
     stop_event: Whether or not thread was terminated. 
 
     Returns:

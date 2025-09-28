@@ -1,7 +1,7 @@
-from style import graphics as g
 import random
 from monopoly_directory.board import Board
 from monopoly_directory.player_class import MonopolyPlayer
+from utils.screenspace import g
 
 class Cards:
     """

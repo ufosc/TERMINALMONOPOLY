@@ -1,10 +1,9 @@
 import time
 import random
-from style import graphics as g, set_cursor, set_cursor_str
 import modules_directory.inventory as inventory
-import screenspace as ss
+from utils.screenspace import g, set_cursor_str, Terminal
 from socket import socket
-import networking as net
+import utils.networking as net
 
 name = "Fish loader"
 command = "fish"
@@ -51,7 +50,7 @@ class fishing_game():
             retval += set_cursor_str(33, 3) + 'No luck...'
 
         return retval
-def run(player_id: int, server: socket, active_terminal: ss.Terminal):
+def run(player_id: int, server: socket, active_terminal: Terminal):
     """
     Run the fishing module.
     
@@ -77,8 +76,6 @@ def handle(client_socket: socket, player_inventory: inventory)->None:
     player_id (int): The Player's ID --> same as above
     """
     message = fishing_game_obj.results(player_inventory)
-    print("pls fish3")
     net.send_message(client_socket, message)
-    print("pls fish4")
 
 fishing_game_obj = fishing_game()
