@@ -22,9 +22,10 @@ import select
 import importlib
 
 # Our Utilities
+import utils.screenspace as ss
 from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset, Main_Output, Monopoly_Game_Output, Casino_Output
 import utils.networking as net
-from utils.utils import Client, screenspace as ss, validate_port, is_port_unused
+from utils.utils import Client, validate_port, is_port_unused
 
 # Modules
 import modules_directory.inventory as inv

@@ -3,10 +3,7 @@ import keyboard
 import time
 import sys
 sys.path.append('..') # Path to the directory
-from utils.utils import set_cursor
-
-from utils.utils import Terminal, overwrite
-from utils.utils import MYCOLORS as COLORS
+from utils.screenspace import MYCOLORS as COLORS, set_cursor, Terminal, overwrite
 from socket import socket
 
 name = "Maze Attack Module"

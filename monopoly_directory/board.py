@@ -1,5 +1,5 @@
 from monopoly_directory.properties import Property
-from utils.utils import MYCOLORS as COLORS
+from utils.screenspace import MYCOLORS as COLORS
 from monopoly_directory.player_class import MonopolyPlayer
 
 class Board:

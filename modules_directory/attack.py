@@ -1,6 +1,4 @@
-from utils.utils import MYCOLORS as c, g # g is graphics
-from utils.utils import screenspace as ss
-from utils.utils import Terminal
+from utils.screenspace import MYCOLORS as c, Terminal, g # g is graphics
 import os
 import utils.networking as net
 from socket import socket

@@ -1,5 +1,5 @@
 from utils.utils import MYCOLORS as COLORS, g # graphics is g
-from utils.utils import screenspace as ss
+from utils.screenspace import screenspace as ss
 from socket import socket
 
 name = "Properties List"

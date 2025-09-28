@@ -1,7 +1,5 @@
 import utils.networking as net
-from utils.utils import Terminal
-from utils.utils import screenspace as ss
-from utils.utils import MYCOLORS as COLORS
+import utils.screenspace as ss
 from socket import socket
 import keyboard
 import time

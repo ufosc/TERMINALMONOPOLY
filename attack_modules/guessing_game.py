@@ -7,7 +7,7 @@ header = "─" * ((75 - len(game_title)) // 2) + game_title + "─" * ((75 - len
 
 from utils import utils as ss
 from utils.utils import Terminal
-from utils.utils import MYCOLORS as COLORS, g
+from utils.screenspace import MYCOLORS as COLORS, g
 #def render_hand(active_terminal: Terminal, attacker_picked_hand, outcome):
  #   if outcome == "WIN":
         #open hand with trick

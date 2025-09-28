@@ -1,4 +1,4 @@
-from utils.utils import MYCOLORS as COLORS
+from utils.screenspace import MYCOLORS as COLORS
 
 class Property:
     """
