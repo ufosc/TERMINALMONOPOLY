@@ -37,6 +37,7 @@ from modules_directory.trading import handle as handle_trading
 from modules_directory.plist import handle as handle_plist
 from modules_directory.inventory import handle as handle_inventory
 from modules_directory.casino import handle as handle_casino
+from modules_directory.fishing import handle as handle_fishing
 
 # Monopoly Game
 import monopoly_directory.monopoly as mply
@@ -391,7 +392,9 @@ def handle_data(data: str, client: socket.socket) -> None:
         command_data = data.split(' ')
         term = int(command_data[1])
         net.send_message(client, str(current_client.terminal_statuses[term]))
-    
+
+    elif data.startswith('fish'):
+        handle_fishing(client, current_client.inventory)
 
     elif data.startswith('kill') or data.startswith('disable') or data.startswith('active') or data.startswith('busy'):
         """
@@ -613,13 +616,17 @@ def monopoly_controller(unit_test) -> None:
     while True:
         sleep(1)
         if mply.turn != last_turn:
-            ss.set_cursor(0, 20)
-            last_turn = mply.turn
-            net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.", "MPLY:")
-            clients[mply.turn].can_roll = True
-            # ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
-            add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
-
+            # if disconnect, move to next player
+            try:
+                ss.set_cursor(0, 20)
+                last_turn = mply.turn
+                net.send_notif(clients[mply.turn].socket, mply.get_gameboard() + ss.set_cursor_str(0, 38) + "It's your turn. Type roll to roll the dice.", "MPLY:")
+                clients[mply.turn].can_roll = True
+                # ss.set_cursor(ss.MONOPOLY_OUTPUT_COORDINATES[0]+1, ss.MONOPOLY_OUTPUT_COORDINATES[1]+1)
+                add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Sent gameboard to {clients[mply.turn].name}.")
+            except:
+                add_to_output_area("Monopoly", f"Player turn: {mply.turn}. Disconnected")
+                mply.end_turn()
 def monopoly_game(client: Client = None, cmd: str = None) -> None:
     """
     Description:
