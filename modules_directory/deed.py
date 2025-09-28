@@ -4,11 +4,12 @@ import networking as net
 
 name = "Deed Viewer"
 author = "https://github.com/adamgulde"
-description = "View property deed details."
 version = "1.3" # Moved to its own file
 command = "deed"
 module_type = "player"
-help_text = "Type DEED to view property deeds."
+help_text = """Type DEED to view property deeds. View property deed details.\n
+    Shows basic view of deed from core monopoly game, with additional information including current owner, 
+    any board-state modifiers, and other information."""
 persistent = True # Keep the terminal open after use
 oof_params = {"player_id": None, "server": None, "index": None} # Global parameters for out of focus function
     

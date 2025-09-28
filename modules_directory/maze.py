@@ -12,9 +12,9 @@ from socket import socket
 name = "Maze Attack Module"
 command = "maze"
 author = "https://github.com/AmariN12"
-description = "Trap another player in a maze."
+description = ""
 version = "1.0"
-help_text = "Type WASD to move and escape the maze!."
+help_text = "Type WASD to move and escape the maze!. Trap another player in a maze. If opposing player takes too long to respond, this module will become disabled."
 persistent = True 
 
 maze_off = 18

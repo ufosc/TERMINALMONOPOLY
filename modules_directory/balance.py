@@ -5,10 +5,9 @@ from utils.utils import g, set_cursor_str # g is graphics
 
 name = "Balance Module"
 author = "https://github.com/adamgulde"
-description = "View balance, net worth, stocks, and property deeds."
 version = "1.0" # Moved to its own file
 command = "bal"
-help_text = "Type BAL to view your cash and assets."
+help_text = "Type BAL to view your cash and assets. View balance, net worth, stocks, and property deeds."
 persistent = False
 oof_params = {}
 

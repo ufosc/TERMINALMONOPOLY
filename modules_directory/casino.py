@@ -4,16 +4,17 @@ from utils.utils import Terminal
 import os
 import networking as net
 from socket import socket
+import sys
 
 name = "Casino Loader"
 command = "casino"
 description = "Gamble your money at the casino!"
-help_text = "Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."
+help_text = "Gamble your money at the casino! Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."
 persistent = False # No need to run additional commands after switching
 # No out of focus function needed, because the terminal closes after use
 
 __modules = []
-def run(player_id: int, server: socket, active_terminal: Terminal):
+def run(player_id: int, server: socket, active_terminal: Terminal, debtok=False):
     """
     Casino Module
     Author: Jordan Brotherton (github.com/jordanbrotherton)
@@ -38,6 +39,8 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
             ss.overwrite(c.RESET + c.RED + "\rInvalid input. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
         elif(wrong == 3):
             ss.overwrite(c.RESET + c.RED + "\rWager has to be an integer greater than 0. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
+        elif(wrong == 4):
+            ss.overwrite(c.RESET + c.RED + "\rYou do not have enough money for that wager.")
         
         game = input(f"\r").lower().split(" ")
         ss.overwrite(c.RESET+"\r" + " " * 40)
@@ -63,10 +66,14 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
                 i = __import__('casino_games.' + game[0], fromlist=[''])
 
                 wager = int(game[1])
-                if(wager == 0): continue
+                if(wager == 0): continue                
 
                 net.send_message(server, f"{player_id}casino lose {wager}")
-                balance = int(net.receive_message(server))
+                new_balance = int(net.receive_message(server))
+                if new_balance == balance:
+                    wrong = 4
+                    continue
+                balance = new_balance
                 ss.overwrite(c.RESET+"\r" + " " * 40)
                 active_terminal.busy(server, player_id)
                 winnings = i.play(active_terminal,wager)
@@ -100,7 +107,7 @@ def get_submodules():
 
 get_submodules() # Load the casino games when the module is imported (at start of game)
 
-def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, name) -> None:
+def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, name, debtok=False) -> None:
     """
     Handles casino-related commands for a client by updating their balance.
 
@@ -114,6 +121,7 @@ def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, nam
         add_to_output_area (function): Function to add messages to the output area.
         id (int): The ID of the client whose balance is being updated.
         name (str): The name of the client whose balance is being updated.
+        debtok (bool): If True, allows the client to go into debt.
 
     Returns:
         None
@@ -125,10 +133,18 @@ def handle(cmds: str, client_socket, change_balance, add_to_output_area, id, nam
     command_data = cmds.split(' ')
     delta = 1 if command_data[1] == 'win' else -1
     amount = int(command_data[2])
+    
+    current_balance = change_balance(id, 0)
+
+    if delta == -1 and not debtok and amount > current_balance:
+        add_to_output_area("Casino",
+            f"Denied wager of ${amount} for {name} (balance ${current_balance})")
+        net.send_message(client_socket, str(current_balance))
+        return
+    
     money = change_balance(id, delta * amount)
     add_to_output_area("Casino", f"Updated {name}'s balance by {delta * amount}. New balance: {money}")
     net.send_message(client_socket, str(money))
-
 
 if __name__ == "__main__":
     run(1)

@@ -5,9 +5,42 @@ import time
 import re
 import networking as net
 from socket import socket
+from datetime import datetime
 
 g = screenspace.get_graphics()
 
+class Loan:
+    def __init__(self, amount, low_or_high):
+        if low_or_high:
+            self.term = int(datetime.now().minute + 9)
+            self.interest_rate = 1.025
+        else:
+            self.term = int(datetime.now().minute + 3)
+            self.interest_rate = 1.010
+        self.principal = amount
+        self.amount_due = amount
+
+
+    def get_due (self):
+        return self.amount_due
+
+    def get_deadline(self):
+        term_in_seconds = self.term * 60
+        loan_due = term_in_seconds - int(datetime.now().second)
+        return loan_due
+    
+    def payoff(self, amount):
+        self.amount_due = self.amount_due - amount
+        return True
+    
+    def accrue(self):
+        if self.interest_rate == 1.025:
+            time_passed = int(datetime.now().minute) - (self.term - 9) 
+        else:
+            time_passed = int(datetime.now().minute) - (self.term - 3)
+        
+        accrued = time_passed * self.interest_rate
+        self.amount_due = self.amount_due + accrued
 
 class LoanScreen:
     def __init__(self, player_id=None, server=None):

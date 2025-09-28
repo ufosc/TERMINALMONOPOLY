@@ -8,7 +8,6 @@ import keyboard
 
 name = "Trading Module"
 author = "https://github.com/adamgulde"
-description = "Trade assets with other players."
 version = "1.0" 
 command = "trade"
 help_text = "Type TRADE to trade assets with other players."

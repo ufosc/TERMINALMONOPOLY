@@ -8,7 +8,7 @@ import time
 module_name = "Chat"
 command = "chat"
 title = c.WHITE + "THE CHAT".center(75) +'\n'
-help_text = "─" * 24 + "THE CHAT HAS BEEN CLOSED" + "─" * 25 + "\nType 'chat' to hop back in!"
+help_text = "The chat is closed. Type 'chat' to hop back in!"
 persistent = True
 oof_params = {"player_id": None, "server": None}
 chat_history = ""

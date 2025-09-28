@@ -25,11 +25,14 @@ import importlib
 from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset
 from utils.screenspace import Main_Output, Monopoly_Game_Output, Casino_Output
 import networking as net
+from utils import Client
+from loan import Loan
 import utils as valid
 from utils import Client, screenspace as ss
 
 # Modules
 import modules_directory.inventory as inv
+
 # Dynamically import handle functions from modules in modules_directory as handle_<module_name>
 modules_path = "modules_directory"
 for filename in os.listdir(modules_path):
@@ -55,6 +58,7 @@ num_players = 0
 play_monopoly = True
 monopoly_unit_test = 6 # assume 1 player, 2 owned properties. See monopoly.py unittest for more options
 messages = []
+DEBT_OK = False
 
 def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -> None:
     """
@@ -372,7 +376,8 @@ def handle_data(data: str, client: socket.socket) -> None:
         handle_balance(data, client, mply, current_client.PlayerObject.cash, current_client.PlayerObject.properties)
 
     elif data.startswith('casino'):
-        handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name)
+        handle_casino(data, client, change_balance, add_to_output_area, current_client.id, current_client.name, DEBT_OK)
+
     elif data.startswith('attack'):
         #run the attack similar to casino on client side and send game to player attacked, then send resulting command back
         handle_attack(data, current_client, client)
@@ -683,6 +688,7 @@ def monopoly_game(client: Client = None, cmd: str = None) -> None:
             net.send_notif(client.socket, ret_val, "MPLY:")
 
 def handle_loan(data: str, client_socket: socket.socket, change_balance: callable, add_to_output_area: callable, player_id: int, player_name: str) -> None:
+
     """
     Handles loan requests from players.
     
@@ -714,13 +720,13 @@ def handle_loan(data: str, client_socket: socket.socket, change_balance: callabl
             if amount <= 0 or amount > 2000:
                 net.send_message(client_socket, "High interest loans must be between $1 and $2000.")
                 return
-            interest_rate = 0.15  # 15% interest for high loans
+            player_loan = Loan(amount, True)
             
         elif loan_type == "low":
             if amount <= 0 or amount > 500:
                 net.send_message(client_socket, "Low interest loans must be between $1 and $500.")
                 return
-            interest_rate = 0.05  # 5% interest for low loans
+            play_loan = Loan(amount, False)
             
         else:
             net.send_message(client_socket, "Invalid loan type. Choose 'high' or 'low'.")
@@ -753,6 +759,9 @@ if __name__ == "__main__":
 
     if "-silent" in sys.argv:
         ss.VERBOSE = False
+
+    if "-debtok" in sys.argv:
+        DEBT_OK = True
 
     set_unittest() 
     # set_gamerules()
