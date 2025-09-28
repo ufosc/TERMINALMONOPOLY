@@ -1,6 +1,5 @@
 import time
 import random
-from utils.utils import g, set_cursor_str
 # import modules_directory.inventory as inv
 
 class fishing_game():
@@ -54,7 +53,7 @@ command = "fish"
 help_text = "Type FISH to go fishing, and press ENTER to try to reel something in! Go fishing!"
 persistent = False
 
-fishing_game_obj = fishing_game() 
+# fishing_game_obj = fishing_game() 
 # def run(inventory: inventory, gamestate: str = 'start') -> tuple[str, str]:
 #     """
 #     Fishing module handler for player.py. Returns tuple of [visual data, gamestate] both as strings.

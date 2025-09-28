@@ -1,5 +1,4 @@
-from utils.utils import MYCOLORS as COLORS, g # graphics is g
-from utils.screenspace import screenspace as ss
+from utils.screenspace import MYCOLORS as COLORS, g, Terminal
 from socket import socket
 
 name = "Properties List"
@@ -9,7 +8,7 @@ command = "list"
 help_text = "Type LIST to view all properties on the board. View property deed details."
 persistent = False
     
-def run(player_id:int, server: socket, active_terminal: ss.Terminal):
+def run(player_id:int, server: socket, active_terminal: Terminal):
     """
     Lists all properties on the board by calling the property list stored in graphics.
     

@@ -1,16 +1,15 @@
-from style import MYCOLORS as c, graphics as g
-import screenspace as ss
 from socket import socket
 import os
 import importlib
 import textwrap
+from utils.screenspace import MYCOLORS as c, Terminal, overwrite
 
 name = "Help List"
 author = "https://github.com/narcistiq"
 command = "help"
 persistent = False
     
-def run(player_id:int, server: socket, active_terminal: ss.Terminal, param):
+def run(player_id:int, server: socket, active_terminal: Terminal, param):
     """
     Show all help text located in each module.
     
@@ -24,22 +23,22 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal, param):
     module_text = "\n" + module_text.center(75) + "\n"
     module_text += "\n" + "-"*75 + "\n"
 
-    ss.overwrite(c.RESET+"\r" + " " * 40)
+    overwrite(c.RESET+"\r" + " " * 40)
     if(module not in help.keys()):
-        ss.overwrite(c.RESET + c.RED + f"\r{module.upper()} help text not found.")
+        overwrite(c.RESET + c.RED + f"\r{module.upper()} help text not found.")
         return
     else:
         lines = textwrap.wrap(help[module], 70)
         pages = [lines[i:i+15] for i in range(0, len(lines), 15)] # TODO: Should perform extra checks for newline characters for better formatting
         if(len(pages) > 1):    
-            ss.overwrite(c.RESET + c.YELLOW + f"\rModule has {len(pages)} help pages available. Type `help <module> <page #>` for more information.")
+            overwrite(c.RESET + c.YELLOW + f"\rModule has {len(pages)} help pages available. Type `help <module> <page #>` for more information.")
         if(len(param) == 2):    # if page_num is provided
             page_num = int(param[1])
             if not(param[1].isdigit()):
-                ss.overwrite(c.RESET + c.RED + "\rInvalid parameter. Type `help <module> <page #>` for more information.")
+                overwrite(c.RESET + c.RED + "\rInvalid parameter. Type `help <module> <page #>` for more information.")
                 return
             elif(page_num < 1 or page_num > len(pages)):
-                ss.overwrite(c.RESET + c.RED + f"\r{module.upper()} help does not have page {int(param[1])}! Please select another page number.")
+                overwrite(c.RESET + c.RED + f"\r{module.upper()} help does not have page {int(param[1])}! Please select another page number.")
                 return
             else:
                 page = pages[page_num - 1]

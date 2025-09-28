@@ -1,8 +1,6 @@
 # BLACKJACK
 import random
-from utils.utils import screenspace as ss
-from utils.utils import Terminal
-from utils.utils import g # g is graphics
+from utils.screenspace import Terminal, g, overwrite
 game_title = "🃑 Blackjack"
 
             # 0         1         2      3      4
@@ -63,7 +61,7 @@ def turn(active_terminal: Terminal, turn):
     score = [0,0,0,0]
 
     input(f"\rPlayer {turn}: DRAW CARD")
-    ss.overwrite("\r" + " " * 40)
+    overwrite("\r" + " " * 40)
 
     hand.append(draw(False, False, score))
     score[turn - 1] += hand[-1][0]
@@ -82,25 +80,25 @@ def turn(active_terminal: Terminal, turn):
         render_hand(active_terminal, hand, dealer_hand)
         if(score[turn] == 21):
             input(f"\rPlayer {turn}: STAND-OFF!")
-            ss.overwrite("\r" + " " * 40)
+            overwrite("\r" + " " * 40)
             return "TIE"
         input(f"\rPlayer {turn}: YOU GOT A NATURAL!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "WIN"
     elif(score[turn] == 21):
         dealer_hand[-1][-1] = False
         render_hand(active_terminal, hand, dealer_hand)
         input(f"\rPlayer {turn}: DEALER GOT A NATURAL!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "BUST"
 
     while score[turn - 1] < 21:
         render_hand(active_terminal, hand, dealer_hand)
         choice = input(f"\rPlayer {turn}: You have {score[turn - 1]}. HIT? (y/N)")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         if(choice.lower() == "y"):
             input(f"\rPlayer {turn}: DRAW CARD")
-            ss.overwrite("\r" + " " * 40)
+            overwrite("\r" + " " * 40)
             hand.append(draw(False, False, score))
             score[turn - 1] += hand[-1][0]
             if(score[turn -1] > 21):
@@ -114,13 +112,13 @@ def turn(active_terminal: Terminal, turn):
         else: break
         if(score[turn - 1] > 21):
             input(f"\rPlayer {turn}: YOU BUST!")
-            ss.overwrite("\r" + " " * 40)
+            overwrite("\r" + " " * 40)
             return "BUST"
         if(score[turn - 1] == 21):
             dealer_hand[-1][-1] = False
             render_hand(active_terminal, hand, dealer_hand)
             input(f"\rPlayer {turn}: YOU GOT A 21!")
-            ss.overwrite("\r" + " " * 40)
+            overwrite("\r" + " " * 40)
             return "WIN"
     
     while(score[turn] < 17):
@@ -138,19 +136,19 @@ def turn(active_terminal: Terminal, turn):
     render_hand(active_terminal, hand, dealer_hand)
     if(score[turn] > 21):
         input(f"\rPlayer {turn}: DEALER BUST!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "WIN"
     if(score[turn - 1] < score[turn]):
         input(f"\rPlayer {turn}: DEALER WINS!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "BUST"
     elif(score[turn - 1] > score[turn]):
         input(f"\rPlayer {turn}: YOU WIN!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "WIN"
     else:
         input(f"\rPlayer {turn}: STAND-OFF!")
-        ss.overwrite("\r" + " " * 40)
+        overwrite("\r" + " " * 40)
         return "TIE"
 
 def play(active_terminal: Terminal, bet) -> int:
@@ -172,5 +170,5 @@ def play(active_terminal: Terminal, bet) -> int:
         active_terminal.update(header + f"\n{g.get('casino_tie')}")
     
     input("\r")
-    ss.overwrite("\r" + " " * 40)
+    overwrite("\r" + " " * 40)
     return bet

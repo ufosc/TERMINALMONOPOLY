@@ -199,7 +199,7 @@ def randomize_theme():
         color = COLORS.RED
 
 
-#The main problem seems to be the translation from screenspace to mazespace. 
+#The main problem seems to be the translation from utils.screenspace to mazespace. 
 def run(player_id: int, server: socket, active_terminal: Terminal):
     overwrite("You've been trapped in a maze! Use the arrow keys to move and escape!")
     active_terminal.indicate_keyboard_hook()

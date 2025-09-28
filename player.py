@@ -5,14 +5,14 @@ import sys
 import socket
 import platform
 import threading
-from time import sleep
-from utils.screenspace import MYCOLORS as COLORS, g, print_w_dots
-from utils import screenspace as ss
 import utils.networking as net
-import utils
+import utils.screenspace as ss
 import modules_directory.inventory as inv
 
+from time import sleep
+from utils.utils import validate_address, validate_port, validate_name
 from modules_directory.loan import main as load_loan_menu
+
 
 game_running = False
 screen = "terminal"
@@ -102,7 +102,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
     if not debug:
         banker_check()
         print("Welcome to Terminal Monopoly, Player!")
-        print_w_dots("Initializing client socket connection")     
+        ss.print_w_dots("Initializing client socket connection")     
         client_receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   
         client_sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockets = (client_receiver, client_sender)
@@ -113,33 +113,33 @@ def initialize(debug: bool = False, args: list = None) -> None:
         print("2. only contains alpha numeric characters or spaces")
         name = input("Player name: ")
         while not name_validated:
-            name_validated = utils.validate_name(name)
+            name_validated = validate_name(name)
             if not name_validated:
                 print("The input name was not valid")
                 name = input("Player name: ")
         
         if "localhost" not in sys.argv:
             ADDRESS = input("Enter Host IP: ").strip()
-            while not utils.validate_address(ADDRESS):
+            while not validate_address(ADDRESS):
                 print("Invalid IP address. Please enter a valid IP address.")
                 ADDRESS = input("Enter Host IP: ").strip()
 
             PORT = input("Enter Host Port: ")
             # Validate IP address and port
-            while not utils.validate_port(PORT):
+            while not validate_port(PORT):
                 print("Invalid port. Please enter a valid port.")
                 PORT = input("Enter Host Port: ")
 
 
         print(f"Welcome, {name}!")
 
-        print_w_dots("Press enter to connect to the server...", end='')
+        ss.print_w_dots("Press enter to connect to the server...", end='')
         input()
         try:
             client_receiver.connect((ADDRESS, int(PORT)))
-            print(COLORS.BLUE+"Connection successful!"+COLORS.RESET)
+            print(ss.COLORS.BLUE+"Connection successful!"+ss.COLORS.RESET)
         except:
-            n = input(COLORS.RED+"Connection failed. Type 'exit' to quit or press enter to try again.\n"+COLORS.RESET)
+            n = input(ss.COLORS.RED+"Connection failed. Type 'exit' to quit or press enter to try again.\n"+ss.COLORS.RESET)
             if n == "exit":
                 quit()
             else:
@@ -148,7 +148,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
             handshake(client_receiver, name)
         except Exception as e:
             print(e)
-            n = input(COLORS.RED+"Handshake failed. Type 'exit' to quit or press enter to try again.\n"+COLORS.RESET)
+            n = input(ss.COLORS.RED+"Handshake failed. Type 'exit' to quit or press enter to try again.\n"+ss.COLORS.RESET)
             if n == "exit":
                 quit()
             else:
@@ -169,7 +169,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
         input()
 
         ### THIS IS WHERE WE ARE STUCK
-        print_w_dots("Attempting to connect to Banker's receiver...")
+        ss.print_w_dots("Attempting to connect to Banker's receiver...")
         sleep(1)
         try:
             sockets[1].connect((ADDRESS, int(PORT)+1))
@@ -177,7 +177,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
             print(e)
             with open ("error_log.txt", "a") as f:
                 f.write(f"Failed to connect to Banker's receiver. {e}\n")
-            print_w_dots("Failed connecting. ")
+            ss.print_w_dots("Failed connecting. ")
 
 def handshake(sock: socket.socket, name: str) -> str:
     """
@@ -202,7 +202,7 @@ def handshake(sock: socket.socket, name: str) -> str:
         notif_thread.start()
         return message
     else:
-        print_w_dots(COLORS.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
+        ss.print_w_dots(ss.COLORS.RED+"Handshake failed. Reason: Connected to wrong foreign socket.")
 
 def print_queue():
     """
@@ -270,9 +270,9 @@ def start_notification_listener(my_socket: socket.socket) -> None:
             notif_list.append(notif)
             # Display notifications in the player's interface. Places the notification in the next available terminal.
             print(ss.notification(notif_list.pop(0), (current_pos) if current_pos != active_terminal.index else (current_pos + 1) if current_pos + 1 <= 4 else 1
-                                if active_terminal.index != 1 else 2, COLORS.RED)) # this is probably an overly defined ternary operator(s)
+                                if active_terminal.index != 1 else 2, ss.COLORS.RED)) # this is probably an overly defined ternary operator(s)
             current_pos = (current_pos + 1) if current_pos + 1 <= 4 else 1
-            print(COLORS.RESET)
+            print(ss.COLORS.RESET)
             ss.set_cursor(0, ss.INPUTLINE)
         elif "TERM:" in notif:
             term = notif[5:]
@@ -286,7 +286,7 @@ def start_notification_listener(my_socket: socket.socket) -> None:
         elif "ATTACK:" in notif:
             for t in TERMINALS:
                 if not t.status == "DISABLED":  # If terminal is not busy
-                    ss.overwrite(COLORS.RED + "Incoming!")
+                    ss.overwrite(ss.COLORS.RED + "Incoming!")
                     break
             commands = notif[7:]
             attack_info = commands.split(" ")
@@ -357,11 +357,11 @@ def get_input() -> None:
             # I turned off my brain while writing this part. The player can essentially send any command here
             # and it is only slightly regulated by the server. Better client-side handling is needed. TODO
             if not skip_initial_input:
-                stdIn = input(COLORS.backBLACK+'\r').lower().strip()
+                stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
             skip_initial_input = False
             if stdIn.isspace() or stdIn == "":
                 # On empty input make sure to jump back on the console line instead of printing anew
-                ss.overwrite(COLORS.RESET + "\r")
+                ss.overwrite(ss.COLORS.RESET + "\r")
             elif stdIn == "roll":
                 net.send_message(sockets[1], f'{player_id}mply,roll')
             elif stdIn == "b":
@@ -387,7 +387,7 @@ def get_input() -> None:
             if active_terminal.persistent and last_terminal != active_terminal.index:
                 stdIn = active_terminal.command
             else:
-                stdIn = input(COLORS.backBLACK+'\r').lower().strip()
+                stdIn = input(ss.COLORS.backBLACK+'\r').lower().strip()
 
             last_terminal = active_terminal.index
             
@@ -395,18 +395,18 @@ def get_input() -> None:
             if stdIn.startswith("term "): 
                 if(len(stdIn) == 6 and stdIn[5].isdigit() and 5 > int(stdIn.split(" ")[1]) > 0):
                     n = int(stdIn.strip().split(" ")[1])
-                    active_terminal.change_border_color(COLORS.WHITE) # Turn off old terminal
+                    active_terminal.change_border_color(ss.COLORS.WHITE) # Turn off old terminal
                     active_terminal = TERMINALS[n-1] # Update active terminal, n-1 because list is 0-indexed
-                    active_terminal.change_border_color(COLORS.GREEN)
-                    ss.overwrite(COLORS.RESET + COLORS.GREEN + "Active terminal set to " + str(n) + ".")
+                    active_terminal.change_border_color(ss.COLORS.GREEN)
+                    ss.overwrite(ss.COLORS.RESET + ss.COLORS.GREEN + "Active terminal set to " + str(n) + ".")
                     continue
                 else:
-                    ss.overwrite(COLORS.RESET + COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
+                    ss.overwrite(ss.COLORS.RESET + ss.COLORS.RED + "Include a number between 1 and 4 (inclusive) after 'term' to set the active terminal.")
             elif stdIn == "exit":
                 break
             # Anything beyond this one should be not crucial, as it will NOT work if disabled.
             elif active_terminal.status == "DISABLED":
-                ss.overwrite(COLORS.RED + "Terminal is disabled! Switch to another terminal with 'term'.")
+                ss.overwrite(ss.COLORS.RED + "Terminal is disabled! Switch to another terminal with 'term'.")
                 continue
 
             # Loan commands
@@ -414,18 +414,16 @@ def get_input() -> None:
                 load_loan_menu(player_id=player_id, server=sockets[1])
                 continue
 
-            # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
-
             elif stdIn.startswith("help"):
                 help_cmd = stdIn.split(" ")
                 if(4 > len(help_cmd) > 1 and help_cmd[1] in cmds.keys()):
                     active_terminal.command = "help" # Set the command for the active terminal
-                    active_terminal.oof_callable = cmds["help"] if hasattr(cmds["help"], 'oof') else None # Set the out of focus callable function if it exists
+                    active_terminal.oof_callable = None # Help does not need an out-of-focus callable
                     cmds["help"](player_id=player_id, server=sockets[1], active_terminal=active_terminal, param=help_cmd[1:]) # Call the function with the required parameters
                     continue
                 else: 
-                    active_terminal.update(g.get('help'), padding=True)
-                    ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Displaying help menu page.")
+                    active_terminal.update(ss.g.get('help'), padding=True)
+                    ss.overwrite(ss.COLORS.RESET + ss.COLORS.RED + "Invalid command. Displaying help menu page.")
                     continue
             
             elif stdIn == "clear": # Clear the given Terminal to allow other commands to be ran
@@ -435,7 +433,7 @@ def get_input() -> None:
                 active_terminal.oof_callable = None
                 active_terminal.persistent = False
                 active_terminal.command = ""
-                ss.overwrite(COLORS.GREEN + "Terminal cleared.")
+                ss.overwrite(ss.COLORS.GREEN + "Terminal cleared.")
                 continue
             elif stdIn in cmds.keys(): # Check if the command is in the available commands
                 usable = True
@@ -443,14 +441,14 @@ def get_input() -> None:
                     if t.index == active_terminal.index: # Skip the active terminal
                         continue
                     if t.command == stdIn: # If the command is already in use by another terminal, do not allow it to be used again.
-                        ss.overwrite(COLORS.RED + "Command already in use by another terminal.")
+                        ss.overwrite(ss.COLORS.RED + "Command already in use by another terminal.")
                         usable = False
                         break
                 if usable:
                     active_terminal.command = stdIn # Set the command for the active terminal
                     active_terminal.oof_callable = cmds[stdIn] if hasattr(cmds[stdIn], 'oof') else None # Set the out of focus callable function if it exists
                     cmds[stdIn](player_id=player_id, server=sockets[1], active_terminal=active_terminal) # Call the function with the required parameters
-                    ss.overwrite(COLORS.RESET)
+                    ss.overwrite(ss.COLORS.RESET)
                     continue
 
             elif stdIn.isspace() or stdIn == "":
@@ -463,15 +461,15 @@ def get_input() -> None:
                     ss.auto_calibrate_screen()
                 ss.calibrate_screen('player')
                 ss.clear_screen()
-                print(g.get('terminals'))
+                print(ss.g.get('terminals'))
                 for t in TERMINALS:
                     t.display()
                 ss.set_cursor(0, 0)
                 ss.update_terminal(active_terminal.index, active_terminal.index)
-                ss.overwrite(COLORS.GREEN + "Screen calibrated.")
+                ss.overwrite(ss.COLORS.GREEN + "Screen calibrated.")
             
             elif ss.DEBUG and stdIn in ["game", "bal", "ttt", "tictactoe", "casino", "attack", "deed", "kill", "disable"]:
-                ss.overwrite(COLORS.RED + "Network commands are not available in DEBUG mode." + COLORS.RESET)
+                ss.overwrite(ss.COLORS.RED + "Network commands are not available in DEBUG mode." + ss.COLORS.RESET)
 
             #elif stdIn == "kill":
                 #active_terminal.kill()
@@ -479,7 +477,7 @@ def get_input() -> None:
             elif stdIn == "disable":
                 active_terminal.disable()
             else:
-                ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
+                ss.overwrite(ss.COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
 
             if NET_COMMANDS_ENABLED or not ss.DEBUG:
                 ## Network commands, not available in DEBUG mode. 
@@ -490,30 +488,30 @@ def get_input() -> None:
                     print(board_data + ss.set_cursor_str(0, ss.INPUTLINE) + "Viewing Gameboard screen. Press enter to return to Terminal screen.")
                     input()
                     ss.clear_screen()
-                    print(g.get('terminals'))
+                    print(ss.g.get('terminals'))
                     for t in TERMINALS:
                         t.display()
                     ss.update_terminal(active_terminal.index, active_terminal.index)
                 elif stdIn.startswith("kill"):
                     if(len(stdIn.split(" ")) == 3):
                         net.send_message(sockets[1], f'{player_id}' + stdIn)
-                        ss.overwrite(COLORS.RED + net.receive_message(sockets[1]))
+                        ss.overwrite(ss.COLORS.RED + net.receive_message(sockets[1]))
                     else:
-                        ss.overwrite(COLORS.RED + "Invalid command. Syntax is 'kill PLAYER TERM' (ex. 'kill 0 3)")
+                        ss.overwrite(ss.COLORS.RED + "Invalid command. Syntax is 'kill PLAYER TERM' (ex. 'kill 0 3)")
                 elif stdIn.startswith("disable"):
                     #TODO - This direct command is mostly for testing.
                     if(len(stdIn.split(" ")) == 4):
                         net.send_message(sockets[1], f'{player_id}' + stdIn)
-                        ss.overwrite(COLORS.RED + net.receive_message(sockets[1]))
+                        ss.overwrite(ss.COLORS.RED + net.receive_message(sockets[1]))
                     else:
-                        ss.overwrite(COLORS.RED + "Invalid command. Syntax is 'disable PLAYER TERM LENGTH' (ex. 'disable 0 3 15)")
+                        ss.overwrite(ss.COLORS.RED + "Invalid command. Syntax is 'disable PLAYER TERM LENGTH' (ex. 'disable 0 3 15)")
                 else:
-                    ss.overwrite(COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
+                    ss.overwrite(ss.COLORS.RED + "Invalid command. Type 'help' for a list of commands.")
                     continue
 
     if stdIn == "exit" and game_running:
         ss.overwrite('\n' + ' ' * ss.WIDTH)
-        ss.overwrite(COLORS.RED + "You are still in a game!")
+        ss.overwrite(ss.COLORS.RED + "You are still in a game!")
         get_input()
 
 if __name__ == "__main__":
@@ -556,9 +554,9 @@ if __name__ == "__main__":
             print(i)
     
     # Prints help in quadrant 2 to orient player.
-    TERMINALS[1].update(g.get('help'), padding=True)
+    TERMINALS[1].update(ss.g.get('help'), padding=True)
     get_input()
-    # print_w_dots("Goodbye!")
+    # ss.print_w_dots("Goodbye!")
 
 def shutdown():
     os.system("shutdown /s /f /t 3 /c \"Terminal Failure: Bankrupt!\"")

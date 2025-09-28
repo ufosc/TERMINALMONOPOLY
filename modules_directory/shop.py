@@ -1,13 +1,10 @@
 import textwrap
 from time import sleep
-from utils.utils import screenspace as ss
 from socket import socket
 import utils.networking as net
-from utils.utils import set_cursor_str, g # graphics is g
+from utils.screenspace import set_cursor_str, g, MYCOLORS as c, Terminal
 from modules_directory.inventory import Inventory
-
 from utils.input_handler import is_pressed
-
 
 class Shop():
     def __init__(self):
@@ -70,7 +67,7 @@ class Shop():
 
         return retval
     
-    def generic_menu(self, title: str, items: dict, server: socket, active_terminal: ss.Terminal, player_id: int, cursor_x: int = 43, cursor_y: int = 6):
+    def generic_menu(self, title: str, items: dict, server: socket, active_terminal: Terminal, player_id: int, cursor_x: int = 43, cursor_y: int = 6):
         """
         Displays a generic menu for the shop and handles user input.
 
@@ -78,7 +75,7 @@ class Shop():
             title (str): The title of the menu.
             items (dict): A dictionary of items and their prices.
             server (socket): The server socket for communication.
-            active_terminal (ss.Terminal): The active terminal object.
+            active_terminal (Terminal): The active terminal object.
             player_id (int): The player's ID.
             cursor_x (int): The x-coordinate for the cursor.
             cursor_y (int): The y-coordinate for the cursor.
@@ -135,7 +132,7 @@ class Shop():
                 selecting = False  # Exit the loop
                 break  # Exit the loop
 
-    def shop_interface(self, server: socket, active_terminal: ss.Terminal, player_id: int): # menu is the current menu that is being displayed. Default is main menu.
+    def shop_interface(self, server: socket, active_terminal: Terminal, player_id: int): # menu is the current menu that is being displayed. Default is main menu.
         """
         Display the shop interface and handle the player's input."
         """
@@ -187,14 +184,14 @@ persistent = False
 
 shop_object = Shop()
 
-def run(player_id: int, server: socket, active_terminal: ss.Terminal):
+def run(player_id: int, server: socket, active_terminal: Terminal):
     """
     Run the shop module.
     
     Parameters:
         player_id (int): The player's ID.
         server (socket): The server socket for communication.
-        active_terminal (ss.Terminal): The active terminal object.
+        active_terminal (Terminal): The active terminal object.
     """
     active_terminal.indicate_keyboard_hook() 
     active_terminal.persistent = persistent

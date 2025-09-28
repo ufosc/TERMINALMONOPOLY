@@ -1,12 +1,12 @@
 import keyboard
 import os
-from utils import screenspace
 import time
 import re
 import utils.networking as net
 from datetime import datetime
+import utils.screenspace
 
-g = screenspace.get_graphics()
+g = utils.screenspace.g
 
 class Loan:
     def __init__(self, amount, low_or_high):
@@ -117,24 +117,24 @@ class LoanScreen:
         Builds dipslay... that's about it
         
         """
-        retval = screenspace.set_cursor_str(0, 0) + g.get('loan')
+        retval = utils.screenspace.set_cursor_str(0, 0) + g.get('loan')
         
         if self.loanScreen and not self.gettingLoan:
-            retval += screenspace.set_cursor_str(3,
+            retval += utils.screenspace.set_cursor_str(3,
                                                  3) + "== Welcome to the office of J.G. Hopworth, esteemed financial lender =="
-            retval += screenspace.set_cursor_str(30, 5) + "Would you like to take out a loan? (y/n)"
+            retval += utils.screenspace.set_cursor_str(30, 5) + "Would you like to take out a loan? (y/n)"
             
             
         
         elif self.loanScreen and self.gettingLoan:
-            retval += screenspace.set_cursor_str(32, 3) + "You may choose a high or low interest loan."
-            retval += screenspace.set_cursor_str(33, 5) + "High interest (h) - Up to $2000"
-            retval += screenspace.set_cursor_str(33, 6) + "Low interest (l) - Up to $500"
-            retval += screenspace.set_cursor_str(33, 8) + "Press (q) to cancel"
+            retval += utils.screenspace.set_cursor_str(32, 3) + "You may choose a high or low interest loan."
+            retval += utils.screenspace.set_cursor_str(33, 5) + "High interest (h) - Up to $2000"
+            retval += utils.screenspace.set_cursor_str(33, 6) + "Low interest (l) - Up to $500"
+            retval += utils.screenspace.set_cursor_str(33, 8) + "Press (q) to cancel"
             
             if self.low_or_high is not None:
                 loan_type = "high" if self.low_or_high else "low"
-                retval += screenspace.set_cursor_str(33, 10) + f"Selected: {loan_type} interest loan"
+                retval += utils.screenspace.set_cursor_str(33, 10) + f"Selected: {loan_type} interest loan"
         
         return retval
     

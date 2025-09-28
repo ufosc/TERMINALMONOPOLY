@@ -1,4 +1,4 @@
-from utils.screenspace import MYCOLORS as c, Terminal, g # g is graphics
+from utils.screenspace import MYCOLORS as c, Terminal, g, overwrite
 import os
 import utils.networking as net
 from socket import socket
@@ -23,20 +23,20 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
         #net.send_message(server, f"{player_id}bal")
         # sleep(0.1)
         #balance = int(net.receive_message(server))
-        ss.overwrite(c.RESET + "\rSelect a game through typing the associated command, amount, and player id. (ex. 'guessing_game 20 2')" + " " * 20)
+        overwrite(c.RESET + "\rSelect a game through typing the associated command, amount, and player id. (ex. 'guessing_game 20 2')" + " " * 20)
         active_terminal.update("─" * 31 + "ATTACK MODULE" + "─" * 31 + "\n" + "\n\nSelect a game by typing the command and wager.\n\n"
                        + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + get_submodules() + "\n☒ Exit (e)")
         if(wrong == 1):
-            ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'guessing_game 20 2 0')")
+            overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'guessing_game 20 2 0')")
         elif(wrong == 2):
-            ss.overwrite(c.RESET + c.RED + "\rInvalid input. Type in the name of the game followed by the penalty amount, and attacked player id. (ex. 'guessing_game 20 2 or guessing_game 100 0')")
+            overwrite(c.RESET + c.RED + "\rInvalid input. Type in the name of the game followed by the penalty amount, and attacked player id. (ex. 'guessing_game 20 2 or guessing_game 100 0')")
         elif(wrong == 3):
-            ss.overwrite(c.RESET + c.RED + "\rAmount has to be an integer greater than 0. Type in the name of the game followed by the amount. (ex. 'guessing_game 20 2 0')")
+            overwrite(c.RESET + c.RED + "\rAmount has to be an integer greater than 0. Type in the name of the game followed by the amount. (ex. 'guessing_game 20 2 0')")
         elif(wrong == 4):
-            ss.overwrite(c.RESET + c.RED + "\rID picked is not valid. (ex. 'guessing_game 20 2')")
+            overwrite(c.RESET + c.RED + "\rID picked is not valid. (ex. 'guessing_game 20 2')")
         game = input(c.backYELLOW+c.BLACK+f"\r").lower().split(" ")
         print(c.RESET, end="") #Reset the color
-        ss.overwrite(c.RESET+"\r" + " " * 40)
+        overwrite(c.RESET+"\r" + " " * 40)
         if active_terminal.status != "ACTIVE":
             break  # Exit the loop if the Terminal is no longer active
         if(game[0] == ""):
@@ -74,7 +74,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal):
                 attacked_player_id = game[3]
                 net.send_message(server, f"{attacked_player_id}attack lose {type, amt}")
                 sleep(0.1)
-                ss.overwrite(c.RESET + "\r" + " " * 40)
+                overwrite(c.RESET + "\r" + " " * 40)
                 winnings = i.play(active_terminal, amt)
                 net.send_message(server, f"{attacked_player_id}attack win {type, amt}")
                 sleep(0.1)

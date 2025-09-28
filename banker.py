@@ -1,45 +1,42 @@
-import itertools
 from time import sleep
 import sys
 import os
+import threading
+import itertools
 # Start the loading animation in a separate thread
 loading = True
-def loading_animation(text="Loading"):
+def loading_animation() -> None:
     for frame in itertools.cycle(['|', '/', '-', '\\']):
         if not loading:
             break
-        sys.stdout.write(f'\r{text} {frame}')
+        sys.stdout.write(f'\rLoading imports {frame}')
         sys.stdout.flush()
         sleep(0.1)
-    sys.stdout.write('\rLoading complete!     \n')
-import threading
-animation_thread = threading.Thread(target=loading_animation, args=["Loading imports"])
+    sys.stdout.write(f'\rLoading imports complete!     \n')
+animation_thread = threading.Thread(target=loading_animation)
 animation_thread.start()
 
 # Python Builtin Utilities
 import socket
 import select
-import importlib
 
-# Our Utilities
-import utils.screenspace as ss
-from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset, Main_Output, Monopoly_Game_Output, Casino_Output
+# Our Utilities 
+import utils.screenspace as ss 
+from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset, Main_Output, Monopoly_Game_Output, Casino_Output # specific imports, helpful on their own
 import utils.networking as net
-from utils.utils import Client, validate_port, is_port_unused
-
+from utils.utils import Client, validate_port, is_port_unused, loading_animation
 # Modules
 import modules_directory.inventory as inv
 from modules_directory.loan import Loan
-
-# Dynamically import handle functions from modules in modules_directory as handle_<module_name>
-modules_path = "modules_directory"
-for filename in os.listdir(modules_path):
-    if filename.endswith(".py") and filename != "__init__.py":
-        module_name = filename[:-3]  # Remove the .py extension
-        module = importlib.import_module(f"{modules_path}.{module_name}")
-        if hasattr(module, "handle"):
-            globals()[f"handle_{module_name}"] = getattr(module, "handle")
-
+# Import all Module handle functions - add here as you create more modules
+from modules_directory.shop import handle as handle_shop
+from modules_directory.deed import handle as handle_deed
+from modules_directory.balance import handle as handle_balance
+from modules_directory.chat import handle as handle_chat
+from modules_directory.trading import handle as handle_trading
+from modules_directory.plist import handle as handle_plist
+from modules_directory.inventory import handle as handle_inventory
+from modules_directory.casino import handle as handle_casino
 
 # Monopoly Game
 import monopoly_directory.monopoly as mply

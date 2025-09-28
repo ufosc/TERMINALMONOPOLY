@@ -1,10 +1,7 @@
-from utils.utils import MYCOLORS as c, g # g is graphics
-from utils.utils import screenspace as ss
-from utils.utils import Terminal
+from utils.screenspace import MYCOLORS as c, g, Terminal, overwrite
 import os
 import utils.networking as net
 from socket import socket
-import sys
 
 name = "Casino Loader"
 command = "casino"
@@ -29,21 +26,21 @@ def run(player_id: int, server: socket, active_terminal: Terminal, debtok=False)
         net.send_message(server, f"{player_id}bal")
         # sleep(0.1)
         balance = int(net.receive_message(server))
-        ss.overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
+        overwrite(c.RESET + "\rSelect a game through typing the associated command and wager. (ex. 'coin_flip 100')" + " " * 20)
         game_list = "".join(__modules)
         active_terminal.update("─" * 31 + "CASINO MODULE" + "─" * 31 + "\n" + f"AVAILABLE CASH: ${balance}".center(75) + "\n\nSelect a game by typing the command and wager.\n\n"
                        + "GAME SELECTION".ljust(37, ".") + " COMMAND\n\n" + game_list + "\n☒ Exit (e)")
         if(wrong == 1):
-            ss.overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
+            overwrite(c.RESET + c.RED + "\rGame does not exist. Refer to the list of games. (ex. 'coin_flip 100')")
         elif(wrong == 2):
-            ss.overwrite(c.RESET + c.RED + "\rInvalid input. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
+            overwrite(c.RESET + c.RED + "\rInvalid input. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
         elif(wrong == 3):
-            ss.overwrite(c.RESET + c.RED + "\rWager has to be an integer greater than 0. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
+            overwrite(c.RESET + c.RED + "\rWager has to be an integer greater than 0. Type in the name of the game followed by the wager. (ex. 'coin_flip 100')")
         elif(wrong == 4):
-            ss.overwrite(c.RESET + c.RED + "\rYou do not have enough money for that wager.")
+            overwrite(c.RESET + c.RED + "\rYou do not have enough money for that wager.")
         
         game = input(f"\r").lower().split(" ")
-        ss.overwrite(c.RESET+"\r" + " " * 40)
+        overwrite(c.RESET+"\r" + " " * 40)
         if active_terminal.status != "ACTIVE":
             break # Exit the loop if the Terminal is no longer active
         if(game[0] == ""):
@@ -74,7 +71,7 @@ def run(player_id: int, server: socket, active_terminal: Terminal, debtok=False)
                     wrong = 4
                     continue
                 balance = new_balance
-                ss.overwrite(c.RESET+"\r" + " " * 40)
+                overwrite(c.RESET+"\r" + " " * 40)
                 active_terminal.busy(server, player_id)
                 winnings = i.play(active_terminal,wager)
                 active_terminal.enable(False, server, player_id)

@@ -1054,7 +1054,6 @@ def center_lines(text, width):
     centered_lines = [line.center(width) for line in lines]
     return '\n'.join(centered_lines)
 
-
 def get_graphics() -> dict:
     """
     Reads all graphics from the ascii directory into a dictionary.
@@ -1066,7 +1065,7 @@ def get_graphics() -> dict:
     The graphics are read from the ascii folder, where the key is the filename and the value is the graphic.
     """
     text_dict = {}
-    for dir_name, sub_dirs, files in os.walk("../ascii/"):
+    for dir_name, sub_dirs, files in os.walk("./ascii/"):
         for file in files:
             with open(os.path.join(dir_name, file), encoding='utf-8') as ascii_text:
                 full_file = ascii_text.read()
@@ -1089,9 +1088,8 @@ def get_graphics() -> dict:
                     text_dict[file] = '\n' + full_file
     return text_dict
 
-
-# Use this object to access all graphics, instead of calling get_graphics() every time.
 g = get_graphics()
+# Use this object to access all graphics, instead of calling get_graphics() every time.
 COLORS = MYCOLORS  # since MYCOLORS now lives in this file
 
 def set_cursor(x: int, y: int) -> None:
