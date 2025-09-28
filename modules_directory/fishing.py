@@ -1,15 +1,22 @@
 import time
 import random
 from style import graphics as g, set_cursor, set_cursor_str
-# import modules_directory.inventory as inv
+import modules_directory.inventory as inventory
+import screenspace as ss
+from socket import socket
+import networking as net
+
+name = "Fish loader"
+command = "fish"
+description = "Women want me, fish FEAR me."
+help_text = "Type FISH to start catching, the fish can smell money."
+persistent = False # No need to run additional commands after switching
 
 class fishing_game():
     """
     Fishing Game
-    Author: Adam Gulde (github.com/adamgulde)
-    Version: 1.3 (2/27/2025) Updated to adhere to new module constraints
-    Written on an airplane in an hour, roughly.
-    This class interfaces with player.py perfectly. 
+    Author: Amy Hoang (https://github.com/TiniToni)
+    Version: 1.4 (9/28/2025) Updated to adhere to new design philosophy
     """
     def __init__(self) -> None:
         self.__fishies = g.copy()
@@ -17,24 +24,22 @@ class fishing_game():
         self.__pictures.append(self.__fishies.pop('fishing 1 idle'))
         self.__pictures.append(self.__fishies.pop('fishing 1 win'))
         self.__catchtime = 0
-        self.__inventory = None
 
-    def start(self, inventory) -> str:
+    #this is not actually used
+    def start(self) -> str:
         start = int(time.time())
         delay = random.randint(3,10)
         self.__catchtime = start + delay
-        self.__inventory = inventory
         return self.__pictures[0]
 
     def get_input(self) -> str:
         return input()
 
-    def results(self) -> str:
+    def results(self, player_inventory: inventory) -> str:
         retval = set_cursor_str(0,0) + self.__pictures[1]
-        # if self.__catchtime < int(time.time()) < self.__catchtime + 5:
         if random.choice([True, False]):
             fish = random.choice(['Carp', 'Bass', 'Salmon'])
-            self.__inventory.add_item(fish, 1) # added fish to inventory
+            player_inventory.add_item(fish, 1) # added fish to inventory
             
             retval += set_cursor_str(24 - (1 if fish == 'Salmon' else 0), 3) + 'Nice job, you caught a ' + fish + '!'
             fish_graphic = self.__fishies['fishing 1 ' + fish.lower()]
@@ -46,26 +51,34 @@ class fishing_game():
             retval += set_cursor_str(33, 3) + 'No luck...'
 
         return retval
+def run(player_id: int, server: socket, active_terminal: ss.Terminal):
+    """
+    Run the fishing module.
+    
+    Parameters:
+        server (socket): The server socket for communication.
+        active_terminal (ss.Terminal): The active terminal object.
+    """
+    active_terminal.clear()
+    active_terminal.persistent = persistent
+    active_terminal.update(g.get('fishing 1 idle'))
+    playerinput = input("Type anything to catch a fish")
+    net.send_message(server, f'{player_id}fish,reel')
+    retval = net.receive_message(server)
+    active_terminal.update(retval, False)
 
-name = "Fishing Game"
-author = "https://github.com/adamgulde"
-version = "1.3" # Moved to its own file
-command = "fish"
-help_text = "Type FISH to go fishing, and press ENTER to try to reel something in! Go fishing!"
-persistent = False
+def handle(client_socket: socket, player_inventory: inventory)->None:
+    """
+    Handles fishing and inventory interaction
 
-fishing_game_obj = fishing_game() 
-# def run(inventory: inventory, gamestate: str = 'start') -> tuple[str, str]:
-#     """
-#     Fishing module handler for player.py. Returns tuple of [visual data, gamestate] both as strings.
-#     """
-#     stdIn = ''
-#     if (gamestate == 'start'):
-#         return fishing_game_obj.start(inventory), 'playing'
-#     elif (gamestate == 'playing'):
-#         stdIn = fishing_game_obj.get_input()
-#         if stdIn == 'e':
-#             return '', 'e'
-#         return fishing_game_obj.results(), 'e'  
-#     elif (gamestate == 'e'):
-#         return '', 'start'  
+    Parameters:
+    client_socket (socket): The client socket to send messages to
+    player_inventory (inventory): The player's inventory object
+    player_id (int): The Player's ID --> same as above
+    """
+    message = fishing_game_obj.results(player_inventory)
+    print("pls fish3")
+    net.send_message(client_socket, message)
+    print("pls fish4")
+
+fishing_game_obj = fishing_game()
