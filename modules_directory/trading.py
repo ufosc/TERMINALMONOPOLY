@@ -1,5 +1,5 @@
 from socket import socket
-import networking as net
+import utils.networking as net
 from utils.utils import g, set_cursor_str, MYCOLORS as COLORS
 from random import randint
 from utils.utils import Client, screenspace as ss

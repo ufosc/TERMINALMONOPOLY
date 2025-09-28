@@ -22,16 +22,13 @@ import select
 import importlib
 
 # Our Utilities
-from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset
-from utils.screenspace import Main_Output, Monopoly_Game_Output, Casino_Output
-import networking as net
-from utils import Client
-from loan import Loan
-import utils as valid
-from utils import Client, screenspace as ss
+from utils.screenspace import MYCOLORS as COLORS, print_w_dots, choose_colorset, Main_Output, Monopoly_Game_Output, Casino_Output
+import utils.networking as net
+from utils.utils import Client, screenspace as ss, validate_port, is_port_unused
 
 # Modules
 import modules_directory.inventory as inv
+from modules_directory.loan import Loan
 
 # Dynamically import handle functions from modules in modules_directory as handle_<module_name>
 modules_path = "modules_directory"
@@ -74,8 +71,6 @@ def add_to_output_area(output_type: str, text: str, color: str = COLORS.WHITE) -
     """
     if output_type == "Monopoly":
         Monopoly_Game_Output.add_output(text, color)
-    elif output_type == "TicTacToe":
-        TTT_Output.add_output(text, color)
     elif output_type == "Casino":
         Casino_Output.add_output(text, color)
     else:
@@ -109,7 +104,7 @@ def start_server() -> socket.socket:
         # Choose a port that is free
         port = input("Choose a port, such as 3131: ")
     
-        while not valid.validate_port(port) or not valid.is_port_unused(int(port)):
+        while not validate_port(port) or not is_port_unused(int(port)):
             port = input("Invalid port. Choose a port, such as 3131: ")
 
     port = int(port) # Convert port to int for socket binding
@@ -726,12 +721,13 @@ def handle_loan(data: str, client_socket: socket.socket, change_balance: callabl
             if amount <= 0 or amount > 500:
                 net.send_message(client_socket, "Low interest loans must be between $1 and $500.")
                 return
-            play_loan = Loan(amount, False)
+            player_loan = Loan(amount, False)
             
         else:
             net.send_message(client_socket, "Invalid loan type. Choose 'high' or 'low'.")
             return
         
+        interest_rate = player_loan.interest_rate
         # Calculate the total amount to be repaid (for informational purposes)
         total_repayment = int(amount * (1 + interest_rate))
         

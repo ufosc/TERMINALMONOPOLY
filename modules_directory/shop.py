@@ -2,11 +2,11 @@ import textwrap
 from time import sleep
 from utils.utils import screenspace as ss
 from socket import socket
-import networking as net
+import utils.networking as net
 from utils.utils import set_cursor_str, g # graphics is g
 from modules_directory.inventory import Inventory
 
-from input_handler import is_pressed
+from utils.input_handler import is_pressed
 
 
 class Shop():

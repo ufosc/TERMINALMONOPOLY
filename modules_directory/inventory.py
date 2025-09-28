@@ -70,7 +70,7 @@ class Inventory():
 
 from socket import socket
 from utils.utils import Terminal
-import networking as net
+import utils.networking as net
 
 name = "Inventory Module"
 command = "inv"

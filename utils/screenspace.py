@@ -6,7 +6,7 @@ WIDTH = 150
 HEIGHT = 40
 INPUTLINE = 45
 import os
-import networking as net
+import utils.networking as net
 import platform
 import ctypes
 import shutil

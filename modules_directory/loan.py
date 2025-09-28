@@ -3,8 +3,7 @@ import os
 from utils import screenspace
 import time
 import re
-import networking as net
-from socket import socket
+import utils.networking as net
 from datetime import datetime
 
 g = screenspace.get_graphics()

@@ -8,7 +8,7 @@ import threading
 from time import sleep
 from utils.screenspace import MYCOLORS as COLORS, g, print_w_dots
 from utils import screenspace as ss
-import networking as net
+import utils.networking as net
 import utils
 import modules_directory.inventory as inv
 

@@ -1,4 +1,4 @@
-import networking as net
+import utils.networking as net
 from utils.utils import Terminal
 from utils.utils import screenspace as ss
 from utils.utils import MYCOLORS as COLORS
