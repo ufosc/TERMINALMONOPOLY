@@ -8,8 +8,7 @@ from socket import socket
 
 name = "Attack Loader"
 command = "attack"
-description = "Attack another player!"
-help_text = "Attack"
+help_text = "Switch to the attack module to attack another player! Attacking other players is a crucial part of Terminal Monopoly. Successfully attacking other players will cripple their mobility on their terminals, and put them in precarious situations on the gameboard. All attacks are played out by winning against another player in some **active** module."
 persistent = False # No need to run additional commands after switching
 # No out of focus function needed, because the terminal closes after use
 

@@ -180,7 +180,7 @@ class Shop():
 
 name = "Shop Module"
 author = "https://github.com/Eon02"
-description = "Buy and sell items here!"
+description = ""
 version = "1.4 - Reworking to add other internal shops - adamgulde"
 command = "shop"
 help_text = "Type SHOP to enter the shop. Press W/S to navigate and Enter to select. Press Q to exit the shop."
