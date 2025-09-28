@@ -10,7 +10,7 @@ import sys
 name = "Casino Loader"
 command = "casino"
 description = "Gamble your money at the casino!"
-help_text = "Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."
+help_text = "Gamble your money at the casino! Type CASINO to enter the casino, where you can gamble your money for in high stakes and low stakes. There's a little something for everyone."
 persistent = False # No need to run additional commands after switching
 # No out of focus function needed, because the terminal closes after use
 

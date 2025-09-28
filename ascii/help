@@ -1,6 +1,6 @@
 RSTRIP
    ___         
- _|\  \__                          === HELP (1) ===
+ _|\  \__                          === HELP ===
 |\   ____\      Welcome to Terminal Monopoly!                           
 \ \  \___|_         
  \ \_____  \    This help screen will assist you with all the commands
@@ -8,7 +8,7 @@ RSTRIP
     ____\_\  \  
    |\___    __\
    \|___|\__\_|             Command List:                          
-        \|__|   help <num> - display help messages (num = 1 by default)
+        \|__|   help <module> - display module help message
                 game - switches ALL terminals to gameboard view___
                 term <num> - switch active terminal          _|\  \__
                   to num                                    |\   ____\

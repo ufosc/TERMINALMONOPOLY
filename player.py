@@ -416,16 +416,19 @@ def get_input() -> None:
                 continue
 
             # TODO, see https://github.com/ufosc/TERMINALMONOPOLY/issues/105
-            elif stdIn == "helpstocks" or stdIn == "help stocks":
-                active_terminal.clear()
-                active_terminal.update(g.get("helpstocks"))
+
             elif stdIn.startswith("help"):
-                if (len(stdIn) == 6 and stdIn[5].isdigit() and 2 >= int(stdIn.split(" ")[1]) > 0):
-                    active_terminal.update(g.get(stdIn if stdIn != 'help 1' else 'help'), padding=True)
+                help_cmd = stdIn.split(" ")
+                if(4 > len(help_cmd) > 1 and help_cmd[1] in cmds.keys()):
+                    active_terminal.command = "help" # Set the command for the active terminal
+                    active_terminal.oof_callable = cmds["help"] if hasattr(cmds["help"], 'oof') else None # Set the out of focus callable function if it exists
+                    cmds["help"](player_id=player_id, server=sockets[1], active_terminal=active_terminal, param=help_cmd[1:]) # Call the function with the required parameters
+                    continue
                 else: 
                     active_terminal.update(g.get('help'), padding=True)
-                    ss.overwrite(COLORS.RED + "Incorrect syntax. Displaying help first page instead.")
-                active_terminal.oof_callable = None
+                    ss.overwrite(COLORS.RESET + COLORS.RED + "Invalid command. Displaying help menu page.")
+                    continue
+            
             elif stdIn == "clear": # Clear the given Terminal to allow other commands to be ran
                 active_terminal.clear()
                 active_terminal.update("")
