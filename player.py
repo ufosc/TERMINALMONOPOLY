@@ -119,7 +119,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
                 print("The input name was not valid")
                 name = input("Player name: ")
         
-        if not argss.local:
+        if "localhost" not in sys.argv:
             ADDRESS = input("Enter Host IP: ").strip()
             while not validate_address(ADDRESS):
                 print("Invalid IP address. Please enter a valid IP address.")
