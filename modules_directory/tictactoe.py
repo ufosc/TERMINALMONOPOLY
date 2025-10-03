@@ -1,7 +1,8 @@
 import utils.networking as net
 import utils.screenspace as ss
 from socket import socket
-import keyboard
+# import keyboard | Redacted
+import readchar
 import time
 
 class TicTacToe:
@@ -144,20 +145,24 @@ def run(server: socket, active_terminal: ss.Terminal, player_id: int) -> None:
         # Only hook the keyboard after you are definitely IN a game. 
         # ss.indicate_keyboard_hook(active_terminal.index) # update terminal border to show keyboard is hooked
 
+        simple_board[y][x] = ss.COLORS.backYELLOW + original_board[y][x] + ss.COLORS.RESET
+        b = construct_board(simple_board)
+        active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
+
         while True:
 
-            if keyboard.read_event().event_type == keyboard.KEY_DOWN:
-                simple_board[y][x] = COLORS.RESET + original_board[y][x]
-                b = construct_board(simple_board)
-                active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
+            key = readchar.readkey()
+            keyLower = key.lower() if len(key) == 1 else key
 
-            if keyboard.is_pressed('w'):
+            simple_board[y][x] = ss.COLORS.RESET + original_board[y][x]
+
+            if keyLower == 'w':
                 y = max(0, min(y-1, 2))
-            if keyboard.is_pressed('a'):
+            elif keyLower == 'a':
                 x = max(0, min(x-1, 2))
-            if keyboard.is_pressed('s'):
+            elif keyLower == 's':
                 y = max(0, min(y+1, 2))
-            if keyboard.is_pressed('d'):
+            elif keyLower == 'd':
                 x = max(0, min(x+1, 2))
 
             simple_board[y][x] = ss.COLORS.backYELLOW + original_board[y][x] + ss.COLORS.RESET
@@ -165,7 +170,7 @@ def run(server: socket, active_terminal: ss.Terminal, player_id: int) -> None:
             b = construct_board(simple_board)
             active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})"))
             
-            if keyboard.is_pressed('enter'):
+            if key == readchar.key.ENTER:
                 # Send move to server
                 if '▒' in simple_board[y][x]:
                     # At this point, the client can be sure that they have the
@@ -175,14 +180,12 @@ def run(server: socket, active_terminal: ss.Terminal, player_id: int) -> None:
                     # receive new board (for display) from server
                     active_terminal.update("Updated board:\n" + net.receive_message(server), padding=True)
                     ss.update_terminal(active_terminal.index, active_terminal.index) # reset terminal to normal
-                    keyboard.unhook_all()
                     break
                 else:
                     active_terminal.update(get_printable_board("New board:", b, f"Coordinates:\n({x},{y})\nInvalid move. Try again."))
 
-            if keyboard.is_pressed('esc'):
+            if key == readchar.key.ESC:
                 ss.update_terminal(active_terminal.index, active_terminal.index) # reset terminal to normal
-                keyboard.unhook_all()
                 break
 
 
