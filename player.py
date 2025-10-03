@@ -8,6 +8,7 @@ import threading
 import utils.networking as net
 import utils.screenspace as ss
 import modules_directory.inventory as inv
+import argparse
 
 from time import sleep
 from utils.utils import validate_address, validate_port, validate_name
@@ -118,7 +119,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
                 print("The input name was not valid")
                 name = input("Player name: ")
         
-        if "localhost" not in sys.argv:
+        if not args.local:
             ADDRESS = input("Enter Host IP: ").strip()
             while not validate_address(ADDRESS):
                 print("Invalid IP address. Please enter a valid IP address.")
@@ -518,26 +519,43 @@ if __name__ == "__main__":
     """
     Main driver function for player.
     """
-    if "-withnet" in sys.argv:
+
+    """
+    We will use argparse to interpret cli arguments. With argparse, flags and arguments are styled in a consistent way.
+    Also, arguments that require multiple details are handled gracefully by the library and can be easily specified in the .add_argument() method.
+    When arguments fail, an error is thrown and the user is shown available arguments instead of the program ignoring incorrect arguments.
+    """
+    parser = argparse.ArgumentParser(description="Terminal Monopoly Player")
+    parser.add_argument("-withnet", action="store_true", help="Enable network commands")
+    parser.add_argument("-local", action="store_true", help="Connect to a local server")
+    parser.add_argument("-debug", nargs=3, metavar=("NAME", "IP", "PORT"), help="Run in debug mode with a custom name, IP, and port")
+    parser.add_argument("-skipcalib", action="store_true", help="Skip screen calibration")
+
+    args = parser.parse_args()
+
+
+    if args.withnet:
         NET_COMMANDS_ENABLED = True
     
-    if "-local" in sys.argv:
+    if args.local:
         initialize(True, ["Player", "localhost", "33333"])
-    elif(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
+    elif(len(sys.argv) == 1 or not args.debug):
         initialize()
         ss.make_fullscreen()
-    elif sys.argv[1] == "-debug":
+    elif args.debug:
         ss.DEBUG = True
 
-    if(len(sys.argv) >= 5): # Debug mode, with args (name, ip, port)
-        if sys.argv[3].count('.') == 3 and all(part.isdigit() and 0 <= int(part) <= 255 for part in sys.argv[3].split('.')):
-            initialize(True, [sys.argv[2], sys.argv[3], sys.argv[4]])
+
+    if args.debug:
+        if args.debug[1].count('.') == 3 and all(part.isdigit() and 0 <= int(part) <= 255 for part in args.debug[1].split('.')):
+            initialize(True, args.debug)
             ss.DEBUG = True
         else:
             print("Invalid IP address format. Please use the format xxx.xxx.xxx.xxx")
-            sys.exit(1)    
+            sys.exit(1)
+   
 
-    if not "-skipcalib" in sys.argv:
+    if not args.skipcalib:
         ss.make_fullscreen()
         ss.auto_calibrate_screen()
         ss.calibrate_screen("player")
@@ -548,7 +566,7 @@ if __name__ == "__main__":
     ss.initialize_terminals(TERMINALS)
     ss.update_terminal(active_terminal.index, active_terminal.index)
 
-    if "-debug" in sys.argv:
+    if args.debug:
         for i in range(ss.HEIGHT + 10):
             ss.set_cursor(155, i)
             print(i)
