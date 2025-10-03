@@ -119,7 +119,7 @@ def initialize(debug: bool = False, args: list = None) -> None:
                 print("The input name was not valid")
                 name = input("Player name: ")
         
-        if not args.local:
+        if not argss.local:
             ADDRESS = input("Enter Host IP: ").strip()
             while not validate_address(ADDRESS):
                 print("Invalid IP address. Please enter a valid IP address.")
@@ -531,31 +531,31 @@ if __name__ == "__main__":
     parser.add_argument("-debug", nargs=3, metavar=("NAME", "IP", "PORT"), help="Run in debug mode with a custom name, IP, and port")
     parser.add_argument("-skipcalib", action="store_true", help="Skip screen calibration")
 
-    args = parser.parse_args()
+    argss = parser.parse_args()
 
 
-    if args.withnet:
+    if argss.withnet:
         NET_COMMANDS_ENABLED = True
     
-    if args.local:
+    if argss.local:
         initialize(True, ["Player", "localhost", "33333"])
-    elif(len(sys.argv) == 1 or not args.debug):
+    elif(len(sys.argv) == 1 or sys.argv[1] != "-debug"):
         initialize()
         ss.make_fullscreen()
-    elif args.debug:
+    elif argss.debug:
         ss.DEBUG = True
 
 
-    if args.debug:
-        if args.debug[1].count('.') == 3 and all(part.isdigit() and 0 <= int(part) <= 255 for part in args.debug[1].split('.')):
-            initialize(True, args.debug)
+    if argss.debug:
+        if argss.debug[1].count('.') == 3 and all(part.isdigit() and 0 <= int(part) <= 255 for part in argss.debug[1].split('.')):
+            initialize(True, argss.debug)
             ss.DEBUG = True
         else:
             print("Invalid IP address format. Please use the format xxx.xxx.xxx.xxx")
             sys.exit(1)
    
 
-    if not args.skipcalib:
+    if not argss.skipcalib:
         ss.make_fullscreen()
         ss.auto_calibrate_screen()
         ss.calibrate_screen("player")
@@ -566,7 +566,7 @@ if __name__ == "__main__":
     ss.initialize_terminals(TERMINALS)
     ss.update_terminal(active_terminal.index, active_terminal.index)
 
-    if args.debug:
+    if argss.debug:
         for i in range(ss.HEIGHT + 10):
             ss.set_cursor(155, i)
             print(i)
