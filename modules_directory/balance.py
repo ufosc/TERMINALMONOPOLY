@@ -10,6 +10,7 @@ command = "bal"
 help_text = "Type BAL to view your cash and assets. View balance, net worth, stocks, and property deeds."
 persistent = False
 oof_params = {}
+_last_balance = None
 
 def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     """
@@ -39,13 +40,13 @@ def run(player_id:int, server: socket, active_terminal: ss.Terminal):
     # Get moneybag image and create the lists of lines
     image = str(g.get("moneybag"))
     image = image.splitlines()
-    info_lines = info.splitlines() 
+    info_lines = info.splitlines()
 
     ret_val = ""
 
     for i in range(len(image)):
         ret_val += " " * 35 + image[i] + "\n"
-    active_terminal.update(ret_val, False) # print just the moneybags 
+    active_terminal.update(ret_val, False) # print just the moneybags
 
     ret_val = ""
     for i in range(ss.rows):
@@ -60,6 +61,7 @@ def oof() -> str:
     """
     Update function for when the terminal is out of focus. Does NOT need active_terminal, and returns the string to be displayed.
     """
+    global _last_balance
     server = oof_params["server"]
     player_id = oof_params["player_id"]
 
@@ -68,6 +70,10 @@ def oof() -> str:
     net.send_message(server, f'{player_id}bal,get_assets,get_net_worth')
     info = header + "\n" + net.receive_message(server)
 
+    if info == _last_balance:
+        return ""
+
+    _last_balance = info
     # Get moneybag image and create the lists of lines
     image = str(g.get("moneybag"))
     image = image.splitlines()
