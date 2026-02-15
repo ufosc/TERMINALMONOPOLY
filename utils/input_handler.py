@@ -37,7 +37,4 @@ if platform.system() == "Darwin":  # macOS
         return key_str.lower() in _pressed_keys
 
 else:  # Assume Windows/Linux
-    import keyboard as kb
-
-    def is_pressed(key_str):
-        return kb.is_pressed(key_str)
+    import readchar

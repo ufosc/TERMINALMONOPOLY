@@ -1,4 +1,5 @@
-import keyboard
+# import keyboard | Redeacted 
+import readchar
 import os
 import time
 import re
@@ -55,31 +56,35 @@ class LoanScreen:
         Checks for key events, includes delay so that multiple keys don't register at once. Returns false if no key is pressed.
         
         """
-        if keyboard.is_pressed('y') and not self.gettingLoan:
-            self.gettingLoan = True
+        k = readchar.readkey()
+        key = k.lower() if len(k) == 1 else k
+
+        if not self.gettingLoan:
+            if key == 'y':
+                self.gettingLoan = True
+                time.sleep(0.2)
+                return True
+        
+            elif key == 'n':
+                self.loanScreen = False
+                time.sleep(0.2)
+                return True
+            return False
+        
+        if key == 'n':
+            self.low_or_high = True
             time.sleep(0.2)
             return True
         
-        elif keyboard.is_pressed('n') and not self.gettingLoan:
-            self.loanScreen = False
+        elif key == 'l':
+            self.low_or_high = False
             time.sleep(0.2)
             return True
         
-        elif self.gettingLoan:
-            if keyboard.is_pressed('h'):
-                self.low_or_high = True
-                time.sleep(0.2)
-                return True
-            
-            elif keyboard.is_pressed('l'):
-                self.low_or_high = False
-                time.sleep(0.2)
-                return True
-            
-            elif keyboard.is_pressed('q'):
-                self.gettingLoan = False
-                time.sleep(0.2)
-                return True
+        elif key == 'q':
+            self.gettingLoan = False
+            time.sleep(0.2)
+            return True
         
         return False
     
@@ -145,16 +150,13 @@ class LoanScreen:
 
 def main(player_id=None, server=None):
     """
-        Initializes keyboard hook, displays current state, processes input and handles loan amount.
+        Displays current state, processes input and handles loan amount.
         
         Args:
             player_id (int): The ID of the player (for networking)
             server (socket): The server socket to communicate with (for networking)
     """
     loan = LoanScreen(player_id, server)
-    
-    
-    keyboard.hook(lambda e: None)
     
     while loan.loanScreen:
        
@@ -175,7 +177,6 @@ def main(player_id=None, server=None):
                 print(f"\n{response}")
                 
                 print("Press any key to continue...")
-                keyboard.read_event()
                 loan.loanScreen = False
             else:
                 loan.low_or_high = None

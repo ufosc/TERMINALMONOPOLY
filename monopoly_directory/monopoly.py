@@ -7,6 +7,8 @@ from monopoly_directory.cards import Cards
 from monopoly_directory.board import Board
 from monopoly_directory.player_class import MonopolyPlayer
 from utils.screenspace import calibrate_screen, make_fullscreen, clear_screen, MYCOLORS as COLORS, set_cursor_str, g
+from utils.input_handler import test
+import time
 
 mode = "normal"
 output = ""

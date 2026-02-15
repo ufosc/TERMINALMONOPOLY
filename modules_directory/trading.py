@@ -1,5 +1,7 @@
 import textwrap
-import keyboard
+# import keyboard | Redacted
+import readchar
+import time
 import utils.networking as net
 from socket import socket
 from utils.screenspace import g, set_cursor_str, MYCOLORS as COLORS, Terminal
@@ -113,38 +115,39 @@ def navigate(option_coords: list, active_terminal: Terminal, static_menu: str) -
     active_terminal.indicate_keyboard_hook()
     selecting = True
     selected_option = 0 # The option that is currently selected.
-    # sleep(0.25) # Sleep to prevent an accidental purchase from pressing "enter" too fast.
-    while keyboard.is_pressed("enter"):
-        pass  # Wait for the user to release the enter key before proceeding.
+    time.sleep(0.25) # Sleep to prevent an accidental purchase from pressing "enter" too fast.
+     # Wait for the user to release the enter key before proceeding.
 
     old_x = option_coords[selected_option][0] # Get the x coordinate of the selected option.
     old_y = option_coords[selected_option][1] # Get the y coordinate of the selected option.
     active_terminal.update(static_menu + COLORS.BLUE + set_cursor_str(old_x, old_y) + ">>", False) # Update the terminal with the default option.
 
     while selecting:
-        if keyboard.is_pressed('w') or keyboard.is_pressed('up'):  # Move up in the menu
+        key = readchar.readkey()
+        keyLower = key.lower() if len(key) == 1 else key
+        
+        if keyLower == 'w' or key == readchar.key.UP:  # Move up in the menu
             old_x = option_coords[selected_option][0] # Get the x coordinate of the selected option.
             old_y = option_coords[selected_option][1] # Get the y coordinate of the selected option.
             selected_option -= 1 # Move up in the menu.
             if selected_option < 0: # If the selected option is less than 0, wrap around to the last option.
                 selected_option = len(option_coords) - 1 # Wrap around to the last option.
+            # Wait for the user to release the up key before proceeding.
+            time.sleep(0.25)
 
-            while keyboard.is_pressed('w') or keyboard.is_pressed('up'):
-                pass # Wait for the user to release the up key before proceeding.
-        elif keyboard.is_pressed('s') or keyboard.is_pressed('down'):  # Move down in the menu
+        elif keyLower == 's' or key == readchar.key.DOWN:  # Move down in the menu
             old_x = option_coords[selected_option][0] # Get the x coordinate of the selected option.
             old_y = option_coords[selected_option][1] # Get the y coordinate of the selected option.
             selected_option += 1 # Move down in the menu.
             if selected_option >= len(option_coords): # If the selected option is greater than the number of options, wrap around to the first option.
                 selected_option = 0 # Wrap around to the first option.
-
-            while keyboard.is_pressed('s') or keyboard.is_pressed('down'):
-                pass # Wait for the user to release the down key before proceeding.
-
-        elif keyboard.is_pressed("enter"):  # Select item
+            # Wait for the user to release the down key before proceeding.
+            time.sleep(0.25)
+        
+        elif key == readchar.key.ENTER:  # Select item
             selecting = False  # Exit the loop 
 
-        elif keyboard.is_pressed("q"):  # Quit menu
+        elif keyLower == 'q':  # Quit menu
             selecting = False  # Exit the loop
             selected_option = -1 # Set the selected option to -1 to indicate quitting.
         

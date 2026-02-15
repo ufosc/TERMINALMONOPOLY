@@ -3,7 +3,8 @@ import time
 from datetime import datetime, timedelta
 import os
 import threading
-import keyboard
+# import keyboard | Redacted
+import readchar
 import heapq
 
 # Seed the random number generator with the current time
@@ -406,13 +407,31 @@ def sell_mode(players_portfolio):
 
 def listen_for_keys(players_portfolio, market):
     print_menu(players_portfolio)
-    keyboard.add_hotkey('w', lambda:move_up(players_portfolio))
-    keyboard.add_hotkey('s', lambda:move_down(players_portfolio))
-    keyboard.add_hotkey('enter', lambda:select_stock(players_portfolio))
-    keyboard.add_hotkey('g', lambda:display_graph(players_portfolio, market))
-    keyboard.add_hotkey('shift+b', lambda:buy_mode(players_portfolio))
-    keyboard.add_hotkey('shift+s', lambda:sell_mode(players_portfolio))
-    keyboard.wait('esc')
+
+    while True:
+        key = readchar.readkey()
+        keyLower = key.lower()
+
+        if keyLower == 'w':
+            move_up(players_portfolio)
+        
+        elif keyLower == 's':
+            move_down(players_portfolio)
+
+        elif key == readchar.key.ENTER: 
+            select_stock(players_portfolio)
+
+        elif keyLower == 'g':
+            display_graph(players_portfolio, market)
+
+        elif key == 'B':
+            buy_mode(players_portfolio)
+
+        elif key == 'S':
+            sell_mode(players_portfolio)
+        
+        elif key == readchar.key.ESC:
+            break
 
 
 def add_mover(market, mover, change, k):
@@ -463,7 +482,7 @@ if __name__ == '__main__':
 
     # create threads
     #graph_chart_thread = threading.Thread(target=build_graph, args=(player1_portfolio, market,))
-    stock_display_thread = threading.Thread(target=display_stock_prices, args=(market, player1_portfolio))
+    stock_display_thread = threading.Thread(target=display_stock_prices, args=(market, player1_portfolio), daemon=True)
     keyboard_listener_thread = threading.Thread(target=listen_for_keys, args=(player1_portfolio, market,))
 
     # start threads
