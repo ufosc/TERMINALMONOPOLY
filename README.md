@@ -56,7 +56,7 @@ Ensure you have the following installed:
 - Python 3.9+
 - install necessary python packages using pip:
   - ```pip install -r requirements.txt```
-- run using python monopoly.py
+- run using `python -m monopoly_directory.monopoly` from TERMINALMONOPOLY (root folder)
 
 # Instructions
 - Banker runs the entire game and manages whose turn it is
