@@ -527,10 +527,10 @@ def player_roll(num_rolls, act: int = 0, mode: str = "normal") -> str:
         # Only check for doubles if the player wasn't in jail at the start of their turn
         if dice[0] == dice[1] and not was_in_jail:
             if num_rolls == 1:
-                update_history(f"{players[turn]} rolled doubles! Roll again.")
+                update_history(f"{players[turn]} rolled doubles! Roll again after this turn.")
 
             elif num_rolls == 2:
-                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again.")
+                update_history(f"{players[turn].name} rolled doubles!(X2) Roll again after this turn.")
 
             elif num_rolls == 3:
                 update_history(f"{players[turn].name} rolled doubles three times in a row!")
@@ -731,11 +731,234 @@ def end_turn():
     global turn
     turn = (turn + 1)%num_players
 
+def transfer_property(property_location: int, from_player: MonopolyPlayer, to_player: MonopolyPlayer):
+    """
+    Transfer a property from one player to another.
+    Updates both players' property lists and board ownership.
+    Handles special cases for railroads and utilities.
+    """
+    prop = board.locations[property_location]
+    
+    # Remove from original owner's properties list
+    from_player.properties = [p for p in from_player.properties if p.location != property_location]
+    
+    # Add to new owner's properties list
+    to_player.properties.append(prop)
+    
+    # Update board ownership
+    prop.owner = to_player.order
+    prop.owner_name = to_player.name
+    
+    # Handle special cases for railroads and utilities
+    if property_location in [5, 15, 25, 35]:  # Railroad
+        # Update railroad counts for both players
+        from_owned_rails = [k for k in [5, 15, 25, 35] if board.locations[k].owner == from_player.order]
+        to_owned_rails = [k for k in [5, 15, 25, 35] if board.locations[k].owner == to_player.order]
+        
+        # Update houses (which represent number of railroads owned) for all railroads
+        for k in from_owned_rails:
+            board.locations[k].houses = len(from_owned_rails)
+        for k in to_owned_rails:
+            board.locations[k].houses = len(to_owned_rails)
+            
+    elif property_location == 12:  # Electric Company
+        # Check if water works is owned by either player
+        if board.locations[28].owner == from_player.order:
+            board.locations[12].houses = 1
+            board.locations[28].houses = 1
+        elif board.locations[28].owner == to_player.order:
+            board.locations[12].houses = 2
+            board.locations[28].houses = 2
+        else:
+            board.locations[12].houses = 1
+            
+    elif property_location == 28:  # Water Works
+        # Check if electric company is owned by either player
+        if board.locations[12].owner == from_player.order:
+            board.locations[28].houses = 1
+            board.locations[12].houses = 1
+        elif board.locations[12].owner == to_player.order:
+            board.locations[28].houses = 2
+            board.locations[12].houses = 2
+        else:
+            board.locations[28].houses = 1
+
+def trade_logic():
+    """
+    Handle property trading between players.
+    Allows current player to offer a property and request one in return.
+    """
+    global turn
+    
+    offering_player = players[turn]
+    
+    # Validate: can't trade if player is bankrupt
+    if offering_player.order == -1:
+        print("\033[36;0HYou are bankrupt and cannot trade.")
+        bottom_screen_wipe()
+        return
+    
+    # Show player's properties
+    update_status(offering_player, "properties")
+    bottom_screen_wipe()
+    
+    # Get property to offer
+    print("\033[36;0H" + ' ' * 70)
+    offer_input = input("\033[36;0HWhat property do you want to offer? Enter property # or 'c' to cancel: ")
+    
+    if offer_input.lower() == 'c':
+        bottom_screen_wipe()
+        return
+    
+    try:
+        offer_location = int(offer_input)
+        if offer_location < 0 or offer_location > 39:
+            print("\033[37;0HInvalid property number. Must be between 0 and 39.")
+            bottom_screen_wipe()
+            return
+    except ValueError:
+        print("\033[37;0HInvalid input. Please enter a property number.")
+        bottom_screen_wipe()
+        return
+    
+    # Validate: player must own the property they're offering
+    if offer_location not in [prop.location for prop in offering_player.properties]:
+        print(f"\033[37;0HYou do not own property {offer_location}.")
+        bottom_screen_wipe()
+        return
+    
+    # Validate: property must be tradeable (has a purchase price)
+    if board.locations[offer_location].purchasePrice == 0:
+        print(f"\033[37;0HProperty {offer_location} cannot be traded.")
+        bottom_screen_wipe()
+        return
+    
+    # Check if property is mortgaged (optional: could allow trading mortgaged properties)
+    if board.locations[offer_location].mortgaged:
+        print(f"\033[37;0HProperty {offer_location} is mortgaged. Cannot trade mortgaged properties.")
+        bottom_screen_wipe()
+        return
+    
+    # Check if property has houses
+    if board.locations[offer_location].houses > 0:
+        print(f"\033[37;0HProperty {offer_location} has houses. Cannot trade properties with houses.")
+        bottom_screen_wipe()
+        return
+    
+    # Get property requested in return
+    print("\033[37;0H" + ' ' * 70)
+    request_input = input("\033[37;0HWhat property do you want in return? Enter property # or 'c' to cancel: ")
+    
+    if request_input.lower() == 'c':
+        bottom_screen_wipe()
+        return
+    
+    try:
+        request_location = int(request_input)
+        if request_location < 0 or request_location > 39:
+            print("\033[38;0HInvalid property number. Must be between 0 and 39.")
+            bottom_screen_wipe()
+            return
+    except ValueError:
+        print("\033[38;0HInvalid input. Please enter a property number.")
+        bottom_screen_wipe()
+        return
+    
+    # Validate: requested property must be owned by someone else
+    if request_location in [prop.location for prop in offering_player.properties]:
+        print(f"\033[38;0HYou already own property {request_location}.")
+        bottom_screen_wipe()
+        return
+    
+    # Check if property is owned by another player
+    if board.locations[request_location].owner < 0:
+        print(f"\033[38;0HProperty {request_location} is not owned by anyone.")
+        bottom_screen_wipe()
+        return
+    
+    # Validate: property must be tradeable (has a purchase price)
+    if board.locations[request_location].purchasePrice == 0:
+        print(f"\033[38;0HProperty {request_location} cannot be traded.")
+        bottom_screen_wipe()
+        return
+    
+    # Get the owner of the requested property
+    receiving_player = players[board.locations[request_location].owner]
+    
+    # Validate: can't trade with yourself (shouldn't happen, but double-check)
+    if receiving_player.order == offering_player.order:
+        print(f"\033[38;0HYou already own property {request_location}.")
+        bottom_screen_wipe()
+        return
+    
+    # Validate: can't trade with bankrupt players
+    if receiving_player.order == -1:
+        print(f"\033[38;0HCannot trade with a bankrupt player.")
+        bottom_screen_wipe()
+        return
+    
+    # Check if requested property is mortgaged
+    if board.locations[request_location].mortgaged:
+        print(f"\033[38;0HProperty {request_location} is mortgaged. Cannot trade mortgaged properties.")
+        bottom_screen_wipe()
+        return
+    
+    # Check if requested property has houses
+    if board.locations[request_location].houses > 0:
+        print(f"\033[38;0HProperty {request_location} has houses. Cannot trade properties with houses.")
+        bottom_screen_wipe()
+        return
+    
+    # Don't switch turns - just prompt the receiving player
+    # Make it very clear in history who needs to respond
+    offering_color = COLORS.playerColors[offering_player.order]
+    receiving_color = COLORS.playerColors[receiving_player.order]
+    
+    refresh_board()
+    update_history("=== TRADE REQUEST ===")
+    update_history(offering_color + f"{offering_player.name}" + COLORS.RESET + f" offers: {board.locations[offer_location].name} (property #{offer_location})")
+    update_history(offering_color + f"{offering_player.name}" + COLORS.RESET + f" requests: " + receiving_color + f"{receiving_player.name}'s" + COLORS.RESET + f" {board.locations[request_location].name} (property #{request_location})")
+    update_history(receiving_color + f"{receiving_player.name}" + COLORS.RESET + " - YOU MUST ANSWER THE PROMPT BELOW!")
+    
+    # Show receiving player's properties
+    update_status(receiving_player, "properties")
+    bottom_screen_wipe()
+    
+    # Get response from receiving player - make it VERY clear who should answer
+    print("\033[36;0H" + ' ' * 70)
+    print("\033[37;0H" + ' ' * 70)
+    print("\033[38;0H" + ' ' * 70)
+    print("\033[39;0H" + ' ' * 70)
+    print("\033[40;0H" + ' ' * 70)
+    
+    # Very explicit prompt
+    prompt_text = receiving_color + f"{receiving_player.name}" + COLORS.RESET + f" - {offering_player.name} wants to trade {board.locations[offer_location].name} (property #{offer_location}) for your {board.locations[request_location].name} (property #{request_location}). Accept? (y/n): "
+    response = input("\033[36;0H" + prompt_text)
+    
+    refresh_board()
+    bottom_screen_wipe()
+    
+    if response.lower() == 'y':
+        # Execute the trade
+        # Transfer offered property to receiving player
+        transfer_property(offer_location, offering_player, receiving_player)
+        
+        # Transfer requested property to offering player
+        transfer_property(request_location, receiving_player, offering_player)
+        
+        # Update history with colors
+        update_history(receiving_color + f"{receiving_player.name}" + COLORS.RESET + " accepted the trade!")
+        update_history(offering_color + f"{offering_player.name}" + COLORS.RESET + f" traded {board.locations[offer_location].name} to " + receiving_color + f"{receiving_player.name}" + COLORS.RESET + f" for {board.locations[request_location].name}")
+        refresh_board()
+    else:
+        # Trade declined
+        update_history(receiving_color + f"{receiving_player.name}" + COLORS.RESET + " declined the trade from " + offering_color + f"{offering_player.name}" + COLORS.RESET)
+
 def player_choice():
     global bankrupts
     if(players[turn].cash > 0):
         print("\033[36;0H" + ' ' * 70)
-        choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
+        choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed, t to trade?")
         while(choice != 'e'): 
             if choice == "e":
                 pass
@@ -743,10 +966,12 @@ def player_choice():
                 manage_properties(players[turn])
             elif choice == "d":
                 update_status(players[turn], "deed")
+            elif choice == "t":
+                trade_logic()
             else:
                 add_to_output("Invalid option!")
             print("\033[36;0H" + ' ' * 70)
-            choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed?")
+            choice = input("\033[36;0He to end turn, p to manage properties, d to view a deed, t to trade?")
         update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"{players[turn]} is in debt. Resolve debts before ending turn.")
@@ -796,12 +1021,13 @@ if __name__ == "__main__": # For debugging purposes. Can play standalone
 
     calibrate_screen('gameboard')
 
-    # CASH = input("Starting cash?")
+    CASH = 1500
+    num_players = 2
     # num_players = int(input("Number players?"))
     for i in range(num_players):
         players.append(MonopolyPlayer(CASH, i, f"Player {i+1}"))
 
-    turn = 0
+    turn = 1
 
     board = Board(num_players)
     decks = Cards()
