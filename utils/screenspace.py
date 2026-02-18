@@ -613,22 +613,36 @@ def calibrate_screen(type: str) -> None:
     current_os = platform.system()
 
     colortest()    
-    choice = input("How does this look? Enter the number of your preferred colorset: ")
+    choice = input("How does this look? " \
+    "Enter the number of your preferred colorset (1 for default; 2 for compatible; 3 for custom): " \
+    "")
 
     # sets the color set based on user input
     global COLORS
-    if choice == "1":
-        print("Using default colorset")
-        choose_colorset("DEFAULT_COLORS")
-    elif choice == "2":
-        print("Using compatible colorset")
-        choose_colorset("COMPAT_COLORS")
-    elif choice == "3":
-        print("Using custom colorset")
-        choose_colorset("CRAZY_THEME")
-    else:
-        print("Please enter a valid choice")
-        choose_colorset("DEFAULT_COLORS") # default to default colorset
+    
+    invalid_colorset_inputs = 0
+    while True:
+        if choice == "1":
+            print("Using default colorset")
+            choose_colorset("DEFAULT_COLORS")
+            break
+        elif choice == "2":
+            print("Using compatible colorset")
+            choose_colorset("COMPAT_COLORS")
+            break
+        elif choice == "3":
+            print("Using custom colorset")
+            choose_colorset("CRAZY_THEME")
+            break
+        else:
+            if invalid_colorset_inputs < 3:
+                print("Please enter a valid choice.")
+                invalid_colorset_inputs+= 1
+            else: 
+                print("Resorting to default colorset!")
+                choose_colorset("DEFAULT_COLORS")
+                break
+        choice = input("Enter colorset: ")
     input("Press enter to continue...")
 
     clear_screen()
