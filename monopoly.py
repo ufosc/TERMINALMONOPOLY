@@ -220,112 +220,87 @@ def buy_logic(mode: str = "normal", pinput: str = ""):
 
 def housing_logic(p: MonopolyPlayer, mode: str = "normal", propertyid: str = "", num_houses: int = -1):
     update_status(p, "properties")
-    
-    # Clear the interaction area (lines 38-42)
-    def clear_interaction_area():
-        for line in range(38, 43):
-            print(f"\033[{line};0H" + ' ' * 150)
-    
     if mode == "normal":
-        clear_interaction_area()
+        print(set_cursor_str(0, 38) + ' ' * 75)
         propertyid = input(set_cursor_str(0, 38) + "What property do you want to build on? Enter property # or 'e' to exit.")
     else:
         if propertyid == "e":
             return get_gameboard()
         elif propertyid == "":
             return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {[propObject.location for propObject in p.properties]}" + COLORS.RESET
-    
     flag = True
     exit_flag = False
-    
     try:   
         if propertyid == 'e':
-            clear_interaction_area()
+            print("\033[37;0H " + ' ' * 70 + "\033[38;0H " + ' ' * 70 + "\033[39;0H " + ' ' * 70)
             exit_flag = True
         else:
-            propertyid = int(propertyid)
+            propertyid =  int(propertyid)
     except ValueError:
-        clear_interaction_area()
-        print(f"\033[40;0H{COLORS.RED}Invalid input, please enter a number in {[propObject.location for propObject in p.properties]}{COLORS.RESET}")
+        add_to_output(f"\033[42;0" + COLORS.RED + f"Invalid input, please enter a number in {[propObject.location for propObject in p.properties]}" + COLORS.RESET)
         flag = False
-    
     if flag and not exit_flag:
         if not propertyid in [propObject.location for propObject in p.properties]:
-            clear_interaction_area()
-            print(f"\033[40;0H{COLORS.RED}You do not own this property!{COLORS.RESET}")
-            flag = False
+            print("\033[40;0HYou do not own this property!")
         else: 
             family = board.locations[propertyid].color
             if family == COLORS.CYAN or family == COLORS.LIGHTBLACK or board.locations[propertyid].name.startswith("Electric"):
-                clear_interaction_area()
-                print(f"\033[40;0H{COLORS.RED}This property cannot be improved.{COLORS.RESET}")
+                print("\033[40;0HThis property cannot be improved.")
                 flag = False
                 if mode == "banker":
                     return get_gameboard() + set_cursor_str(0, 40) + "This property cannot be improved."
-            
             if flag: 
-                for i in range(propertyid-3 if propertyid > 3 else 0, propertyid+5 if propertyid < 35 else 39):
+                for i in range(propertyid-3 if propertyid > 3 else 0, propertyid+5 if propertyid < 35 else 39): # check only a few properties around for efficiency
                     if board.locations[i].color == family:
                         if not i in [propObject.location for propObject in p.properties]:
-                            clear_interaction_area()
-                            print(f"\033[40;0H{COLORS.RED}You do not own a monopoly on these properties!{COLORS.RESET}")
+                            print("\033[40;0HYou do not own a monopoly on these properties!")
                             flag = False
                             if mode == "banker":
-                                return get_gameboard() + set_cursor_str(0, 40) + "You do not own a monopoly on these properties!"
-                            break
-            
+                                return get_gameboard() + set_cursor_str(0, 40) + "You do not own a monopoly on these properties!"  
             if flag and board.locations[propertyid].mortgaged:
-                clear_interaction_area()
-                print(f"\033[40;0H{COLORS.RED}This property is mortgaged.{COLORS.RESET}")
+                add_to_output("This property is mortaged.")
                 flag = False
                 if mode == "banker":
-                    return get_gameboard() + set_cursor_str(0, 40) + "This property is mortgaged."
-            
+                    return get_gameboard() + set_cursor_str(0, 40) + "This property is mortaged."
             if flag:
-                # Calculate cost based on property location
-                if 0 < propertyid < 10:
-                    cost = 50
-                elif 10 < propertyid < 20:
-                    cost = 100
-                elif 20 < propertyid < 30:
-                    cost = 150
-                elif 30 < propertyid < 40:
-                    cost = 200
-                else:
-                    cost = 0
-                
-                max_houses = 5 - board.locations[propertyid].houses
-                
-                if mode == "normal":
-                    clear_interaction_area()
-                    houses = input(f"\033[39;0HCost of housing is ${cost}. How many houses would you like to buy? (Max {max_houses}/min 0) ")
-                    try:
-                        houses = int(houses)
-                        if 0 < houses <= max_houses:
-                            p.cash -= board.locations[propertyid].housePrice * houses
-                            update_history(f"{p.name} bought {houses} house{'s' if houses != 1 else ''} on {board.locations[propertyid].name}!")
-                            board.locations[propertyid].houses += houses
-                            refresh_board()
-                        else:
-                            clear_interaction_area()
-                            print(f"\033[40;0H{COLORS.RED}Invalid input. Please enter a number 1-{max_houses}{COLORS.RESET}")
-                    except ValueError:
-                        clear_interaction_area()
-                        print(f"\033[40;0H{COLORS.RED}Invalid input. Please enter a number 0-{max_houses}{COLORS.RESET}")
-    
+                cost = 0
+                if flag:
+                    if 0 < propertyid < 10:
+                        cost = 50
+                    elif 10 < propertyid < 20:
+                        cost = 100
+                    elif 20 < propertyid < 30:
+                        cost = 150
+                    elif 30 < propertyid < 40:
+                        cost = 200
+                    max_houses = 5 - board.locations[propertyid].houses
+                    if mode == "normal":
+                        houses = input(f"Cost of housing is ${cost}. How many houses would you like to buy? (Max {max_houses}/min 0)")
+                    if mode == "normal":
+                        try:
+                            houses = int(houses)
+                            if(0 < houses and houses <= max_houses):
+                                p.cash -= board.locations[propertyid].housePrice * houses
+                                update_history(f"{p.name} bought {houses} house{'s' if houses != 1 else ''} on {board.locations[propertyid].name}!")
+                                board.locations[propertyid].houses += houses
+                                refresh_board()
+                            else:
+                                raise ValueError
+                        except ValueError:
+                            add_to_output(f"Invalid input. Please enter a number 0-{max_houses}")
+        
     if not exit_flag:
         if mode == "normal":
             housing_logic(p)
+        elif choice == "s":
+            sell_logic(p)
+        elif choice == "m":
+            mortgage_logic(p)
         else:
-            # Note: 'choice' variable doesn't exist in this scope - this looks like a bug
-            # These branches seem unreachable in current code
-            clear_interaction_area()
-            print("\033[40;0HInvalid option!")
+            print("\033[38;0H" + ' ' * 70)
+            print("\033[38;0HInvalid option!")
             return get_gameboard() + set_cursor_str(0, 39) + f"[Property management]\nEnter an ID of one of your properties: {[propObject.location for propObject in p.properties]}" + COLORS.RESET
-    
     return get_gameboard()
-
-
 
 def mortgage_logic(p:MonopolyPlayer):
     update_status(p, "properties")
@@ -775,7 +750,7 @@ def player_choice():
         update_history(f"{players[turn].name} ended their turn.")
     else:
         update_history(f"{players[turn]} is in debt. Resolve debts before ending turn.")
-        option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels: ").lower().strip()
+        option = input("\033[38;0Hb to declare bankruptcy, m to mortgage properties, s to sell houses/hotels").lower().strip()
         while option != 'b': # Loop until bankruptcy is declared
                 if option == "m": # Mortgage properties
                     mortgage_logic(players[turn])
